@@ -5,45 +5,56 @@ import ProfilesPage from './pages/ProfilesPage';
 import ProfileEditPage from './pages/ProfileEditPage';
 import SubscriptionPickerPage from './pages/SubscriptionPickerPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profiles"
-        element={
-          <ProtectedRoute>
-            <ProfilesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profiles/:id/edit"
-        element={
-          <ProtectedRoute>
-            <ProfileEditPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profiles/:profileId/subscriptions"
-        element={
-          <ProtectedRoute>
-            <SubscriptionPickerPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <Dashboard />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profiles"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <ProfilesPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profiles/:id/edit"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <ProfileEditPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profiles/:profileId/subscriptions"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <SubscriptionPickerPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }
 

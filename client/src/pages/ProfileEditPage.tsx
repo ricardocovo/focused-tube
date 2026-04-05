@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../services/profilesApi';
 import { useProfiles } from '../context/ProfileContext';
+import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
 
 const BLUE = '#11A0D9';
@@ -45,8 +46,10 @@ export default function ProfileEditPage() {
     try {
       await updateProfile(id, { name: name.trim() });
       await loadProfile(id);
+      notify.success('Profile name updated');
     } catch {
       setError('Failed to update name.');
+      notify.error('Failed to update name');
     } finally {
       setSaving(false);
     }
@@ -61,8 +64,10 @@ export default function ProfileEditPage() {
       setNewKeyword('');
       await loadProfile(id);
       await refreshProfiles();
+      notify.success('Keyword added');
     } catch {
       setError('Failed to add keyword.');
+      notify.error('Failed to add keyword');
     }
   }
 
@@ -72,8 +77,10 @@ export default function ProfileEditPage() {
       await removeKeyword(id, keywordId);
       await loadProfile(id);
       await refreshProfiles();
+      notify.success('Keyword removed');
     } catch {
       setError('Failed to remove keyword.');
+      notify.error('Failed to remove keyword');
     }
   }
 
@@ -83,8 +90,10 @@ export default function ProfileEditPage() {
       await removeChannel(id, channelId);
       await loadProfile(id);
       await refreshProfiles();
+      notify.success('Channel removed');
     } catch {
       setError('Failed to remove channel.');
+      notify.error('Failed to remove channel');
     }
   }
 
@@ -104,7 +113,7 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: '0 auto' }}>
+    <div className="page-container-narrow">
       <button
         onClick={() => navigate('/profiles')}
         style={{
@@ -274,30 +283,15 @@ export default function ProfileEditPage() {
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {profile.keywords.map((kw) => (
-              <span
-                key={kw.id}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '6px 12px',
-                  fontSize: 13,
-                  background: '#f0f0f0',
-                  borderRadius: 16,
-                }}
-              >
+              <span key={kw.id} className="keyword-tag">
                 {kw.keyword}
                 <button
                   onClick={() => handleRemoveKeyword(kw.id)}
                   style={{
-                    background: 'none',
-                    border: 'none',
                     color: CORAL,
-                    cursor: 'pointer',
                     fontWeight: 700,
                     fontSize: 14,
                     lineHeight: 1,
-                    padding: 0,
                   }}
                   title="Remove keyword"
                 >

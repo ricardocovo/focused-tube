@@ -6,6 +6,7 @@ import { addChannel } from '../services/profilesApi';
 import { fetchProfile } from '../services/profilesApi';
 import SubscriptionChannelRow from '../components/subscriptions/SubscriptionChannelRow';
 import SubscriptionItemSkeleton from '../components/subscriptions/SubscriptionItemSkeleton';
+import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
 
 const BLUE = '#11A0D9';
@@ -64,6 +65,7 @@ export default function SubscriptionPickerPage() {
           thumbnailUrl: channel.thumbnailUrl,
         });
         await refreshProfiles();
+        notify.success(`Added ${channel.channelTitle}`);
       } catch {
         // Revert on error
         setAddedChannelIds((prev) => {
@@ -71,6 +73,7 @@ export default function SubscriptionPickerPage() {
           next.delete(channel.youtubeChannelId);
           return next;
         });
+        notify.error(`Failed to add ${channel.channelTitle}`);
       } finally {
         setAddingChannelIds((prev) => {
           const next = new Set(prev);
@@ -85,7 +88,7 @@ export default function SubscriptionPickerPage() {
   const showLoading = isLoading || profileLoading;
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: '0 auto' }}>
+    <div className="page-container-narrow">
       <button
         onClick={() => navigate(`/profiles/${profileId}/edit`)}
         style={{
@@ -110,16 +113,7 @@ export default function SubscriptionPickerPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search channels…"
-        style={{
-          width: '100%',
-          padding: '10px 14px',
-          fontSize: 14,
-          border: '1px solid #ccc',
-          borderRadius: 6,
-          outline: 'none',
-          marginBottom: 16,
-          boxSizing: 'border-box',
-        }}
+        className="subscription-search"
       />
 
       {/* Error state */}
