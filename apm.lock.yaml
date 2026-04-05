@@ -1,0 +1,36 @@
+lockfile_version: '1'
+generated_at: '2026-04-05T01:03:35.211421+00:00'
+apm_version: 0.8.10
+dependencies:
+- repo_url: anthropics/skills
+  host: github.com
+  resolved_commit: 98669c11ca63e9c81c11501e1437e5c47b556621
+  virtual_path: skills/frontend-design
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .github/skills/frontend-design
+  content_hash: sha256:063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: 0c3c5bbbfb2a7d57d36473a83fdbef1becc5053f
+  virtual_path: skills/readme-blueprint-generator
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .github/skills/readme-blueprint-generator
+  content_hash: sha256:e2c7dabf2e455794260f1516e2ceda6a82dc92a409578cc184fcb0f45bddca54
+- repo_url: ricardocovo/agent-primitives
+  host: github.com
+  virtual_path: agents/developer.agent.md
+  is_virtual: true
+  deployed_files:
+  - .github/agents/developer.agent.md
+  content_hash: sha256:1ebf9e832c1da0b2c5bf98e23a027985b248ba47ed924b8d21aaacc0559454f7
+- repo_url: ricardocovo/agent-primitives
+  host: github.com
+  virtual_path: agents/feature-spec-generator.agent.md
+  is_virtual: true
+  deployed_files:
+  - .github/agents/feature-spec-generator.agent.md
+  content_hash: sha256:5c7248262cbd978fe23e36e631410974435e13ed3b9f625989f97bee09fbae93

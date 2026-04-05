@@ -1,0 +1,12 @@
+name: focused-tube
+version: 1.0.0
+description: APM project for focused-tube
+author: Ricardo.Covo
+dependencies:
+  apm: 
+  - ricardocovo/agent-primitives/agents/developer.agent.md
+  - ricardocovo/agent-primitives/agents/feature-spec-generator.agent.md
+  - github/awesome-copilot/skills/readme-blueprint-generator
+  - anthropics/skills/skills/frontend-design
+  mcp: []
+scripts: {}
