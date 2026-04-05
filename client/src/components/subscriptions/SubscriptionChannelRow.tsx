@@ -41,43 +41,18 @@ export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onA
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '12px 14px',
-        background: '#f9f9f9',
-        borderRadius: 6,
-      }}
-    >
+    <div className="subscription-row">
       <img
         src={channel.thumbnailUrl ?? undefined}
         alt={channel.channelTitle}
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: '50%',
-          objectFit: 'cover',
-          flexShrink: 0,
-          background: '#ddd',
-        }}
       />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
+      <div className="subscription-row-info">
+        <div className="subscription-row-title">
           {channel.channelTitle}
         </div>
         {channel.description && (
-          <div
-            style={{
-              fontSize: 12,
-              color: '#666',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <div className="subscription-row-desc">
             {channel.description}
           </div>
         )}
