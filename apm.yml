@@ -6,6 +6,8 @@ dependencies:
   apm: 
   - ricardocovo/agent-primitives/agents/developer.agent.md
   - ricardocovo/agent-primitives/agents/feature-spec-generator.agent.md
+  - ricardocovo/agent-primitives/skills/google-authentication
+  - ricardocovo/agent-primitives/skills/youtube-api
   - github/awesome-copilot/skills/readme-blueprint-generator
   - anthropics/skills/skills/frontend-design
   mcp: []

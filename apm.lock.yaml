@@ -1,6 +1,6 @@
 lockfile_version: '1'
-generated_at: '2026-04-05T01:03:35.211421+00:00'
-apm_version: 0.8.10
+generated_at: '2026-04-05T02:49:40.303581+00:00'
+apm_version: 0.8.9
 dependencies:
 - repo_url: anthropics/skills
   host: github.com
@@ -26,11 +26,29 @@ dependencies:
   is_virtual: true
   deployed_files:
   - .github/agents/developer.agent.md
-  content_hash: sha256:1ebf9e832c1da0b2c5bf98e23a027985b248ba47ed924b8d21aaacc0559454f7
+  content_hash: sha256:9b6e1dd031df9c39215893cede98981091a0e564410d11d9f5fbeb7c60ed9af1
 - repo_url: ricardocovo/agent-primitives
   host: github.com
   virtual_path: agents/feature-spec-generator.agent.md
   is_virtual: true
   deployed_files:
   - .github/agents/feature-spec-generator.agent.md
-  content_hash: sha256:5c7248262cbd978fe23e36e631410974435e13ed3b9f625989f97bee09fbae93
+  content_hash: sha256:f4a5ceddf4953e4edaddccf31c774dc11b9cef54b1f7e6ddb057b1368ba5a699
+- repo_url: ricardocovo/agent-primitives
+  host: github.com
+  resolved_commit: 4103af5762d9564bcae058a9bd780240705a7dc5
+  virtual_path: skills/google-authentication
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .github/skills/google-authentication
+  content_hash: sha256:7dd3118660ea32cf3852269608b388de63cb16066ee358c0634f80a00cb35317
+- repo_url: ricardocovo/agent-primitives
+  host: github.com
+  resolved_commit: 4103af5762d9564bcae058a9bd780240705a7dc5
+  virtual_path: skills/youtube-api
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .github/skills/youtube-api
+  content_hash: sha256:5071693a26060bfb87d91147492e5e081c2684cbf9c13d53d47c24a0b575e5a4
