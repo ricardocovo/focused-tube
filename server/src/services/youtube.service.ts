@@ -100,6 +100,18 @@ function isUnauthorizedError(error: unknown): boolean {
   );
 }
 
+export function isInsufficientScopeError(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null) {
+    const e = error as any;
+    return (
+      e.code === 403 &&
+      Array.isArray(e.errors) &&
+      e.errors.some((err: any) => err.reason === 'insufficientPermissions')
+    );
+  }
+  return false;
+}
+
 export async function getUserSubscriptions(userId: string): Promise<Subscription[]> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {

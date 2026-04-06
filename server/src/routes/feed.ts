@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import { authenticateJwt } from '../middleware/auth';
-import { searchVideos, Video } from '../services/youtube.service';
+import { searchVideos, Video, isInsufficientScopeError } from '../services/youtube.service';
 
 const router = Router();
 router.use(authenticateJwt);
@@ -82,11 +82,17 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
 
     const results = await Promise.allSettled(promises);
 
-    // Check for quota errors in rejected promises
+    // Check for scope or quota errors in rejected promises
     for (const result of results) {
-      if (result.status === 'rejected' && isQuotaError(result.reason)) {
-        res.status(503).json({ error: 'youtube_quota_exceeded' });
-        return;
+      if (result.status === 'rejected') {
+        if (isInsufficientScopeError(result.reason)) {
+          res.status(403).json({ error: 'Insufficient YouTube permissions. Please log out and sign in again to grant the required access.' });
+          return;
+        }
+        if (isQuotaError(result.reason)) {
+          res.status(503).json({ error: 'youtube_quota_exceeded' });
+          return;
+        }
       }
     }
 

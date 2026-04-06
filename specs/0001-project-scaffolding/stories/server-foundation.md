@@ -8,7 +8,7 @@
 
 ## Description
 
-> This story wires up the Express application entry point (`server/src/index.ts`) with all foundational middleware and configuration. It sets up `dotenv` for environment variable loading, applies the CORS middleware with a configurable allowed origin, adds `express.json()` for request body parsing, registers the health check route, and attaches a centralized error-handling middleware as the final middleware in the chain. It also ensures the server reads its port from the `PORT` environment variable (defaulting to `3000`) and logs a clear startup message. The server should be fully startable with `npm run dev` from the `server/` workspace or from the repo root.
+> This story wires up the Express application entry point (`server/src/index.ts`) with all foundational middleware and configuration. It sets up `dotenv` for environment variable loading, applies the CORS middleware with a configurable allowed origin, adds `express.json()` for request body parsing, registers the health check route, and attaches a centralized error-handling middleware as the final middleware in the chain. It also ensures the server reads its port from the `PORT` environment variable (defaulting to `3001`) and logs a clear startup message. The server should be fully startable with `npm run dev` from the `server/` workspace or from the repo root.
 
 ## Acceptance Criteria
 
@@ -17,7 +17,7 @@
 - [ ] Given the running server, when a request is made from `http://localhost:5173` (the Vite dev origin), then the response includes the correct CORS headers (`Access-Control-Allow-Origin`) and is not blocked.
 - [ ] Given the running server, when a route handler throws an error and passes it to `next(err)`, then the centralized error handler returns a JSON error response (not an Express HTML error page) with an appropriate HTTP status code.
 - [ ] Given the running server, when a `POST` request with a JSON body is sent to any route, then `req.body` is correctly parsed as a JavaScript object.
-- [ ] Given no `.env` file, when the server starts, then it falls back to `PORT=3000` and does not crash on missing optional variables.
+- [ ] Given no `.env` file, when the server starts, then it falls back to `PORT=3001` and does not crash on missing optional variables.
 - [ ] Given the `.env.example` at the repo root, when it is opened, then it contains entries for `PORT`, `CLIENT_ORIGIN`, and `DATABASE_URL` with descriptive comments.
 - [ ] Given `server/src/index.ts`, when it is compiled with `tsc --noEmit`, then it produces zero TypeScript errors.
 
@@ -25,7 +25,7 @@
 
 - [ ] Install `dotenv` in `server/` dependencies if not already present: `npm install dotenv --workspace=server`
 - [ ] Add the `dotenv` import and `dotenv.config()` call as the very first lines of `server/src/index.ts`, before any other imports that might read `process.env`
-- [ ] Create `server/src/utils/config.ts` that reads and exports typed config values from `process.env`: `PORT` (number, default 3000), `CLIENT_ORIGIN` (string, default `"http://localhost:5173"`), and `DATABASE_URL` (string, required — throw on missing)
+- [ ] Create `server/src/utils/config.ts` that reads and exports typed config values from `process.env`: `PORT` (number, default 3001), `CLIENT_ORIGIN` (string, default `"http://localhost:5173"`), and `DATABASE_URL` (string, required — throw on missing)
 - [ ] Install `cors` and its types in the `server/` workspace: `npm install cors` and `npm install --save-dev @types/cors`
 - [ ] Create `server/src/middleware/cors.ts` that exports a configured `cors()` middleware instance using `CLIENT_ORIGIN` from the config module, with `credentials: true` to support cookie-based auth in future phases
 - [ ] Wire `express.json()` middleware in `server/src/index.ts` before any route registrations
@@ -37,9 +37,9 @@
 - [ ] Register the error-handling middleware as the last `app.use()` call in `server/src/index.ts`, after all route registrations
 - [ ] Add a 404 catch-all middleware before the error handler that calls `next` with a 404 error for any unmatched routes
 - [ ] Start the server with `app.listen(PORT, () => console.log(\`Server running on port ${PORT}\`))` in `server/src/index.ts`
-- [ ] Add `PORT=3000` and `CLIENT_ORIGIN=http://localhost:5173` entries (with comments) to the root `.env.example`
-- [ ] Create a local `.env` file at the repo root (or `server/.env`) with `PORT=3000`, `CLIENT_ORIGIN=http://localhost:5173`, and `DATABASE_URL=file:./prisma/dev.db` — confirm it is gitignored
-- [ ] Manually test `GET http://localhost:3000/api/health` with `curl` or a browser and confirm `{ "status": "ok" }` is returned
+- [ ] Add `PORT=3001` and `CLIENT_ORIGIN=http://localhost:5173` entries (with comments) to the root `.env.example`
+- [ ] Create a local `.env` file at the repo root (or `server/.env`) with `PORT=3001`, `CLIENT_ORIGIN=http://localhost:5173`, and `DATABASE_URL=file:./prisma/dev.db` — confirm it is gitignored
+- [ ] Manually test `GET http://localhost:3001/api/health` with `curl` or a browser and confirm `{ "status": "ok" }` is returned
 - [ ] Manually test that an invalid route (e.g., `GET /api/nonexistent`) returns a JSON 404 response rather than an HTML Express error page
 - [ ] Update the root `README.md` to document the health check endpoint and the list of environment variables with their descriptions
 

@@ -13,7 +13,7 @@
 ## Acceptance Criteria
 
 - [ ] Given a fresh clone of the repository, when `npm install` is run at the root, then all dependencies for both `client/` and `server/` are installed without errors.
-- [ ] Given dependencies are installed, when `npm run dev` is run at the root, then both the Vite dev server (port 5173) and the Express server (port 3000) start concurrently and log their respective startup messages.
+- [ ] Given dependencies are installed, when `npm run dev` is run at the root, then both the Vite dev server (port 5173) and the Express server (port 3001) start concurrently and log their respective startup messages.
 - [ ] Given dependencies are installed, when `npm run build` is run at the root, then both `client/dist/` and `server/dist/` are produced with zero TypeScript compilation errors.
 - [ ] Given the repository, when TypeScript is invoked in either workspace, then it inherits `strict: true` and other shared options from `tsconfig.base.json`.
 - [ ] Given the repository root, when the directory structure is inspected, then `client/`, `server/`, `tsconfig.base.json`, `.gitignore`, `.env.example`, and `README.md` are all present.
@@ -29,7 +29,7 @@
 - [ ] Create `tsconfig.base.json` at the repo root with `strict: true`, `target: "ES2022"`, `module: "ESNext"`, `moduleResolution: "bundler"`, `esModuleInterop: true`, `skipLibCheck: true`, and `forceConsistentCasingInFileNames: true`
 - [ ] Scaffold the `client/` workspace using `npm create vite@latest client -- --template react-ts` (or equivalent manual setup)
 - [ ] Update `client/tsconfig.json` to extend `../tsconfig.base.json` and remove any duplicate compiler options already covered by the base
-- [ ] Configure `client/vite.config.ts` with a dev server proxy entry forwarding `/api` requests to `http://localhost:3000` to allow same-origin API calls during development
+- [ ] Configure `client/vite.config.ts` with a dev server proxy entry forwarding `/api` requests to `http://localhost:3001` to allow same-origin API calls during development
 - [ ] Create `client/package.json` `"dev"` script as `vite` and `"build"` script as `tsc && vite build`
 - [ ] Create the `server/` directory with `package.json` declaring `name: "server"` and listing `express`, `cors`, and `dotenv` as `dependencies`, and `typescript`, `@types/express`, `@types/cors`, `@types/node`, and `ts-node-dev` as `devDependencies`
 - [ ] Define `server/package.json` `"dev"` script as `ts-node-dev --respawn --transpile-only src/index.ts` and `"build"` script as `tsc`

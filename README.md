@@ -16,7 +16,7 @@ A YouTube overlay web app that lets users create curated profiles to bypass YouT
 
 ## Development
 
-- `npm run dev` — starts both client (port 5173) and server (port 3000)
+- `npm run dev` — starts both client (port 5173) and server (port 3001)
 - `npm run build` — builds both workspaces
 
 ## Database
@@ -44,7 +44,7 @@ npx prisma migrate dev   # Apply migrations (creates the SQLite DB)
 
 | Variable | Description |
 |---|---|
-| `PORT` | Server port (default: 3000) |
+| `PORT` | Server port (default: 3001) |
 | `CLIENT_ORIGIN` | Frontend URL for CORS (default: http://localhost:5173) |
 | `DATABASE_URL` | SQLite connection string |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |

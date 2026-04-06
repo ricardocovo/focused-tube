@@ -66,7 +66,7 @@
 
 - Key flow 1: Developer clones the repo, runs `npm install` at the root, copies `.env.example` to `.env`, then runs `npm run dev` — both the Vite dev server and Express server start without errors.
 - Key flow 2: Developer runs `npm run build` at the root and both `client/` and `server/` compile to their respective `dist/` directories without TypeScript errors.
-- Key flow 3: Developer hits `http://localhost:3000/api/health` and receives `{ "status": "ok" }` confirming the server is wired up correctly.
+- Key flow 3: Developer hits `http://localhost:3001/api/health` and receives `{ "status": "ok" }` confirming the server is wired up correctly.
 
 ## Technical Considerations
 
@@ -76,7 +76,7 @@
 - **Prisma location**: `schema.prisma` lives at `server/src/prisma/schema.prisma`. The `DATABASE_URL` env var points to a SQLite file at `server/prisma/dev.db` (or similar local path).
 - **CORS origin**: During development the allowed origin is `http://localhost:5173` (Vite default). This should be driven by the `CLIENT_ORIGIN` env variable.
 - **Error handler**: The Express error-handling middleware must be the last `app.use()` call and must accept `(err, req, res, next)` signature to satisfy Express's error-handler detection.
-- **Port configuration**: Server port defaults to `3000`, driven by `PORT` env variable. Client Vite dev server runs on default port `5173`.
+- **Port configuration**: Server port defaults to `3001`, driven by `PORT` env variable. Client Vite dev server runs on default port `5173`.
 
 ## Dependencies
 
