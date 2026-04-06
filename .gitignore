@@ -1,3 +1,22 @@
 
 # APM dependencies
 apm_modules/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# Database
+*.db
+*.db-journal
+
+# OS
+.DS_Store
+
+# Source maps
+*.js.map
