@@ -1,4 +1,7 @@
 .app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: 800;
   color: var(--ft-brand);
@@ -6,6 +9,12 @@
   white-space: nowrap;
   text-decoration: none;
   transition: opacity 0.15s;
+}
+
+.app-header-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .app-header-brand:hover {
