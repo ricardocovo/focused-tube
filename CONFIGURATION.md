@@ -64,7 +64,7 @@ The server uses the YouTube Data API v3 to fetch user subscriptions and search f
 3. Click the result, then click **Enable**.
 4. Wait for the API to be enabled.
 
-> **Quota note:** The free tier gives you **10,000 units per day**. A single `search.list` call costs **100 units**, so you get roughly 100 searches per day during development. This is more than enough for local testing.
+> **Quota note:** The free tier gives you **10,000 units per day**. Channel uploads use `playlistItems.list` at **1 unit** per call. Keyword searches use `search.list` at **100 units** per call. Server-side caching reduces repeated calls. A built-in quota tracker warns when approaching the limit.
 
 ---
 
@@ -248,7 +248,7 @@ curl http://localhost:3001/api/health
 Expected response:
 
 ```json
-{ "status": "ok" }
+{ "status": "ok", "quota": { "date": "2025-01-01", "used": 0, "limit": 9000, "remaining": 9000 } }
 ```
 
 ---
@@ -267,6 +267,11 @@ Expected response:
 | `JWT_SECRET` | **Yes** | — | Secret for signing access tokens (32+ chars) |
 | `JWT_REFRESH_SECRET` | **Yes** | — | Secret for signing refresh tokens (32+ chars, different from JWT_SECRET) |
 | `ENCRYPTION_KEY` | **Yes** | — | 64-char hex string for AES-256-GCM encryption of stored Google tokens |
+| `CACHE_MAX_ENTRIES` | No | `5000` | Maximum number of entries in the server-side in-memory cache |
+| `CACHE_TTL_CHANNEL_SECONDS` | No | `600` | TTL (seconds) for cached channel upload results |
+| `CACHE_TTL_KEYWORD_SECONDS` | No | `300` | TTL (seconds) for cached keyword search results |
+| `FEED_PUBLISHED_AFTER_DAYS` | No | `14` | Only return videos published within this many days |
+| `QUOTA_DAILY_LIMIT` | No | `9000` | Soft quota guard threshold (YouTube daily limit is 10,000) |
 
 ---
 
@@ -311,7 +316,7 @@ Make sure `CLIENT_ORIGIN` in `.env` matches the URL you're accessing the client 
 
 ### Token refresh fails silently
 
-The access token expires every 15 minutes. If refresh fails, try signing out and signing back in. Ensure `GOOGLE_CALLBACK_URL` includes `accessType: 'offline'` and `prompt: 'consent'` — these are set by default in the server's auth route configuration.
+The access token expires every 15 minutes. If refresh fails, try signing out and signing back in. Returning users skip the consent screen automatically; if you need to re-grant permissions, clear the `ft_returning_user` cookie or use an incognito window.
 
 ### Database reset
 

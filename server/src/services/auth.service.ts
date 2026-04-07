@@ -10,29 +10,33 @@ interface GoogleProfile {
 
 interface GoogleTokens {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export async function upsertUser(googleProfile: GoogleProfile, googleTokens: GoogleTokens) {
   const encryptedAccessToken = encrypt(googleTokens.accessToken);
-  const encryptedRefreshToken = encrypt(googleTokens.refreshToken);
+
+  const updateData: Record<string, string | undefined> = {
+    email: googleProfile.email,
+    name: googleProfile.name,
+    avatarUrl: googleProfile.avatarUrl,
+    accessToken: encryptedAccessToken,
+  };
+
+  if (googleTokens.refreshToken) {
+    updateData.refreshToken = encrypt(googleTokens.refreshToken);
+  }
 
   const user = await prisma.user.upsert({
     where: { googleId: googleProfile.googleId },
-    update: {
-      email: googleProfile.email,
-      name: googleProfile.name,
-      avatarUrl: googleProfile.avatarUrl,
-      accessToken: encryptedAccessToken,
-      refreshToken: encryptedRefreshToken,
-    },
+    update: updateData,
     create: {
       googleId: googleProfile.googleId,
       email: googleProfile.email,
       name: googleProfile.name,
       avatarUrl: googleProfile.avatarUrl,
       accessToken: encryptedAccessToken,
-      refreshToken: encryptedRefreshToken,
+      refreshToken: googleTokens.refreshToken ? encrypt(googleTokens.refreshToken) : '',
     },
   });
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { FeedVideo } from '../types/feed';
 import { fetchFeed } from '../services/feedApi';
+import { useFeedCache } from '../context/FeedCacheContext';
 
 interface UseFeedResult {
   videos: FeedVideo[];
@@ -20,12 +21,24 @@ export function useFeed(profileId: string | null, source?: string): UseFeedResul
   const [error, setError] = useState<string | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const feedCache = useFeedCache();
 
   // Track the current request so we can ignore stale responses
   const requestIdRef = useRef(0);
 
   const fetchInitial = useCallback(async () => {
     if (!profileId) return;
+
+    // Check client-side cache first
+    const cached = feedCache.get(profileId, source);
+    if (cached) {
+      setVideos(cached.videos);
+      setNextPageToken(cached.nextPageToken);
+      setHasLoadedOnce(true);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
 
     const id = ++requestIdRef.current;
     setIsLoading(true);
@@ -40,6 +53,7 @@ export function useFeed(profileId: string | null, source?: string): UseFeedResul
       setVideos(res.videos);
       setNextPageToken(res.nextPageToken);
       setHasLoadedOnce(true);
+      feedCache.set(profileId, source, res.videos, res.nextPageToken);
     } catch (err: any) {
       if (id !== requestIdRef.current) return;
       const serverMessage = err?.response?.data?.error;
@@ -50,7 +64,7 @@ export function useFeed(profileId: string | null, source?: string): UseFeedResul
         setIsLoading(false);
       }
     }
-  }, [profileId, source]);
+  }, [profileId, source, feedCache]);
 
   useEffect(() => {
     fetchInitial();

@@ -21,7 +21,7 @@ passport.use(
           },
           {
             accessToken: _accessToken,
-            refreshToken: _refreshToken ?? '',
+            refreshToken: _refreshToken || undefined,
           }
         );
         done(null, user);

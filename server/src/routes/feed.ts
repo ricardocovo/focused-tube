@@ -1,7 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import { authenticateJwt } from '../middleware/auth';
-import { searchVideos, Video, isInsufficientScopeError } from '../services/youtube.service';
+import { searchVideos, getChannelVideos, Video, isInsufficientScopeError } from '../services/youtube.service';
+import { config } from '../utils/config';
+import { quotaTracker, QUOTA_COSTS } from '../utils/quota';
 
 const router = Router();
 router.use(authenticateJwt);
@@ -53,13 +55,35 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
     const promises: Promise<{ videos: Video[]; nextPageToken?: string }>[] = [];
     const promiseLabels: ('subscription' | 'search')[] = [];
 
-    // Fan out channel searches
+    // Compute publishedAfter cutoff date
+    const publishedAfterDate = new Date();
+    publishedAfterDate.setDate(publishedAfterDate.getDate() - config.FEED_PUBLISHED_AFTER_DAYS);
+    const publishedAfter = publishedAfterDate.toISOString();
+
+    // Quota guard: estimate cost and reject early if it would exceed limit
+    const channelCount = source !== 'search' ? profile.channels.length : 0;
+    const keywordCount = source !== 'subscriptions' ? profile.keywords.length : 0;
+    const estimatedCost =
+      channelCount * QUOTA_COSTS['playlistItems.list'] +
+      keywordCount * QUOTA_COSTS['search.list'];
+
+    if (estimatedCost > 0 && quotaTracker.wouldExceed('search.list', keywordCount) &&
+        quotaTracker.wouldExceed('playlistItems.list', channelCount)) {
+      res.status(429).json({
+        error: 'YouTube API daily quota nearly exhausted. Please try again tomorrow.',
+        quota: quotaTracker.getUsage(),
+      });
+      return;
+    }
+
+    // Fan out channel uploads (uses playlistItems.list — 1 unit per call)
     if (source !== 'search') {
       for (const channel of profile.channels) {
         promises.push(
-          searchVideos(userId, {
+          getChannelVideos(userId, {
             channelId: channel.youtubeChannelId,
             maxResults: 20,
+            publishedAfter,
             pageToken,
           }),
         );
@@ -67,13 +91,14 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
       }
     }
 
-    // Fan out keyword searches
+    // Fan out keyword searches (uses search.list — 100 units per call)
     if (source !== 'subscriptions') {
       for (const kw of profile.keywords) {
         promises.push(
           searchVideos(userId, {
             query: kw.keyword,
             maxResults: 20,
+            publishedAfter,
             pageToken,
           }),
         );

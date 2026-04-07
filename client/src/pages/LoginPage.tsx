@@ -19,6 +19,9 @@ export default function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
+  const isReturningUser = document.cookie.split('; ').some((c) => c.startsWith('ft_returning_user='));
+  const googleAuthHref = isReturningUser ? '/api/auth/google?returning=true' : '/api/auth/google';
+
   return (
     <div className="login-page">
       <div className="login-content">
@@ -49,7 +52,7 @@ export default function LoginPage() {
 
         {/* Google sign-in button */}
         <a
-          href="/api/auth/google"
+          href={googleAuthHref}
           className="login-google-btn"
         >
           <svg width="20" height="20" viewBox="0 0 48 48">

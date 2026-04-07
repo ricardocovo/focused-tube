@@ -23,4 +23,15 @@ export const config = {
   get JWT_SECRET() { return requireEnv('JWT_SECRET'); },
   get JWT_REFRESH_SECRET() { return requireEnv('JWT_REFRESH_SECRET'); },
   get ENCRYPTION_KEY() { return requireEnv('ENCRYPTION_KEY'); },
+
+  // Cache settings
+  CACHE_MAX_ENTRIES: parseInt(process.env.CACHE_MAX_ENTRIES || '5000', 10),
+  CACHE_TTL_CHANNEL_SECONDS: parseInt(process.env.CACHE_TTL_CHANNEL_SECONDS || '600', 10),
+  CACHE_TTL_KEYWORD_SECONDS: parseInt(process.env.CACHE_TTL_KEYWORD_SECONDS || '300', 10),
+
+  // Feed settings
+  FEED_PUBLISHED_AFTER_DAYS: parseInt(process.env.FEED_PUBLISHED_AFTER_DAYS || '14', 10),
+
+  // Quota settings
+  QUOTA_DAILY_LIMIT: parseInt(process.env.QUOTA_DAILY_LIMIT || '9000', 10),
 };

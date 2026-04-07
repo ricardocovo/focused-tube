@@ -3,6 +3,8 @@ import { OAuth2Client } from 'google-auth-library';
 import prisma from '../utils/prisma';
 import { config } from '../utils/config';
 import { encrypt, decrypt } from '../utils/encryption';
+import { cache } from '../utils/cache';
+import { quotaTracker } from '../utils/quota';
 
 export interface Subscription {
   youtubeChannelId: string;
@@ -28,6 +30,18 @@ export interface SearchVideosParams {
   maxResults?: number;
   publishedAfter?: string;
   pageToken?: string;
+}
+
+export interface GetChannelVideosParams {
+  channelId: string;
+  maxResults?: number;
+  publishedAfter?: string;
+  pageToken?: string;
+}
+
+export interface GetChannelVideosResult {
+  videos: Video[];
+  nextPageToken?: string;
 }
 
 export interface SearchVideosResult {
@@ -165,10 +179,123 @@ async function fetchAllSubscriptions(youtube: youtube_v3.Youtube): Promise<Subsc
   return subscriptions;
 }
 
+/**
+ * Derive the uploads playlist ID from a channel ID.
+ * YouTube channels with IDs starting with "UC" have an uploads playlist
+ * with the same suffix but prefixed with "UU".
+ */
+function getUploadsPlaylistId(channelId: string): string {
+  if (channelId.startsWith('UC')) {
+    return 'UU' + channelId.slice(2);
+  }
+  return channelId;
+}
+
+/**
+ * Fetch recent videos from a channel using playlistItems.list (1 unit)
+ * instead of search.list (100 units).
+ */
+export async function getChannelVideos(
+  userId: string,
+  params: GetChannelVideosParams,
+): Promise<GetChannelVideosResult> {
+  // Check cache first (only for initial page — paginated requests bypass cache)
+  const cacheKey = `channel:${params.channelId}:${params.publishedAfter ?? ''}`;
+  if (!params.pageToken) {
+    const cached = await cache.get<GetChannelVideosResult>(cacheKey);
+    if (cached) return cached;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const { oauth2Client, youtube } = await getAuthenticatedClient(userId);
+  const playlistId = getUploadsPlaylistId(params.channelId);
+
+  try {
+    const result = await fetchPlaylistItems(youtube, playlistId, params);
+    if (!params.pageToken) {
+      await cache.set(cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
+    }
+    return result;
+  } catch (error) {
+    if (isUnauthorizedError(error)) {
+      await refreshAndSaveToken(userId, oauth2Client, user.refreshToken);
+      const retryYoutube = google.youtube({ version: 'v3', auth: oauth2Client });
+      const result = await fetchPlaylistItems(retryYoutube, playlistId, params);
+      if (!params.pageToken) {
+        await cache.set(cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
+      }
+      return result;
+    }
+    // Graceful fallback: if the uploads playlist is private/unavailable, return empty
+    if (isPlaylistNotFoundError(error)) {
+      console.debug(`Uploads playlist ${playlistId} not found for channel ${params.channelId}, returning empty`);
+      return { videos: [] };
+    }
+    throw error;
+  }
+}
+
+function isPlaylistNotFoundError(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null) {
+    const e = error as any;
+    return e.code === 404 || (e.code === 403 && e.message?.includes('playlistItemsNotAccessible'));
+  }
+  return false;
+}
+
+async function fetchPlaylistItems(
+  youtube: youtube_v3.Youtube,
+  playlistId: string,
+  params: GetChannelVideosParams,
+): Promise<GetChannelVideosResult> {
+  const response = await youtube.playlistItems.list({
+    part: ['snippet'],
+    playlistId,
+    maxResults: params.maxResults ?? 20,
+    pageToken: params.pageToken,
+  });
+  quotaTracker.record('playlistItems.list');
+
+  let videos: Video[] = (response.data.items ?? [])
+    .filter((item) => item.snippet?.resourceId?.videoId && item.snippet)
+    .map((item) => ({
+      videoId: item.snippet!.resourceId!.videoId!,
+      title: item.snippet!.title ?? '',
+      description: item.snippet!.description ?? '',
+      channelId: item.snippet!.channelId ?? '',
+      channelTitle: item.snippet!.channelTitle ?? '',
+      thumbnailUrl: item.snippet!.thumbnails?.medium?.url ?? '',
+      publishedAt: item.snippet!.publishedAt ?? '',
+      source: 'subscription' as const,
+    }));
+
+  // playlistItems.list does not support publishedAfter, so filter post-fetch
+  if (params.publishedAfter) {
+    const cutoff = new Date(params.publishedAfter).getTime();
+    videos = videos.filter((v) => new Date(v.publishedAt).getTime() >= cutoff);
+  }
+
+  return {
+    videos,
+    nextPageToken: response.data.nextPageToken ?? undefined,
+  };
+}
+
 export async function searchVideos(
   userId: string,
   params: SearchVideosParams,
 ): Promise<SearchVideosResult> {
+  // Check cache first (only for initial page — paginated requests bypass cache)
+  const cacheKey = `search:${params.query ?? ''}:${params.publishedAfter ?? ''}`;
+  if (!params.pageToken) {
+    const cached = await cache.get<SearchVideosResult>(cacheKey);
+    if (cached) return cached;
+  }
+
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     throw new Error('User not found');
@@ -191,12 +318,20 @@ export async function searchVideos(
   const source: Video['source'] = params.channelId ? 'subscription' : 'search';
 
   try {
-    return await executeSearch(youtube, requestParams, source);
+    const result = await executeSearch(youtube, requestParams, source);
+    if (!params.pageToken) {
+      await cache.set(cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
+    }
+    return result;
   } catch (error) {
     if (isUnauthorizedError(error)) {
       await refreshAndSaveToken(userId, oauth2Client, user.refreshToken);
       const retryYoutube = google.youtube({ version: 'v3', auth: oauth2Client });
-      return await executeSearch(retryYoutube, requestParams, source);
+      const result = await executeSearch(retryYoutube, requestParams, source);
+      if (!params.pageToken) {
+        await cache.set(cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
+      }
+      return result;
     }
     throw error;
   }
@@ -208,6 +343,7 @@ async function executeSearch(
   source: Video['source'],
 ): Promise<SearchVideosResult> {
   const response = await youtube.search.list(requestParams);
+  quotaTracker.record('search.list');
 
   const videos: Video[] = (response.data.items ?? [])
     .filter((item) => item.id?.videoId && item.snippet)

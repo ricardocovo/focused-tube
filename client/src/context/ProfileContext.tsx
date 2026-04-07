@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import { useFeedCache } from './FeedCacheContext';
 import type { Profile } from '../types/profile';
 import * as profilesApi from '../services/profilesApi';
 
@@ -20,6 +21,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const feedCache = useFeedCache();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfile, setActiveProfileState] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,21 +89,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfileFn = useCallback(
     async (id: string, data: { name?: string; isDefault?: boolean }) => {
       const updated = await profilesApi.updateProfile(id, data);
+      feedCache.invalidate(id);
       await loadProfiles();
       return updated;
     },
-    [loadProfiles],
+    [loadProfiles, feedCache],
   );
 
   const deleteProfileFn = useCallback(
     async (id: string) => {
       await profilesApi.deleteProfile(id);
+      feedCache.invalidate(id);
       if (activeProfile?.id === id) {
         localStorage.removeItem(STORAGE_KEY);
       }
       await loadProfiles();
     },
-    [activeProfile, loadProfiles],
+    [activeProfile, loadProfiles, feedCache],
   );
 
   return (
