@@ -24,9 +24,9 @@ export default function LoginPage() {
       <div className="login-content">
         {/* Brand row: logo + Focused-Tube */}
         <div className="login-brand-row">
-          <img src="/ft-logo.png" alt="Focused-Tube" className="login-brand-logo" />
+          <img src="/ft-logo.png" alt="FocusedTube" className="login-brand-logo" />
           <span className="login-brand-name">
-            Focused-Tube
+            FocusedTube
           </span>
         </div>
 
