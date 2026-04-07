@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import AppHeader from '../components/ui/AppHeader';
 import './ProfilesPage.css';
 
 export default function ProfilesPage() {
@@ -39,13 +40,17 @@ export default function ProfilesPage() {
   }
 
   return (
-    <div className="page-container-narrow">
-      <div className="profiles-header">
-        <h1 className="profiles-title">Profiles</h1>
-        <div className="profiles-header-actions">
-          <Link to="/" className="profiles-dashboard-link">
-            ← Dashboard
-          </Link>
+    <>
+      <AppHeader>
+        <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><span aria-current="page">Profiles</span></li>
+          </ol>
+        </nav>
+      </AppHeader>
+      <div className="page-container-narrow">
+        <div className="profiles-header">
+          <h1 className="profiles-title">Profiles</h1>
           <button
             onClick={() => setShowForm(!showForm)}
             className="profiles-new-btn"
@@ -53,7 +58,6 @@ export default function ProfilesPage() {
             {showForm ? 'Cancel' : '+ New Profile'}
           </button>
         </div>
-      </div>
 
       {showForm && (
         <form
@@ -116,6 +120,7 @@ export default function ProfilesPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

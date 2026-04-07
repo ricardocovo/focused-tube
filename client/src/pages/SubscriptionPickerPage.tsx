@@ -1,18 +1,18 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useSubscriptions } from '../hooks/useSubscriptions';
 import { useProfiles } from '../context/ProfileContext';
 import { addChannel } from '../services/profilesApi';
 import { fetchProfile } from '../services/profilesApi';
 import SubscriptionChannelRow from '../components/subscriptions/SubscriptionChannelRow';
 import SubscriptionItemSkeleton from '../components/subscriptions/SubscriptionItemSkeleton';
+import AppHeader from '../components/ui/AppHeader';
 import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
 import './SubscriptionPickerPage.css';
 
 export default function SubscriptionPickerPage() {
   const { profileId } = useParams<{ profileId: string }>();
-  const navigate = useNavigate();
   const { subscriptions, isLoading, error, refetch } = useSubscriptions();
   const { refreshProfiles } = useProfiles();
 
@@ -86,75 +86,79 @@ export default function SubscriptionPickerPage() {
   const showLoading = isLoading || profileLoading;
 
   return (
-    <div className="page-container-narrow">
-      <button
-        onClick={() => navigate(`/profiles/${profileId}/edit`)}
-        className="sub-picker-back"
-      >
-        ← Back to Profile
-      </button>
+    <>
+      <AppHeader>
+        <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><Link to="/profiles">Profiles</Link></li>
+            <li><Link to={`/profiles/${profileId}/edit`}>Edit Profile</Link></li>
+            <li><span aria-current="page">Subscriptions</span></li>
+          </ol>
+        </nav>
+      </AppHeader>
+      <div className="page-container-narrow">
+        <h1 className="sub-picker-title">Browse Subscriptions</h1>
 
-      <h1 className="sub-picker-title">Browse Subscriptions</h1>
+        {/* Search input */}
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search channels…"
+          className="subscription-search"
+        />
 
-      {/* Search input */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search channels…"
-        className="subscription-search"
-      />
+        {/* Error state */}
+        {error && !showLoading && (
+          <div className="sub-picker-error">
+            <p className="sub-picker-error-text">{error}</p>
+            <button
+              onClick={refetch}
+              className="sub-picker-retry-btn"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
-      {/* Error state */}
-      {error && !showLoading && (
-        <div className="sub-picker-error">
-          <p className="sub-picker-error-text">{error}</p>
-          <button
-            onClick={refetch}
-            className="sub-picker-retry-btn"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+        {/* Loading state */}
+        {showLoading && (
+          <div className="sub-picker-list">
+            {Array.from({ length: 8 }, (_, i) => (
+              <SubscriptionItemSkeleton key={i} />
+            ))}
+          </div>
+        )}
 
-      {/* Loading state */}
-      {showLoading && (
-        <div className="sub-picker-list">
-          {Array.from({ length: 8 }, (_, i) => (
-            <SubscriptionItemSkeleton key={i} />
-          ))}
-        </div>
-      )}
+        {/* Empty state */}
+        {!showLoading && !error && subscriptions.length === 0 && (
+          <p className="sub-picker-empty">
+            No YouTube subscriptions found.
+          </p>
+        )}
 
-      {/* Empty state */}
-      {!showLoading && !error && subscriptions.length === 0 && (
-        <p className="sub-picker-empty">
-          No YouTube subscriptions found.
-        </p>
-      )}
+        {/* No search results */}
+        {!showLoading && !error && subscriptions.length > 0 && filtered.length === 0 && (
+          <p className="sub-picker-empty">
+            No channels match "{search}".
+          </p>
+        )}
 
-      {/* No search results */}
-      {!showLoading && !error && subscriptions.length > 0 && filtered.length === 0 && (
-        <p className="sub-picker-empty">
-          No channels match "{search}".
-        </p>
-      )}
-
-      {/* Channel list */}
-      {!showLoading && !error && filtered.length > 0 && (
-        <div className="sub-picker-list">
-          {filtered.map((ch) => (
-            <SubscriptionChannelRow
-              key={ch.youtubeChannelId}
-              channel={ch}
-              isAdded={addedChannelIds.has(ch.youtubeChannelId)}
-              isAdding={addingChannelIds.has(ch.youtubeChannelId)}
-              onAdd={() => handleAdd(ch)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+        {/* Channel list */}
+        {!showLoading && !error && filtered.length > 0 && (
+          <div className="sub-picker-list">
+            {filtered.map((ch) => (
+              <SubscriptionChannelRow
+                key={ch.youtubeChannelId}
+                channel={ch}
+                isAdded={addedChannelIds.has(ch.youtubeChannelId)}
+                isAdding={addingChannelIds.has(ch.youtubeChannelId)}
+                onAdd={() => handleAdd(ch)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

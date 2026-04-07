@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../services/profilesApi';
 import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
+import AppHeader from '../components/ui/AppHeader';
 import type { Profile } from '../types/profile';
 import './ProfileEditPage.css';
 
@@ -95,140 +96,141 @@ export default function ProfileEditPage() {
     }
   }
 
-  if (loading) {
-    return <div className="profile-edit-loading">Loading…</div>;
-  }
-
-  if (!profile) {
-    return (
-      <div className="profile-edit-not-found">
-        <p className="profile-edit-not-found-text">{error || 'Profile not found.'}</p>
-        <button onClick={() => navigate('/profiles')} className="profile-edit-not-found-back">
-          Back to profiles
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="page-container-narrow">
-      <button
-        onClick={() => navigate('/profiles')}
-        className="profile-edit-back"
-      >
-        ← Back to profiles
-      </button>
-
-      <h1 className="profile-edit-title">Edit Profile</h1>
-
-      {error && <p className="profile-edit-error">{error}</p>}
-
-      {/* Name section */}
-      <form onSubmit={handleSaveName} className="profile-edit-name-form">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="profile-edit-input"
-        />
-        <button
-          type="submit"
-          disabled={saving || !name.trim() || name.trim() === profile.name}
-          className="profile-edit-save-btn"
-        >
-          {saving ? 'Saving…' : 'Save Name'}
-        </button>
-      </form>
-
-      {/* Channels section */}
-      <section className="profile-edit-section">
-        <div className="profile-edit-section-header">
-          <h2 className="profile-edit-section-title">
-            Channels ({profile.channels?.length ?? 0})
-          </h2>
-          <Link
-            to={`/profiles/${id}/subscriptions`}
-            className="profile-edit-browse-link"
-          >
-            Browse Subscriptions
-          </Link>
-        </div>
-        {!profile.channels || profile.channels.length === 0 ? (
-          <p className="profile-edit-empty-text">
-            No channels yet. Add channels from the subscriptions page.
-          </p>
+    <>
+      <AppHeader>
+        <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><Link to="/profiles">Profiles</Link></li>
+            <li><span aria-current="page">Edit Profile</span></li>
+          </ol>
+        </nav>
+      </AppHeader>
+      <div className="page-container-narrow">
+        {loading ? (
+          <p className="profile-edit-loading">Loading…</p>
+        ) : !profile ? (
+          <div className="profile-edit-not-found">
+            <p className="profile-edit-not-found-text">{error || 'Profile not found.'}</p>
+            <button onClick={() => navigate('/profiles')} className="profile-edit-not-found-back">
+              Back to profiles
+            </button>
+          </div>
         ) : (
-          <div className="profile-edit-channel-list">
-            {profile.channels.map((ch) => (
-              <div
-                key={ch.id}
-                className="profile-edit-channel-item"
+          <>
+            <h1 className="profile-edit-title">Edit Profile</h1>
+
+            {error && <p className="profile-edit-error">{error}</p>}
+
+            {/* Name section */}
+            <form onSubmit={handleSaveName} className="profile-edit-name-form">
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="profile-edit-input"
+              />
+              <button
+                type="submit"
+                disabled={saving || !name.trim() || name.trim() === profile.name}
+                className="profile-edit-save-btn"
               >
-                <div className="profile-edit-channel-info">
-                  {ch.thumbnailUrl && (
-                    <img
-                      src={ch.thumbnailUrl}
-                      alt=""
-                      className="profile-edit-channel-avatar"
-                    />
-                  )}
-                  <span className="profile-edit-channel-name">{ch.channelTitle}</span>
-                </div>
-                <button
-                  onClick={() => handleRemoveChannel(ch.id)}
-                  className="profile-edit-remove-btn"
+                {saving ? 'Saving…' : 'Save Name'}
+              </button>
+            </form>
+
+            {/* Channels section */}
+            <section className="profile-edit-section">
+              <div className="profile-edit-section-header">
+                <h2 className="profile-edit-section-title">
+                  Channels ({profile.channels?.length ?? 0})
+                </h2>
+                <Link
+                  to={`/profiles/${id}/subscriptions`}
+                  className="profile-edit-browse-link"
                 >
-                  Remove
-                </button>
+                  Browse Subscriptions
+                </Link>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+              {!profile.channels || profile.channels.length === 0 ? (
+                <p className="profile-edit-empty-text">
+                  No channels yet. Add channels from the subscriptions page.
+                </p>
+              ) : (
+                <div className="profile-edit-channel-list">
+                  {profile.channels.map((ch) => (
+                    <div
+                      key={ch.id}
+                      className="profile-edit-channel-item"
+                    >
+                      <div className="profile-edit-channel-info">
+                        {ch.thumbnailUrl && (
+                          <img
+                            src={ch.thumbnailUrl}
+                            alt=""
+                            className="profile-edit-channel-avatar"
+                          />
+                        )}
+                        <span className="profile-edit-channel-name">{ch.channelTitle}</span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveChannel(ch.id)}
+                        className="profile-edit-remove-btn"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
 
-      {/* Keywords section */}
-      <section>
-        <h2 className="profile-edit-keywords-title">
-          Keywords ({profile.keywords?.length ?? 0})
-        </h2>
+            {/* Keywords section */}
+            <section>
+              <h2 className="profile-edit-keywords-title">
+                Keywords ({profile.keywords?.length ?? 0})
+              </h2>
 
-        <form
-          onSubmit={handleAddKeyword}
-          className="profile-edit-keyword-form"
-        >
-          <input
-            value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            placeholder="Add keyword…"
-            className="profile-edit-input"
-          />
-          <button
-            type="submit"
-            disabled={!newKeyword.trim()}
-            className="profile-edit-add-btn"
-          >
-            Add
-          </button>
-        </form>
-
-        {!profile.keywords || profile.keywords.length === 0 ? (
-          <p className="profile-edit-empty-text">No keywords yet.</p>
-        ) : (
-          <div className="profile-edit-keywords-list">
-            {profile.keywords.map((kw) => (
-              <span key={kw.id} className="keyword-tag">
-                {kw.keyword}
+              <form
+                onSubmit={handleAddKeyword}
+                className="profile-edit-keyword-form"
+              >
+                <input
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  placeholder="Add keyword…"
+                  className="profile-edit-input"
+                />
                 <button
-                  onClick={() => handleRemoveKeyword(kw.id)}
-                  className="profile-edit-keyword-remove"
-                  title="Remove keyword"
+                  type="submit"
+                  disabled={!newKeyword.trim()}
+                  className="profile-edit-add-btn"
                 >
-                  ×
+                  Add
                 </button>
-              </span>
-            ))}
-          </div>
+              </form>
+
+              {!profile.keywords || profile.keywords.length === 0 ? (
+                <p className="profile-edit-empty-text">No keywords yet.</p>
+              ) : (
+                <div className="profile-edit-keywords-list">
+                  {profile.keywords.map((kw) => (
+                    <span key={kw.id} className="keyword-tag">
+                      {kw.keyword}
+                      <button
+                        onClick={() => handleRemoveKeyword(kw.id)}
+                        className="profile-edit-keyword-remove"
+                        title="Remove keyword"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
         )}
-      </section>
-    </div>
+      </div>
+    </>
   );
 }
