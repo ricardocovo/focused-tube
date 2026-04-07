@@ -22,7 +22,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
       className="video-card"
     >
       {/* Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#f0f0f0' }}>
+      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: 'var(--ft-skeleton-from)' }}>
         <img
           src={video.thumbnailUrl}
           alt={video.title}
@@ -43,7 +43,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
         <h3 className="video-card-title">{video.title}</h3>
         <p className="video-card-channel">{video.channelTitle}</p>
         <div className="video-card-meta">
-          <span style={{ fontSize: 12, color: '#909090' }}>{relativeTime}</span>
+          <span style={{ fontSize: 12, color: 'var(--ft-text-tertiary)' }}>{relativeTime}</span>
           <span className={badgeClass}>{badgeLabel}</span>
         </div>
       </div>

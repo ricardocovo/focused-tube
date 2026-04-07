@@ -53,20 +53,6 @@ All routes are prefixed with `/api/`:
 - Run `npx prisma migrate dev` from `server/` for migrations
 - Run `npx prisma generate` after schema changes
 
-## Brand Color Palette
-
-Defined in `references/schema.css`:
-
-| Name | Hex | Usage |
-|------|-----|-------|
-| Primary Blue | `#11A0D9` | Primary actions, links |
-| Light Blue | `#11B4D9` | Secondary accents |
-| Mint Green | `#80F2DD` | Success states, highlights |
-| Amber | `#F2B441` | Warnings, attention |
-| Coral Red | `#F2594B` | Errors, destructive actions |
-
-Use these colors for all UI work. Reference `references/schema.css` for RGBA/HSLA variants.
-
 ## Spec-Driven Development
 
 Feature work follows a spec-driven workflow:

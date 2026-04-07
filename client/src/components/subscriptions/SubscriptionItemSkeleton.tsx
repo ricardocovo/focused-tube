@@ -8,8 +8,9 @@ export default function SubscriptionItemSkeleton() {
         alignItems: 'center',
         gap: 12,
         padding: '12px 14px',
-        background: '#f9f9f9',
-        borderRadius: 6,
+        background: 'var(--ft-surface)',
+        borderRadius: 8,
+        border: '1px solid var(--ft-border)',
       }}
     >
       {/* Avatar circle */}

@@ -1,8 +1,5 @@
 import type { SubscriptionChannel } from '../../types/youtube';
 
-const BLUE = '#11A0D9';
-const MINT = '#80F2DD';
-
 interface Props {
   channel: SubscriptionChannel;
   isAdded: boolean;
@@ -19,19 +16,20 @@ export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onA
     fontSize: 13,
     fontWeight: 600,
     border: 'none',
-    borderRadius: 6,
+    borderRadius: 999,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
     color: '#fff',
-    backgroundColor: BLUE,
+    backgroundColor: 'var(--ft-primary)',
+    transition: 'background 0.15s, opacity 0.15s',
   };
 
   if (isAdded) {
     btnLabel = 'Added ✓';
     btnStyle = {
       ...btnStyle,
-      backgroundColor: MINT,
-      color: '#1a5c4a',
+      backgroundColor: 'var(--ft-success-bg)',
+      color: 'var(--ft-success)',
       cursor: 'default',
       opacity: 0.9,
     };

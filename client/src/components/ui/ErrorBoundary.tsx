@@ -1,8 +1,5 @@
 import React from 'react';
 
-const CORAL = '#F2594B';
-const BLUE = '#11A0D9';
-
 interface ErrorBoundaryProps {
   fallback?: React.ReactNode;
   children: React.ReactNode;
@@ -45,8 +42,8 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-          <h2 style={{ fontSize: 20, color: CORAL, marginBottom: 8 }}>Something went wrong</h2>
-          <p style={{ fontSize: 14, color: '#666', marginBottom: 24, maxWidth: 400 }}>
+          <h2 style={{ fontSize: 20, color: 'var(--ft-danger)', marginBottom: 8 }}>Something went wrong</h2>
+          <p style={{ fontSize: 14, color: 'var(--ft-text-secondary)', marginBottom: 24, maxWidth: 400 }}>
             An unexpected error occurred. Please try reloading the page.
           </p>
           <button
@@ -56,9 +53,9 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
+              backgroundColor: 'var(--ft-primary)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: 'pointer',
             }}
           >

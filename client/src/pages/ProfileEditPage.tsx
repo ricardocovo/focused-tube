@@ -5,9 +5,6 @@ import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
 
-const BLUE = '#11A0D9';
-const CORAL = '#F2594B';
-
 export default function ProfileEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -104,8 +101,8 @@ export default function ProfileEditPage() {
   if (!profile) {
     return (
       <div style={{ padding: 24 }}>
-        <p style={{ color: CORAL }}>{error || 'Profile not found.'}</p>
-        <button onClick={() => navigate('/profiles')} style={{ marginTop: 8, color: BLUE, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+        <p style={{ color: 'var(--ft-danger)' }}>{error || 'Profile not found.'}</p>
+        <button onClick={() => navigate('/profiles')} style={{ marginTop: 8, color: 'var(--ft-link)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
           Back to profiles
         </button>
       </div>
@@ -120,7 +117,7 @@ export default function ProfileEditPage() {
           marginBottom: 16,
           padding: '6px 0',
           fontSize: 14,
-          color: BLUE,
+          color: 'var(--ft-link)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -130,9 +127,9 @@ export default function ProfileEditPage() {
         ← Back to profiles
       </button>
 
-      <h1 style={{ color: BLUE, marginBottom: 20 }}>Edit Profile</h1>
+      <h1 style={{ color: 'var(--ft-text)', marginBottom: 20 }}>Edit Profile</h1>
 
-      {error && <p style={{ color: CORAL, marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>}
 
       {/* Name section */}
       <form onSubmit={handleSaveName} style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
@@ -143,9 +140,10 @@ export default function ProfileEditPage() {
             flex: 1,
             padding: '8px 12px',
             fontSize: 14,
-            border: '1px solid #ccc',
-            borderRadius: 6,
+            border: '1px solid var(--ft-border)',
+            borderRadius: 8,
             outline: 'none',
+            fontFamily: 'var(--ft-font)',
           }}
         />
         <button
@@ -156,9 +154,9 @@ export default function ProfileEditPage() {
             fontSize: 14,
             fontWeight: 600,
             color: '#fff',
-            backgroundColor: BLUE,
+            backgroundColor: 'var(--ft-primary)',
             border: 'none',
-            borderRadius: 6,
+            borderRadius: 999,
             cursor: saving ? 'not-allowed' : 'pointer',
             opacity: saving || !name.trim() || name.trim() === profile.name ? 0.6 : 1,
           }}
@@ -180,8 +178,8 @@ export default function ProfileEditPage() {
               fontSize: 13,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
-              borderRadius: 6,
+              backgroundColor: 'var(--ft-primary)',
+              borderRadius: 999,
               textDecoration: 'none',
             }}
           >
@@ -189,7 +187,7 @@ export default function ProfileEditPage() {
           </Link>
         </div>
         {!profile.channels || profile.channels.length === 0 ? (
-          <p style={{ color: '#888', fontSize: 14 }}>
+          <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14 }}>
             No channels yet. Add channels from the subscriptions page.
           </p>
         ) : (
@@ -202,8 +200,9 @@ export default function ProfileEditPage() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '10px 14px',
-                  background: '#f9f9f9',
-                  borderRadius: 6,
+                  background: 'var(--ft-surface)',
+                  borderRadius: 8,
+                  border: '1px solid var(--ft-border)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -221,10 +220,10 @@ export default function ProfileEditPage() {
                   style={{
                     padding: '4px 12px',
                     fontSize: 12,
-                    color: CORAL,
+                    color: 'var(--ft-danger)',
                     background: 'transparent',
-                    border: `1px solid ${CORAL}`,
-                    borderRadius: 4,
+                    border: '1px solid var(--ft-danger)',
+                    borderRadius: 999,
                     cursor: 'pointer',
                   }}
                 >
@@ -254,9 +253,10 @@ export default function ProfileEditPage() {
               flex: 1,
               padding: '8px 12px',
               fontSize: 14,
-              border: '1px solid #ccc',
-              borderRadius: 6,
+              border: '1px solid var(--ft-border)',
+              borderRadius: 8,
               outline: 'none',
+              fontFamily: 'var(--ft-font)',
             }}
           />
           <button
@@ -267,9 +267,9 @@ export default function ProfileEditPage() {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
+              backgroundColor: 'var(--ft-primary)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: !newKeyword.trim() ? 'not-allowed' : 'pointer',
               opacity: !newKeyword.trim() ? 0.6 : 1,
             }}
@@ -279,7 +279,7 @@ export default function ProfileEditPage() {
         </form>
 
         {!profile.keywords || profile.keywords.length === 0 ? (
-          <p style={{ color: '#888', fontSize: 14 }}>No keywords yet.</p>
+          <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14 }}>No keywords yet.</p>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {profile.keywords.map((kw) => (
@@ -288,7 +288,7 @@ export default function ProfileEditPage() {
                 <button
                   onClick={() => handleRemoveKeyword(kw.id)}
                   style={{
-                    color: CORAL,
+                    color: 'var(--ft-danger)',
                     fontWeight: 700,
                     fontSize: 14,
                     lineHeight: 1,

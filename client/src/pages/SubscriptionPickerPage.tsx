@@ -9,9 +9,6 @@ import SubscriptionItemSkeleton from '../components/subscriptions/SubscriptionIt
 import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
 
-const BLUE = '#11A0D9';
-const CORAL = '#F2594B';
-
 export default function SubscriptionPickerPage() {
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
@@ -95,7 +92,7 @@ export default function SubscriptionPickerPage() {
           marginBottom: 16,
           padding: '6px 0',
           fontSize: 14,
-          color: BLUE,
+          color: 'var(--ft-link)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -105,7 +102,7 @@ export default function SubscriptionPickerPage() {
         ← Back to Profile
       </button>
 
-      <h1 style={{ color: BLUE, marginBottom: 20 }}>Browse Subscriptions</h1>
+      <h1 style={{ color: 'var(--ft-text)', marginBottom: 20 }}>Browse Subscriptions</h1>
 
       {/* Search input */}
       <input
@@ -119,7 +116,7 @@ export default function SubscriptionPickerPage() {
       {/* Error state */}
       {error && !showLoading && (
         <div style={{ textAlign: 'center', padding: '32px 0' }}>
-          <p style={{ color: CORAL, marginBottom: 12 }}>{error}</p>
+          <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>
           <button
             onClick={refetch}
             style={{
@@ -127,9 +124,9 @@ export default function SubscriptionPickerPage() {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
+              backgroundColor: 'var(--ft-primary)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: 'pointer',
             }}
           >
@@ -149,14 +146,14 @@ export default function SubscriptionPickerPage() {
 
       {/* Empty state */}
       {!showLoading && !error && subscriptions.length === 0 && (
-        <p style={{ color: '#888', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+        <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
           No YouTube subscriptions found.
         </p>
       )}
 
       {/* No search results */}
       {!showLoading && !error && subscriptions.length > 0 && filtered.length === 0 && (
-        <p style={{ color: '#888', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+        <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
           No channels match "{search}".
         </p>
       )}

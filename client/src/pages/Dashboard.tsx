@@ -3,35 +3,34 @@ import { useAuth } from '../context/AuthContext';
 import { useProfiles } from '../context/ProfileContext';
 import ProfileSwitcher from '../components/profile/ProfileSwitcher';
 import VideoFeed from '../components/feed/VideoFeed';
-
-const BLUE = '#11A0D9';
+import SettingsMenu from '../components/ui/SettingsMenu';
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { activeProfile } = useProfiles();
 
   return (
-    <div className="page-container">
+    <>
       <header className="app-header">
-        <h1 style={{ color: BLUE }}>Focused Tube</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <h1>Focused <span style={{ color: 'var(--ft-brand)' }}>Tube</span></h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ProfileSwitcher />
           {user && (
-            <>
-              <span>{user.name}</span>
-              {user.avatarUrl && <img src={user.avatarUrl} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%' }} />}
-            </>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {user.avatarUrl && <img src={user.avatarUrl} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--ft-border)' }} />}
+            </div>
           )}
-          <button onClick={logout} style={{ padding: '8px 16px', cursor: 'pointer' }}>Logout</button>
+          <SettingsMenu />
         </div>
       </header>
+      <div className="page-container">
 
       {activeProfile ? (
         <VideoFeed profileId={activeProfile.id} />
       ) : (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
-          <p style={{ fontSize: 16, color: '#666', marginBottom: 16 }}>
+          <p style={{ fontSize: 16, color: 'var(--ft-text-secondary)', marginBottom: 16 }}>
             Select or create a profile to get started.
           </p>
           <Link
@@ -42,15 +41,17 @@ export default function Dashboard() {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
-              borderRadius: 6,
+              backgroundColor: 'var(--ft-primary)',
+              borderRadius: 999,
               textDecoration: 'none',
+              transition: 'background 0.15s',
             }}
           >
             Manage Profiles
           </Link>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

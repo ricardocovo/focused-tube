@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
 
-const BLUE = '#11A0D9';
-const CORAL = '#F2594B';
-
 export default function ProfilesPage() {
   const { profiles, isLoading, createProfile, deleteProfile } = useProfiles();
   const navigate = useNavigate();
@@ -43,17 +40,19 @@ export default function ProfilesPage() {
   return (
     <div className="page-container-narrow">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ color: BLUE, margin: 0 }}>Profiles</h1>
+        <h1 style={{ color: 'var(--ft-text)', margin: 0 }}>Profiles</h1>
         <div style={{ display: 'flex', gap: 12 }}>
           <Link
             to="/"
             style={{
               padding: '8px 16px',
               fontSize: 14,
-              color: BLUE,
+              color: 'var(--ft-text-secondary)',
               textDecoration: 'none',
-              border: `1px solid ${BLUE}`,
-              borderRadius: 6,
+              border: '1px solid var(--ft-border)',
+              borderRadius: 999,
+              background: 'var(--ft-surface)',
+              transition: 'background 0.15s',
             }}
           >
             ← Dashboard
@@ -65,10 +64,11 @@ export default function ProfilesPage() {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
+              backgroundColor: 'var(--ft-primary)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: 'pointer',
+              transition: 'background 0.15s',
             }}
           >
             {showForm ? 'Cancel' : '+ New Profile'}
@@ -84,8 +84,9 @@ export default function ProfilesPage() {
             gap: 8,
             marginBottom: 20,
             padding: 16,
-            background: '#f9f9f9',
-            borderRadius: 8,
+            background: 'var(--ft-surface)',
+            borderRadius: 12,
+            border: '1px solid var(--ft-border)',
           }}
         >
           <input
@@ -97,9 +98,10 @@ export default function ProfilesPage() {
               flex: 1,
               padding: '8px 12px',
               fontSize: 14,
-              border: '1px solid #ccc',
-              borderRadius: 6,
+              border: '1px solid var(--ft-border)',
+              borderRadius: 8,
               outline: 'none',
+              fontFamily: 'var(--ft-font)',
             }}
           />
           <button
@@ -110,9 +112,9 @@ export default function ProfilesPage() {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
+              backgroundColor: 'var(--ft-primary)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: creating ? 'not-allowed' : 'pointer',
               opacity: creating || !newName.trim() ? 0.6 : 1,
             }}
@@ -122,12 +124,12 @@ export default function ProfilesPage() {
         </form>
       )}
 
-      {error && <p style={{ color: CORAL, marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>}
 
       {isLoading ? (
-        <p style={{ color: '#999' }}>Loading profiles…</p>
+        <p style={{ color: 'var(--ft-text-tertiary)' }}>Loading profiles…</p>
       ) : profiles.length === 0 ? (
-        <p style={{ color: '#666' }}>No profiles yet. Create your first one above!</p>
+        <p style={{ color: 'var(--ft-text-secondary)' }}>No profiles yet. Create your first one above!</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {profiles.map((p) => (
@@ -138,9 +140,9 @@ export default function ProfilesPage() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '14px 16px',
-                background: '#fff',
-                border: '1px solid #e8e8e8',
-                borderRadius: 8,
+                background: 'var(--ft-surface)',
+                border: '1px solid var(--ft-border)',
+                borderRadius: 12,
               }}
             >
               <div>
@@ -151,15 +153,16 @@ export default function ProfilesPage() {
                       marginLeft: 8,
                       fontSize: 11,
                       padding: '2px 8px',
-                      background: '#80F2DD',
+                      background: 'var(--ft-success-bg)',
                       borderRadius: 10,
-                      color: '#333',
+                      color: 'var(--ft-success)',
+                      fontWeight: 600,
                     }}
                   >
                     Default
                   </span>
                 )}
-                <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: 'var(--ft-text-tertiary)', marginTop: 4 }}>
                   {p._count?.channels ?? 0} channels · {p._count?.keywords ?? 0} keywords
                 </div>
               </div>
@@ -169,10 +172,10 @@ export default function ProfilesPage() {
                   style={{
                     padding: '6px 14px',
                     fontSize: 13,
-                    color: BLUE,
+                    color: 'var(--ft-link)',
                     background: 'transparent',
-                    border: `1px solid ${BLUE}`,
-                    borderRadius: 6,
+                    border: '1px solid var(--ft-border)',
+                    borderRadius: 999,
                     cursor: 'pointer',
                   }}
                 >
@@ -183,10 +186,10 @@ export default function ProfilesPage() {
                   style={{
                     padding: '6px 14px',
                     fontSize: 13,
-                    color: CORAL,
+                    color: 'var(--ft-danger)',
                     background: 'transparent',
-                    border: `1px solid ${CORAL}`,
-                    borderRadius: 6,
+                    border: '1px solid var(--ft-danger)',
+                    borderRadius: 999,
                     cursor: 'pointer',
                   }}
                 >

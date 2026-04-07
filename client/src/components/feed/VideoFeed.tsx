@@ -5,9 +5,6 @@ import VideoCard from './VideoCard';
 import VideoCardSkeleton from './VideoCardSkeleton';
 import FeedSourceTabs from './FeedSourceTabs';
 
-const CORAL = '#F2594B';
-const BLUE = '#11A0D9';
-
 interface VideoFeedProps {
   profileId: string;
 }
@@ -74,7 +71,7 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
       <div>
         <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <p style={{ fontSize: 16, color: CORAL, marginBottom: 16 }}>{error}</p>
+          <p style={{ fontSize: 16, color: 'var(--ft-danger)', marginBottom: 16 }}>{error}</p>
           <button
             onClick={reset}
             style={{
@@ -82,9 +79,9 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: CORAL,
+              backgroundColor: 'var(--ft-danger)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: 'pointer',
             }}
           >
@@ -102,7 +99,7 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
         <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📺</div>
-          <p style={{ fontSize: 16, color: '#666', marginBottom: 16 }}>
+          <p style={{ fontSize: 16, color: 'var(--ft-text-secondary)', marginBottom: 16 }}>
             No videos found. Add channels or keywords to your profile to see videos here.
           </p>
           <Link
@@ -113,8 +110,8 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
               fontSize: 14,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: BLUE,
-              borderRadius: 6,
+              backgroundColor: 'var(--ft-primary)',
+              borderRadius: 999,
               textDecoration: 'none',
             }}
           >
@@ -172,7 +169,7 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
       {/* Inline error with videos already shown */}
       {error && videos.length > 0 && (
         <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <p style={{ fontSize: 14, color: CORAL, marginBottom: 8 }}>{error}</p>
+          <p style={{ fontSize: 14, color: 'var(--ft-danger)', marginBottom: 8 }}>{error}</p>
           <button
             onClick={reset}
             style={{
@@ -180,9 +177,9 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
               fontSize: 13,
               fontWeight: 600,
               color: '#fff',
-              backgroundColor: CORAL,
+              backgroundColor: 'var(--ft-danger)',
               border: 'none',
-              borderRadius: 6,
+              borderRadius: 999,
               cursor: 'pointer',
             }}
           >

@@ -3,9 +3,6 @@ import { useProfiles } from '../../context/ProfileContext';
 import { Link } from 'react-router-dom';
 import ProfileSwitcherSkeleton from './ProfileSwitcherSkeleton';
 
-const BLUE = '#11A0D9';
-const MINT = '#80F2DD';
-
 export default function ProfileSwitcher() {
   const { profiles, activeProfile, setActiveProfile, isLoading } = useProfiles();
   const [open, setOpen] = useState(false);
@@ -29,7 +26,7 @@ export default function ProfileSwitcher() {
     return (
       <span style={{ fontSize: 14, color: '#666' }}>
         No profiles yet —{' '}
-        <Link to="/profiles" style={{ color: BLUE, textDecoration: 'underline' }}>
+        <Link to="/profiles" style={{ color: 'var(--ft-link)', textDecoration: 'underline' }}>
           create one!
         </Link>
       </span>
@@ -57,20 +54,20 @@ export default function ProfileSwitcher() {
               }}
               className="profile-switcher-option"
               style={{
-                backgroundColor: p.id === activeProfile?.id ? MINT : '#fff',
+                backgroundColor: p.id === activeProfile?.id ? 'var(--ft-surface-raised)' : 'var(--ft-surface)',
                 fontWeight: p.id === activeProfile?.id ? 600 : 400,
               }}
               onMouseEnter={(e) => {
-                if (p.id !== activeProfile?.id) e.currentTarget.style.backgroundColor = '#f5f5f5';
+                if (p.id !== activeProfile?.id) e.currentTarget.style.backgroundColor = 'var(--ft-surface-hover)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor =
-                  p.id === activeProfile?.id ? MINT : '#fff';
+                  p.id === activeProfile?.id ? 'var(--ft-surface-raised)' : 'var(--ft-surface)';
               }}
             >
               {p.name}
               {p.isDefault && (
-                <span style={{ fontSize: 11, color: '#999', marginLeft: 6 }}>(default)</span>
+                <span style={{ fontSize: 11, color: 'var(--ft-text-tertiary)', marginLeft: 6 }}>(default)</span>
               )}
             </button>
           ))}

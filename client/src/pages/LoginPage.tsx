@@ -8,11 +8,11 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0F0F0F' }}>
         <div style={{
           width: 40, height: 40,
-          border: '4px solid #e0e0e0',
-          borderTop: '4px solid #11A0D9',
+          border: '4px solid #333',
+          borderTop: '4px solid var(--ft-brand)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }} />
@@ -28,47 +28,87 @@ export default function LoginPage() {
     <div className="login-page">
       <div style={{
         textAlign: 'center',
-        padding: '48px 40px',
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
-        maxWidth: 400,
+        maxWidth: 560,
         width: '100%',
       }}>
+        {/* Brand row: logo + Focused-Tube */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 32 }}>
+          <img src="/ft-logo.png" alt="Focused-Tube" style={{ height: 56, background: '#8f8f96', borderRadius: '50%', padding: 6 }} />
+          <span style={{
+            fontSize: 42,
+            fontWeight: 700,
+            color: 'var(--ft-brand)',
+            letterSpacing: '-0.3px',
+          }}>
+            Focused-Tube
+          </span>
+        </div>
+
+        {/* Hero headline */}
         <h1 style={{
           fontSize: 32,
-          fontWeight: 700,
-          color: '#11A0D9',
-          marginBottom: 8,
+          fontWeight: 800,
+          color: '#FFFFFF',
+          marginBottom: 12,
+          letterSpacing: '-1px',
+          lineHeight: 1.15,
         }}>
-          Focused Tube
+          Escape the algorithm.
         </h1>
+
+        {/* Sub-headline */}
         <p style={{
-          fontSize: 16,
-          color: '#666',
-          marginBottom: 36,
+          fontSize: 20,
+          color: '#AAAAAA',
+          marginBottom: 32,
+          fontWeight: 400,
         }}>
-          Curate your YouTube experience
+          Watch only what matters.
         </p>
+
+        {/* Description */}
+        <p style={{
+          fontSize: 15,
+          color: '#717171',
+          marginBottom: 48,
+          lineHeight: 1.6,
+          maxWidth: 460,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}>
+          Create curated profiles of your favourite YouTube channels
+          with keyword filters. No recommendations. No rabbit holes.
+          Just your content.
+        </p>
+
+        {/* Google sign-in button */}
         <a
           href="/api/auth/google"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 10,
-            padding: '12px 28px',
+            justifyContent: 'center',
+            gap: 12,
+            padding: '14px 48px',
             fontSize: 16,
             fontWeight: 600,
-            color: '#fff',
-            backgroundColor: '#11A0D9',
+            color: '#3C4043',
+            backgroundColor: '#FFFFFF',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 999,
             textDecoration: 'none',
             cursor: 'pointer',
-            transition: 'background-color 0.2s',
+            transition: 'background-color 0.15s, box-shadow 0.15s',
+            minWidth: 300,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#0e8fc2')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#11A0D9')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F5F5F5';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,255,255,0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#FFFFFF';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
         >
           <svg width="20" height="20" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
