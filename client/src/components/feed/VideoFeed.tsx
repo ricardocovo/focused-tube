@@ -4,6 +4,7 @@ import { useFeed } from '../../hooks/useFeed';
 import VideoCard from './VideoCard';
 import VideoCardSkeleton from './VideoCardSkeleton';
 import FeedSourceTabs from './FeedSourceTabs';
+import './VideoFeed.css';
 
 interface VideoFeedProps {
   profileId: string;
@@ -70,20 +71,11 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
     return (
       <div>
         <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <p style={{ fontSize: 16, color: 'var(--ft-danger)', marginBottom: 16 }}>{error}</p>
+        <div className="video-feed-error">
+          <p className="video-feed-error-text">{error}</p>
           <button
             onClick={reset}
-            style={{
-              padding: '10px 24px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-danger)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: 'pointer',
-            }}
+            className="video-feed-retry-btn"
           >
             Retry
           </button>
@@ -97,23 +89,14 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
     return (
       <div>
         <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📺</div>
-          <p style={{ fontSize: 16, color: 'var(--ft-text-secondary)', marginBottom: 16 }}>
+        <div className="video-feed-empty">
+          <div className="video-feed-empty-icon">📺</div>
+          <p className="video-feed-empty-text">
             No videos found. Add channels or keywords to your profile to see videos here.
           </p>
           <Link
             to="/profiles"
-            style={{
-              display: 'inline-block',
-              padding: '10px 24px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              borderRadius: 999,
-              textDecoration: 'none',
-            }}
+            className="video-feed-empty-cta"
           >
             Edit Profile
           </Link>
@@ -148,18 +131,11 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
           </div>
 
           {/* Sentinel for infinite scroll */}
-          <div ref={sentinelRef} style={{ height: 1 }} />
+          <div ref={sentinelRef} className="video-feed-sentinel" />
 
           {/* All caught up */}
           {!nextPageToken && hasLoadedOnce && (
-            <p
-              style={{
-                textAlign: 'center',
-                padding: '32px 0',
-                fontSize: 14,
-                color: '#999',
-              }}
-            >
+            <p className="video-feed-caught-up">
               You're all caught up! 🎉
             </p>
           )}
@@ -168,20 +144,11 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
 
       {/* Inline error with videos already shown */}
       {error && videos.length > 0 && (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <p style={{ fontSize: 14, color: 'var(--ft-danger)', marginBottom: 8 }}>{error}</p>
+        <div className="video-feed-inline-error">
+          <p className="video-feed-inline-error-text">{error}</p>
           <button
             onClick={reset}
-            style={{
-              padding: '8px 20px',
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-danger)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: 'pointer',
-            }}
+            className="video-feed-inline-retry-btn"
           >
             Retry
           </button>

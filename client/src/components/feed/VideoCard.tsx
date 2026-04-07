@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedVideo } from '../../types/feed';
+import './VideoCard.css';
 
 interface VideoCardProps {
   video: FeedVideo;
@@ -22,28 +23,20 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
       className="video-card"
     >
       {/* Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: 'var(--ft-skeleton-from)' }}>
+      <div className="video-card-thumbnail">
         <img
           src={video.thumbnailUrl}
           alt={video.title}
           loading="lazy"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
         />
       </div>
 
       {/* Info */}
-      <div style={{ padding: 12 }}>
+      <div className="video-card-info">
         <h3 className="video-card-title">{video.title}</h3>
         <p className="video-card-channel">{video.channelTitle}</p>
         <div className="video-card-meta">
-          <span style={{ fontSize: 12, color: 'var(--ft-text-tertiary)' }}>{relativeTime}</span>
+          <span className="video-card-time">{relativeTime}</span>
           <span className={badgeClass}>{badgeLabel}</span>
         </div>
       </div>

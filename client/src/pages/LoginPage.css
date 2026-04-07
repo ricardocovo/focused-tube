@@ -1,0 +1,93 @@
+.login-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #0F0F0F;
+}
+
+.login-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #333;
+  border-top: 4px solid var(--ft-brand);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.login-content {
+  text-align: center;
+  max-width: 560px;
+  width: 100%;
+}
+
+.login-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.login-brand-logo {
+  height: 56px;
+  background: #8f8f96;
+  border-radius: 50%;
+  padding: 6px;
+}
+
+.login-brand-name {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--ft-brand);
+  letter-spacing: -0.3px;
+}
+
+.login-hero {
+  font-size: 32px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.login-subheadline {
+  font-size: 20px;
+  color: #AAAAAA;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.login-description {
+  font-size: 15px;
+  color: #717171;
+  margin-bottom: 48px;
+  line-height: 1.6;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.login-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 48px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #3C4043;
+  background-color: #FFFFFF;
+  border: none;
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, box-shadow 0.15s;
+  min-width: 300px;
+}
+
+.login-google-btn:hover {
+  background-color: #F5F5F5;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}

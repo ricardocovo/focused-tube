@@ -4,6 +4,7 @@ import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../servi
 import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
+import './ProfileEditPage.css';
 
 export default function ProfileEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -95,14 +96,14 @@ export default function ProfileEditPage() {
   }
 
   if (loading) {
-    return <div style={{ padding: 24, color: '#999' }}>Loading…</div>;
+    return <div className="profile-edit-loading">Loading…</div>;
   }
 
   if (!profile) {
     return (
-      <div style={{ padding: 24 }}>
-        <p style={{ color: 'var(--ft-danger)' }}>{error || 'Profile not found.'}</p>
-        <button onClick={() => navigate('/profiles')} style={{ marginTop: 8, color: 'var(--ft-link)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+      <div className="profile-edit-not-found">
+        <p className="profile-edit-not-found-text">{error || 'Profile not found.'}</p>
+        <button onClick={() => navigate('/profiles')} className="profile-edit-not-found-back">
           Back to profiles
         </button>
       </div>
@@ -113,119 +114,68 @@ export default function ProfileEditPage() {
     <div className="page-container-narrow">
       <button
         onClick={() => navigate('/profiles')}
-        style={{
-          marginBottom: 16,
-          padding: '6px 0',
-          fontSize: 14,
-          color: 'var(--ft-link)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          textDecoration: 'underline',
-        }}
+        className="profile-edit-back"
       >
         ← Back to profiles
       </button>
 
-      <h1 style={{ color: 'var(--ft-text)', marginBottom: 20 }}>Edit Profile</h1>
+      <h1 className="profile-edit-title">Edit Profile</h1>
 
-      {error && <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>}
+      {error && <p className="profile-edit-error">{error}</p>}
 
       {/* Name section */}
-      <form onSubmit={handleSaveName} style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+      <form onSubmit={handleSaveName} className="profile-edit-name-form">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{
-            flex: 1,
-            padding: '8px 12px',
-            fontSize: 14,
-            border: '1px solid var(--ft-border)',
-            borderRadius: 8,
-            outline: 'none',
-            fontFamily: 'var(--ft-font)',
-          }}
+          className="profile-edit-input"
         />
         <button
           type="submit"
           disabled={saving || !name.trim() || name.trim() === profile.name}
-          style={{
-            padding: '8px 20px',
-            fontSize: 14,
-            fontWeight: 600,
-            color: '#fff',
-            backgroundColor: 'var(--ft-primary)',
-            border: 'none',
-            borderRadius: 999,
-            cursor: saving ? 'not-allowed' : 'pointer',
-            opacity: saving || !name.trim() || name.trim() === profile.name ? 0.6 : 1,
-          }}
+          className="profile-edit-save-btn"
         >
           {saving ? 'Saving…' : 'Save Name'}
         </button>
       </form>
 
       {/* Channels section */}
-      <section style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ fontSize: 18, margin: 0 }}>
+      <section className="profile-edit-section">
+        <div className="profile-edit-section-header">
+          <h2 className="profile-edit-section-title">
             Channels ({profile.channels?.length ?? 0})
           </h2>
           <Link
             to={`/profiles/${id}/subscriptions`}
-            style={{
-              padding: '6px 14px',
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              borderRadius: 999,
-              textDecoration: 'none',
-            }}
+            className="profile-edit-browse-link"
           >
             Browse Subscriptions
           </Link>
         </div>
         {!profile.channels || profile.channels.length === 0 ? (
-          <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14 }}>
+          <p className="profile-edit-empty-text">
             No channels yet. Add channels from the subscriptions page.
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="profile-edit-channel-list">
             {profile.channels.map((ch) => (
               <div
                 key={ch.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '10px 14px',
-                  background: 'var(--ft-surface)',
-                  borderRadius: 8,
-                  border: '1px solid var(--ft-border)',
-                }}
+                className="profile-edit-channel-item"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="profile-edit-channel-info">
                   {ch.thumbnailUrl && (
                     <img
                       src={ch.thumbnailUrl}
                       alt=""
-                      style={{ width: 28, height: 28, borderRadius: '50%' }}
+                      className="profile-edit-channel-avatar"
                     />
                   )}
-                  <span style={{ fontSize: 14 }}>{ch.channelTitle}</span>
+                  <span className="profile-edit-channel-name">{ch.channelTitle}</span>
                 </div>
                 <button
                   onClick={() => handleRemoveChannel(ch.id)}
-                  style={{
-                    padding: '4px 12px',
-                    fontSize: 12,
-                    color: 'var(--ft-danger)',
-                    background: 'transparent',
-                    border: '1px solid var(--ft-danger)',
-                    borderRadius: 999,
-                    cursor: 'pointer',
-                  }}
+                  className="profile-edit-remove-btn"
                 >
                   Remove
                 </button>
@@ -237,62 +187,39 @@ export default function ProfileEditPage() {
 
       {/* Keywords section */}
       <section>
-        <h2 style={{ fontSize: 18, marginBottom: 12 }}>
+        <h2 className="profile-edit-keywords-title">
           Keywords ({profile.keywords?.length ?? 0})
         </h2>
 
         <form
           onSubmit={handleAddKeyword}
-          style={{ display: 'flex', gap: 8, marginBottom: 12 }}
+          className="profile-edit-keyword-form"
         >
           <input
             value={newKeyword}
             onChange={(e) => setNewKeyword(e.target.value)}
             placeholder="Add keyword…"
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              fontSize: 14,
-              border: '1px solid var(--ft-border)',
-              borderRadius: 8,
-              outline: 'none',
-              fontFamily: 'var(--ft-font)',
-            }}
+            className="profile-edit-input"
           />
           <button
             type="submit"
             disabled={!newKeyword.trim()}
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: !newKeyword.trim() ? 'not-allowed' : 'pointer',
-              opacity: !newKeyword.trim() ? 0.6 : 1,
-            }}
+            className="profile-edit-add-btn"
           >
             Add
           </button>
         </form>
 
         {!profile.keywords || profile.keywords.length === 0 ? (
-          <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14 }}>No keywords yet.</p>
+          <p className="profile-edit-empty-text">No keywords yet.</p>
         ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <div className="profile-edit-keywords-list">
             {profile.keywords.map((kw) => (
               <span key={kw.id} className="keyword-tag">
                 {kw.keyword}
                 <button
                   onClick={() => handleRemoveKeyword(kw.id)}
-                  style={{
-                    color: 'var(--ft-danger)',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    lineHeight: 1,
-                  }}
+                  className="profile-edit-keyword-remove"
                   title="Remove keyword"
                 >
                   ×

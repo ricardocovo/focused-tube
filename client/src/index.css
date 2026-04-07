@@ -117,6 +117,7 @@ img {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 /* ===== APP HEADER ===== */

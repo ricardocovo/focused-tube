@@ -1,0 +1,29 @@
+.profile-switcher-empty {
+  font-size: 14px;
+  color: #666;
+}
+
+.profile-switcher-empty-link {
+  color: var(--ft-link);
+  text-decoration: underline;
+}
+
+.profile-switcher-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.profile-switcher-option--active {
+  background-color: var(--ft-surface-raised);
+  font-weight: 600;
+}
+
+.profile-switcher-option--active:hover {
+  background-color: var(--ft-surface-raised);
+}
+
+.profile-switcher-default-label {
+  font-size: 11px;
+  color: var(--ft-text-tertiary);
+  margin-left: 6px;
+}

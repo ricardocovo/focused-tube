@@ -8,6 +8,7 @@ import SubscriptionChannelRow from '../components/subscriptions/SubscriptionChan
 import SubscriptionItemSkeleton from '../components/subscriptions/SubscriptionItemSkeleton';
 import { notify } from '../lib/toast';
 import type { Profile } from '../types/profile';
+import './SubscriptionPickerPage.css';
 
 export default function SubscriptionPickerPage() {
   const { profileId } = useParams<{ profileId: string }>();
@@ -88,21 +89,12 @@ export default function SubscriptionPickerPage() {
     <div className="page-container-narrow">
       <button
         onClick={() => navigate(`/profiles/${profileId}/edit`)}
-        style={{
-          marginBottom: 16,
-          padding: '6px 0',
-          fontSize: 14,
-          color: 'var(--ft-link)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          textDecoration: 'underline',
-        }}
+        className="sub-picker-back"
       >
         ← Back to Profile
       </button>
 
-      <h1 style={{ color: 'var(--ft-text)', marginBottom: 20 }}>Browse Subscriptions</h1>
+      <h1 className="sub-picker-title">Browse Subscriptions</h1>
 
       {/* Search input */}
       <input
@@ -115,20 +107,11 @@ export default function SubscriptionPickerPage() {
 
       {/* Error state */}
       {error && !showLoading && (
-        <div style={{ textAlign: 'center', padding: '32px 0' }}>
-          <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>
+        <div className="sub-picker-error">
+          <p className="sub-picker-error-text">{error}</p>
           <button
             onClick={refetch}
-            style={{
-              padding: '8px 20px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: 'pointer',
-            }}
+            className="sub-picker-retry-btn"
           >
             Retry
           </button>
@@ -137,7 +120,7 @@ export default function SubscriptionPickerPage() {
 
       {/* Loading state */}
       {showLoading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="sub-picker-list">
           {Array.from({ length: 8 }, (_, i) => (
             <SubscriptionItemSkeleton key={i} />
           ))}
@@ -146,21 +129,21 @@ export default function SubscriptionPickerPage() {
 
       {/* Empty state */}
       {!showLoading && !error && subscriptions.length === 0 && (
-        <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+        <p className="sub-picker-empty">
           No YouTube subscriptions found.
         </p>
       )}
 
       {/* No search results */}
       {!showLoading && !error && subscriptions.length > 0 && filtered.length === 0 && (
-        <p style={{ color: 'var(--ft-text-tertiary)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+        <p className="sub-picker-empty">
           No channels match "{search}".
         </p>
       )}
 
       {/* Channel list */}
       {!showLoading && !error && filtered.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="sub-picker-list">
           {filtered.map((ch) => (
             <SubscriptionChannelRow
               key={ch.youtubeChannelId}

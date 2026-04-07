@@ -1,41 +1,24 @@
 import React from 'react';
+import './VideoCardSkeleton.css';
 
 const VideoCardSkeleton: React.FC = React.memo(function VideoCardSkeleton() {
   return (
-    <div className="video-card" style={{ cursor: 'default' }}>
+    <div className="video-card video-card-skeleton">
       {/* Thumbnail placeholder */}
-      <div
-        className="skeleton-shimmer"
-        style={{ width: '100%', paddingTop: '56.25%' }}
-      />
+      <div className="skeleton-shimmer video-card-skeleton-thumb" />
 
       {/* Info placeholder */}
-      <div style={{ padding: 12 }}>
+      <div className="video-card-skeleton-info">
         {/* Title line 1 */}
-        <div
-          className="skeleton-shimmer"
-          style={{ height: 14, borderRadius: 4, marginBottom: 8, width: '90%' }}
-        />
+        <div className="skeleton-shimmer video-card-skeleton-title-1" />
         {/* Title line 2 */}
-        <div
-          className="skeleton-shimmer"
-          style={{ height: 14, borderRadius: 4, marginBottom: 10, width: '65%' }}
-        />
+        <div className="skeleton-shimmer video-card-skeleton-title-2" />
         {/* Channel name */}
-        <div
-          className="skeleton-shimmer"
-          style={{ height: 12, borderRadius: 4, marginBottom: 10, width: '50%' }}
-        />
+        <div className="skeleton-shimmer video-card-skeleton-channel" />
         {/* Date + badge row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div
-            className="skeleton-shimmer"
-            style={{ height: 12, borderRadius: 4, width: '30%' }}
-          />
-          <div
-            className="skeleton-shimmer"
-            style={{ height: 18, borderRadius: 12, width: 70 }}
-          />
+        <div className="video-card-skeleton-meta">
+          <div className="skeleton-shimmer video-card-skeleton-date" />
+          <div className="skeleton-shimmer video-card-skeleton-badge" />
         </div>
       </div>
     </div>

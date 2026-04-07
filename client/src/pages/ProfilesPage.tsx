@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import './ProfilesPage.css';
 
 export default function ProfilesPage() {
   const { profiles, isLoading, createProfile, deleteProfile } = useProfiles();
@@ -39,37 +40,15 @@ export default function ProfilesPage() {
 
   return (
     <div className="page-container-narrow">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ color: 'var(--ft-text)', margin: 0 }}>Profiles</h1>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <Link
-            to="/"
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              color: 'var(--ft-text-secondary)',
-              textDecoration: 'none',
-              border: '1px solid var(--ft-border)',
-              borderRadius: 999,
-              background: 'var(--ft-surface)',
-              transition: 'background 0.15s',
-            }}
-          >
+      <div className="profiles-header">
+        <h1 className="profiles-title">Profiles</h1>
+        <div className="profiles-header-actions">
+          <Link to="/" className="profiles-dashboard-link">
             ← Dashboard
           </Link>
           <button
             onClick={() => setShowForm(!showForm)}
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
+            className="profiles-new-btn"
           >
             {showForm ? 'Cancel' : '+ New Profile'}
           </button>
@@ -79,119 +58,56 @@ export default function ProfilesPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          style={{
-            display: 'flex',
-            gap: 8,
-            marginBottom: 20,
-            padding: 16,
-            background: 'var(--ft-surface)',
-            borderRadius: 12,
-            border: '1px solid var(--ft-border)',
-          }}
+          className="profiles-create-form"
         >
           <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Profile name"
             autoFocus
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              fontSize: 14,
-              border: '1px solid var(--ft-border)',
-              borderRadius: 8,
-              outline: 'none',
-              fontFamily: 'var(--ft-font)',
-            }}
+            className="profiles-create-input"
           />
           <button
             type="submit"
             disabled={creating || !newName.trim()}
-            style={{
-              padding: '8px 20px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              border: 'none',
-              borderRadius: 999,
-              cursor: creating ? 'not-allowed' : 'pointer',
-              opacity: creating || !newName.trim() ? 0.6 : 1,
-            }}
+            className="profiles-create-btn"
           >
             {creating ? 'Creating…' : 'Create'}
           </button>
         </form>
       )}
 
-      {error && <p style={{ color: 'var(--ft-danger)', marginBottom: 12 }}>{error}</p>}
+      {error && <p className="profiles-error">{error}</p>}
 
       {isLoading ? (
-        <p style={{ color: 'var(--ft-text-tertiary)' }}>Loading profiles…</p>
+        <p className="profiles-loading">Loading profiles…</p>
       ) : profiles.length === 0 ? (
-        <p style={{ color: 'var(--ft-text-secondary)' }}>No profiles yet. Create your first one above!</p>
+        <p className="profiles-empty">No profiles yet. Create your first one above!</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="profiles-list">
           {profiles.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '14px 16px',
-                background: 'var(--ft-surface)',
-                border: '1px solid var(--ft-border)',
-                borderRadius: 12,
-              }}
-            >
+            <div key={p.id} className="profiles-item">
               <div>
-                <span style={{ fontWeight: 600, fontSize: 15 }}>{p.name}</span>
+                <span className="profiles-item-name">{p.name}</span>
                 {p.isDefault && (
-                  <span
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 11,
-                      padding: '2px 8px',
-                      background: 'var(--ft-success-bg)',
-                      borderRadius: 10,
-                      color: 'var(--ft-success)',
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span className="profiles-item-default">
                     Default
                   </span>
                 )}
-                <div style={{ fontSize: 13, color: 'var(--ft-text-tertiary)', marginTop: 4 }}>
+                <div className="profiles-item-meta">
                   {p._count?.channels ?? 0} channels · {p._count?.keywords ?? 0} keywords
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="profiles-item-actions">
                 <button
                   onClick={() => navigate(`/profiles/${p.id}/edit`)}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 13,
-                    color: 'var(--ft-link)',
-                    background: 'transparent',
-                    border: '1px solid var(--ft-border)',
-                    borderRadius: 999,
-                    cursor: 'pointer',
-                  }}
+                  className="profiles-edit-btn"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(p.id, p.name)}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 13,
-                    color: 'var(--ft-danger)',
-                    background: 'transparent',
-                    border: '1px solid var(--ft-danger)',
-                    borderRadius: 999,
-                    cursor: 'pointer',
-                  }}
+                  className="profiles-delete-btn"
                 >
                   Delete
                 </button>

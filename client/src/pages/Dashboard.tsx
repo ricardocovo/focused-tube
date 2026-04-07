@@ -4,6 +4,7 @@ import { useProfiles } from '../context/ProfileContext';
 import ProfileSwitcher from '../components/profile/ProfileSwitcher';
 import VideoFeed from '../components/feed/VideoFeed';
 import SettingsMenu from '../components/ui/SettingsMenu';
+import './Dashboard.css';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -12,12 +13,12 @@ export default function Dashboard() {
   return (
     <>
       <header className="app-header">
-        <h1>Focused <span style={{ color: 'var(--ft-brand)' }}>Tube</span></h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <h1>Focused <span className="dashboard-brand-accent">Tube</span></h1>
+        <div className="dashboard-header-controls">
           <ProfileSwitcher />
           {user && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {user.avatarUrl && <img src={user.avatarUrl} alt={user.name} style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--ft-border)' }} />}
+            <div className="dashboard-header-user">
+              {user.avatarUrl && <img src={user.avatarUrl} alt={user.name} className="dashboard-avatar" />}
             </div>
           )}
           <SettingsMenu />
@@ -28,25 +29,12 @@ export default function Dashboard() {
       {activeProfile ? (
         <VideoFeed profileId={activeProfile.id} />
       ) : (
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
-          <p style={{ fontSize: 16, color: 'var(--ft-text-secondary)', marginBottom: 16 }}>
+        <div className="dashboard-empty">
+          <div className="dashboard-empty-icon">🎬</div>
+          <p className="dashboard-empty-text">
             Select or create a profile to get started.
           </p>
-          <Link
-            to="/profiles"
-            style={{
-              display: 'inline-block',
-              padding: '10px 24px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              backgroundColor: 'var(--ft-primary)',
-              borderRadius: 999,
-              textDecoration: 'none',
-              transition: 'background 0.15s',
-            }}
-          >
+          <Link to="/profiles" className="dashboard-empty-cta">
             Manage Profiles
           </Link>
         </div>

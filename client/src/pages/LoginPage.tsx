@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import './LoginPage.css';
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth();
@@ -8,14 +9,8 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0F0F0F' }}>
-        <div style={{
-          width: 40, height: 40,
-          border: '4px solid #333',
-          borderTop: '4px solid var(--ft-brand)',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
+      <div className="login-spinner-container">
+        <div className="login-spinner" />
       </div>
     );
   }
@@ -26,56 +21,27 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div style={{
-        textAlign: 'center',
-        maxWidth: 560,
-        width: '100%',
-      }}>
+      <div className="login-content">
         {/* Brand row: logo + Focused-Tube */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 32 }}>
-          <img src="/ft-logo.png" alt="Focused-Tube" style={{ height: 56, background: '#8f8f96', borderRadius: '50%', padding: 6 }} />
-          <span style={{
-            fontSize: 42,
-            fontWeight: 700,
-            color: 'var(--ft-brand)',
-            letterSpacing: '-0.3px',
-          }}>
+        <div className="login-brand-row">
+          <img src="/ft-logo.png" alt="Focused-Tube" className="login-brand-logo" />
+          <span className="login-brand-name">
             Focused-Tube
           </span>
         </div>
 
         {/* Hero headline */}
-        <h1 style={{
-          fontSize: 32,
-          fontWeight: 800,
-          color: '#FFFFFF',
-          marginBottom: 12,
-          letterSpacing: '-1px',
-          lineHeight: 1.15,
-        }}>
+        <h1 className="login-hero">
           Escape the algorithm.
         </h1>
 
         {/* Sub-headline */}
-        <p style={{
-          fontSize: 20,
-          color: '#AAAAAA',
-          marginBottom: 32,
-          fontWeight: 400,
-        }}>
+        <p className="login-subheadline">
           Watch only what matters.
         </p>
 
         {/* Description */}
-        <p style={{
-          fontSize: 15,
-          color: '#717171',
-          marginBottom: 48,
-          lineHeight: 1.6,
-          maxWidth: 460,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}>
+        <p className="login-description">
           Create curated profiles of your favourite YouTube channels
           with keyword filters. No recommendations. No rabbit holes.
           Just your content.
@@ -84,31 +50,7 @@ export default function LoginPage() {
         {/* Google sign-in button */}
         <a
           href="/api/auth/google"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            padding: '14px 48px',
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#3C4043',
-            backgroundColor: '#FFFFFF',
-            border: 'none',
-            borderRadius: 999,
-            textDecoration: 'none',
-            cursor: 'pointer',
-            transition: 'background-color 0.15s, box-shadow 0.15s',
-            minWidth: 300,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F5F5F5';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,255,255,0.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFFFFF';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
+          className="login-google-btn"
         >
           <svg width="20" height="20" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>

@@ -1,4 +1,5 @@
 import type { SubscriptionChannel } from '../../types/youtube';
+import './SubscriptionChannelRow.css';
 
 interface Props {
   channel: SubscriptionChannel;
@@ -11,31 +12,14 @@ export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onA
   const disabled = isAdded || isAdding;
 
   let btnLabel = 'Add to Profile';
-  let btnStyle: React.CSSProperties = {
-    padding: '6px 14px',
-    fontSize: 13,
-    fontWeight: 600,
-    border: 'none',
-    borderRadius: 999,
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    color: '#fff',
-    backgroundColor: 'var(--ft-primary)',
-    transition: 'background 0.15s, opacity 0.15s',
-  };
+  let btnClass = 'sub-channel-btn';
 
   if (isAdded) {
     btnLabel = 'Added ✓';
-    btnStyle = {
-      ...btnStyle,
-      backgroundColor: 'var(--ft-success-bg)',
-      color: 'var(--ft-success)',
-      cursor: 'default',
-      opacity: 0.9,
-    };
+    btnClass += ' sub-channel-btn--added';
   } else if (isAdding) {
     btnLabel = 'Adding…';
-    btnStyle = { ...btnStyle, opacity: 0.6, cursor: 'not-allowed' };
+    btnClass += ' sub-channel-btn--adding';
   }
 
   return (
@@ -56,7 +40,7 @@ export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onA
         )}
       </div>
 
-      <button disabled={disabled} onClick={onAdd} style={btnStyle}>
+      <button disabled={disabled} onClick={onAdd} className={btnClass}>
         {btnLabel}
       </button>
     </div>

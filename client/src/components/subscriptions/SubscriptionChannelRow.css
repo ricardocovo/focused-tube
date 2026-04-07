@@ -1,0 +1,32 @@
+.sub-channel-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #fff;
+  background-color: var(--ft-primary);
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.sub-channel-btn:hover {
+  background-color: var(--ft-primary-hover);
+}
+
+.sub-channel-btn--added {
+  background-color: var(--ft-success-bg);
+  color: var(--ft-success);
+  cursor: default;
+  opacity: 0.9;
+}
+
+.sub-channel-btn--added:hover {
+  background-color: var(--ft-success-bg);
+}
+
+.sub-channel-btn--adding {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

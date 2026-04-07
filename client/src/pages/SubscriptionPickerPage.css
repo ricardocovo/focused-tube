@@ -1,0 +1,53 @@
+.sub-picker-back {
+  margin-bottom: 16px;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--ft-link);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sub-picker-title {
+  color: var(--ft-text);
+  margin-bottom: 20px;
+}
+
+.sub-picker-error {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.sub-picker-error-text {
+  color: var(--ft-danger);
+  margin-bottom: 12px;
+}
+
+.sub-picker-retry-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--ft-primary);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.sub-picker-retry-btn:hover {
+  background-color: var(--ft-primary-hover);
+}
+
+.sub-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sub-picker-empty {
+  color: var(--ft-text-tertiary);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+}

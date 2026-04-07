@@ -9,7 +9,7 @@ export default function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
       className={`skeleton-shimmer${className ? ` ${className}` : ''}`}
-      style={{ borderRadius: 4, ...style }}
+      style={style}
     />
   );
 }

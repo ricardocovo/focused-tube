@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useProfiles } from '../../context/ProfileContext';
 import { Link } from 'react-router-dom';
 import ProfileSwitcherSkeleton from './ProfileSwitcherSkeleton';
+import './ProfileSwitcher.css';
 
 export default function ProfileSwitcher() {
   const { profiles, activeProfile, setActiveProfile, isLoading } = useProfiles();
@@ -24,9 +25,9 @@ export default function ProfileSwitcher() {
 
   if (profiles.length === 0) {
     return (
-      <span style={{ fontSize: 14, color: '#666' }}>
+      <span className="profile-switcher-empty">
         No profiles yet —{' '}
-        <Link to="/profiles" style={{ color: 'var(--ft-link)', textDecoration: 'underline' }}>
+        <Link to="/profiles" className="profile-switcher-empty-link">
           create one!
         </Link>
       </span>
@@ -40,7 +41,7 @@ export default function ProfileSwitcher() {
         className="profile-switcher-trigger"
       >
         {activeProfile?.name ?? 'Select profile'}
-        <span style={{ fontSize: 10, marginLeft: 4 }}>{open ? '▲' : '▼'}</span>
+        <span className="profile-switcher-arrow">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
@@ -52,22 +53,11 @@ export default function ProfileSwitcher() {
                 setActiveProfile(p.id);
                 setOpen(false);
               }}
-              className="profile-switcher-option"
-              style={{
-                backgroundColor: p.id === activeProfile?.id ? 'var(--ft-surface-raised)' : 'var(--ft-surface)',
-                fontWeight: p.id === activeProfile?.id ? 600 : 400,
-              }}
-              onMouseEnter={(e) => {
-                if (p.id !== activeProfile?.id) e.currentTarget.style.backgroundColor = 'var(--ft-surface-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  p.id === activeProfile?.id ? 'var(--ft-surface-raised)' : 'var(--ft-surface)';
-              }}
+              className={`profile-switcher-option${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
             >
               {p.name}
               {p.isDefault && (
-                <span style={{ fontSize: 11, color: 'var(--ft-text-tertiary)', marginLeft: 6 }}>(default)</span>
+                <span className="profile-switcher-default-label">(default)</span>
               )}
             </button>
           ))}
