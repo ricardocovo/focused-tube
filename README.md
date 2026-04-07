@@ -14,6 +14,9 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 - **Subscription picker** — browse and search your YouTube subscriptions to add channels to a profile
 - **Keyword management** — tag-style input for adding/removing keywords per profile
 - **Error boundaries & toast notifications** — graceful error handling with retry logic throughout
+- **API caching** — server-side in-memory cache (TTL + LRU) and client-side React context cache to minimize YouTube API calls
+- **Quota management** — real-time quota tracking, soft-limit guard, and usage visible on the health endpoint
+- **Smart OAuth** — returning users skip the Google consent screen automatically
 
 ---
 
@@ -51,6 +54,9 @@ Communication is via REST JSON API. The server proxies all YouTube Data API v3 c
 │  │  Auth    │  │ Profile  │  │  Video Feed   │  │
 │  │  Context │  │ Manager  │  │  (Combined)   │  │
 │  └──────────┘  └──────────┘  └───────────────┘  │
+│  ┌──────────────────────────────────────────────┐│
+│  │           Feed Cache Context (5-min TTL)     ││
+│  └──────────────────────────────────────────────┘│
 └────────────────────┬────────────────────────────┘
                      │ REST API
 ┌────────────────────▼────────────────────────────┐
@@ -63,6 +69,10 @@ Communication is via REST JSON API. The server proxies all YouTube Data API v3 c
 │  │  Prisma  │  │  YouTube Data API v3 Client  │  │
 │  │  (SQLite)│  │  (googleapis)                │  │
 │  └──────────┘  └──────────────────────────────┘  │
+│  ┌─────────────────┐  ┌──────────────────────┐   │
+│  │  In-Memory Cache │  │  Quota Tracker       │   │
+│  │  (TTL + LRU)    │  │  (daily counter)     │   │
+│  └─────────────────┘  └──────────────────────┘   │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -71,9 +81,11 @@ Communication is via REST JSON API. The server proxies all YouTube Data API v3 c
 1. User authenticates via Google OAuth → server stores encrypted access/refresh tokens
 2. User creates profiles with channels (from their YouTube subscriptions) and keywords
 3. Feed endpoint combines two sources per profile:
-   - **Subscription feed** — recent uploads from profile channels via `youtube.search.list`
-   - **Keyword search feed** — results for each keyword via `youtube.search.list`
-4. Videos are deduplicated by ID, sorted by date, and tagged with their source
+   - **Subscription feed** — recent uploads from profile channels via `playlistItems.list` (1 unit/call)
+   - **Keyword search feed** — results for each keyword via `search.list` (100 units/call)
+4. Both sources are checked against the server-side cache before making API calls
+5. Videos are deduplicated by ID, sorted by date, filtered to the last 14 days (configurable), and tagged with their source
+6. Client-side cache prevents redundant network requests for recently fetched feeds
 
 ---
 
@@ -89,7 +101,7 @@ focused-tube/
 │   │   │   ├── profile/       # ProfileSwitcher, ProfileEditor
 │   │   │   ├── subscriptions/ # SubscriptionPicker
 │   │   │   └── ui/            # Shared UI (ErrorBoundary, etc.)
-│   │   ├── context/           # AuthContext, ProfileContext
+│   │   ├── context/           # AuthContext, ProfileContext, FeedCacheContext
 │   │   ├── hooks/             # useAuth, useProfiles, useFeed, useSubscriptions
 │   │   ├── pages/             # LoginPage, Dashboard, ProfileEditPage, etc.
 │   │   ├── services/          # API client functions (api, feedApi, profilesApi, etc.)
@@ -102,7 +114,7 @@ focused-tube/
 │   │   ├── middleware/        # auth, cors, errorHandler, notFound
 │   │   ├── services/          # auth.service, profile.service, youtube.service
 │   │   ├── prisma/            # schema.prisma + migrations
-│   │   ├── utils/             # jwt, encryption, config
+│   │   ├── utils/             # jwt, encryption, config, cache, quota
 │   │   ├── types/             # express.d.ts
 │   │   └── index.ts           # Express app entry point
 │   └── package.json
@@ -161,7 +173,7 @@ This launches both services concurrently:
 
 ```bash
 curl http://localhost:3001/api/health
-# → { "status": "ok" }
+# → { "status": "ok", "quota": { "date": "...", "used": 0, "limit": 9000, "remaining": 9000 } }
 ```
 
 Open http://localhost:5173 and click **Sign in with Google**.
@@ -184,6 +196,11 @@ Create a `.env` file in the project root:
 | `JWT_SECRET` | **Yes** | — | Secret for access tokens (32+ chars) |
 | `JWT_REFRESH_SECRET` | **Yes** | — | Secret for refresh tokens (different from JWT_SECRET) |
 | `ENCRYPTION_KEY` | **Yes** | — | 64-char hex string for AES-256-GCM encryption |
+| `CACHE_MAX_ENTRIES` | No | `5000` | Maximum entries in the server-side in-memory cache |
+| `CACHE_TTL_CHANNEL_SECONDS` | No | `600` | TTL for cached channel upload results (seconds) |
+| `CACHE_TTL_KEYWORD_SECONDS` | No | `300` | TTL for cached keyword search results (seconds) |
+| `FEED_PUBLISHED_AFTER_DAYS` | No | `14` | Only return videos published within this many days |
+| `QUOTA_DAILY_LIMIT` | No | `9000` | Soft quota guard threshold (YouTube limit is 10,000) |
 
 Generate secrets with:
 
@@ -288,11 +305,31 @@ This project uses a **spec-driven development** workflow:
 
 ## YouTube API Quota
 
-The YouTube Data API v3 has a **10,000 unit daily quota**. `search.list` costs **100 units** per call (~100 searches/day).
+The YouTube Data API v3 has a **10,000 unit daily quota**. Focused Tube optimizes quota usage through several layers:
 
-- API calls are batched where possible
-- The service layer is designed to be cache-friendly (caching will be added in a future phase)
-- Avoid unnecessary duplicate calls for the same data
+| Strategy | Impact |
+|----------|--------|
+| **`playlistItems.list` for channel uploads** | 1 unit/call instead of 100 units (`search.list`) — **99% reduction** |
+| **Server-side in-memory cache** | Channel results cached for 10 min, keyword results for 5 min (configurable via env vars) |
+| **Client-side feed cache** | 5-minute TTL prevents redundant network requests on tab/profile switches |
+| **`publishedAfter` filter** | Only fetches videos from the last 14 days (configurable), reducing result bloat |
+| **Soft quota guard** | Feed endpoint rejects requests when approaching the daily limit (default 9,000 units) |
+| **Conditional OAuth consent** | Returning users skip the consent screen, avoiding unnecessary token re-grants |
+
+### Quota costs per endpoint
+
+| Endpoint | Cost per call |
+|----------|---------------|
+| `playlistItems.list` (channel uploads) | 1 unit |
+| `search.list` (keyword search) | 100 units |
+| `channels.list` | 1 unit |
+| `subscriptions.list` | 1 unit |
+
+Monitor real-time usage via the health endpoint:
+
+```bash
+curl http://localhost:3001/api/health
+```
 
 ---
 
