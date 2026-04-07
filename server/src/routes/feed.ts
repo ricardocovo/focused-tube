@@ -9,7 +9,8 @@ router.use(authenticateJwt);
 function isQuotaError(error: unknown): boolean {
   if (typeof error === 'object' && error !== null) {
     const e = error as any;
-    return e.code === 403 && e.errors?.[0]?.reason === 'quotaExceeded';
+    if (e.code === 403 && e.errors?.[0]?.reason === 'quotaExceeded') return true;
+    if (e.code === 403 && typeof e.message === 'string' && e.message.toLowerCase().includes('quota')) return true;
   }
   return false;
 }
@@ -90,10 +91,19 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
           return;
         }
         if (isQuotaError(result.reason)) {
-          res.status(503).json({ error: 'youtube_quota_exceeded' });
+          res.status(429).json({ error: 'YouTube API daily quota exceeded. Please try again tomorrow.' });
           return;
         }
       }
+    }
+
+    // If ALL promises failed, surface the error instead of returning empty results
+    const allFailed = results.length > 0 && results.every((r) => r.status === 'rejected');
+    if (allFailed) {
+      const firstError = (results[0] as PromiseRejectedResult).reason;
+      const message = firstError?.message || 'Failed to fetch videos';
+      res.status(502).json({ error: message });
+      return;
     }
 
     // Collect videos, deduplicating by videoId (subscription wins)

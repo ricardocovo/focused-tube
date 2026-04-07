@@ -40,9 +40,10 @@ export function useFeed(profileId: string | null, source?: string): UseFeedResul
       setVideos(res.videos);
       setNextPageToken(res.nextPageToken);
       setHasLoadedOnce(true);
-    } catch (err) {
+    } catch (err: any) {
       if (id !== requestIdRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to load feed');
+      const serverMessage = err?.response?.data?.error;
+      setError(serverMessage || (err instanceof Error ? err.message : 'Failed to load feed'));
       setHasLoadedOnce(true);
     } finally {
       if (id === requestIdRef.current) {
@@ -70,9 +71,10 @@ export function useFeed(profileId: string | null, source?: string): UseFeedResul
         return [...prev, ...newVideos];
       });
       setNextPageToken(res.nextPageToken);
-    } catch (err) {
+    } catch (err: any) {
       if (id !== requestIdRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to load more videos');
+      const serverMessage = err?.response?.data?.error;
+      setError(serverMessage || (err instanceof Error ? err.message : 'Failed to load more videos'));
     } finally {
       if (id === requestIdRef.current) {
         setIsFetchingMore(false);
