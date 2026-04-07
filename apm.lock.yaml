@@ -1,5 +1,5 @@
 lockfile_version: '1'
-generated_at: '2026-04-05T02:49:40.303581+00:00'
+generated_at: '2026-04-07T13:25:57.114705+00:00'
 apm_version: 0.8.9
 dependencies:
 - repo_url: anthropics/skills
@@ -13,7 +13,39 @@ dependencies:
   content_hash: sha256:063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67
 - repo_url: github/awesome-copilot
   host: github.com
-  resolved_commit: 0c3c5bbbfb2a7d57d36473a83fdbef1becc5053f
+  virtual_path: instructions/a11y.instructions.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/instructions/a11y.instructions.md
+  content_hash: sha256:3738d5add20c7c16e82016bdb1d3aa17b952fbb8ecd453861f4f1f2cdfebc5b7
+- repo_url: github/awesome-copilot
+  host: github.com
+  virtual_path: instructions/markdown-gfm.instructions.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/instructions/markdown-gfm.instructions.md
+  content_hash: sha256:229c705e168b2fc6f74baa1ac25281357c7bee73c9a8636cb898ce0640572f1c
+- repo_url: github/awesome-copilot
+  host: github.com
+  virtual_path: instructions/nodejs-javascript-vitest.instructions.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/instructions/nodejs-javascript-vitest.instructions.md
+  content_hash: sha256:f4fef1f6f76d349031fbefebf03cb589a7261efceb33e89212d944e5ebb25902
+- repo_url: github/awesome-copilot
+  host: github.com
+  virtual_path: instructions/playwright-typescript.instructions.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/instructions/playwright-typescript.instructions.md
+  content_hash: sha256:60a426896cc9bbb126c0b44545058a2896a8a08a85e740d78fbc4a4aa18a3670
+- repo_url: github/awesome-copilot
+  host: github.com
+  resolved_commit: ba2ade0312708d44c2966a4a1c278b92471d2b8b
   virtual_path: skills/readme-blueprint-generator
   is_virtual: true
   package_type: claude_skill
