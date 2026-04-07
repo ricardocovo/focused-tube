@@ -20,17 +20,6 @@
   text-decoration: underline;
 }
 
-.profile-edit-back {
-  margin-bottom: 16px;
-  padding: 6px 0;
-  font-size: 14px;
-  color: var(--ft-link);
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
 .profile-edit-title {
   color: var(--ft-text);
   margin-bottom: 20px;

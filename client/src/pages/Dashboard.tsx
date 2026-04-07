@@ -1,29 +1,18 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { useProfiles } from '../context/ProfileContext';
+import AppHeader from '../components/ui/AppHeader';
 import ProfileSwitcher from '../components/profile/ProfileSwitcher';
 import VideoFeed from '../components/feed/VideoFeed';
-import SettingsMenu from '../components/ui/SettingsMenu';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  const { user } = useAuth();
   const { activeProfile } = useProfiles();
 
   return (
     <>
-      <header className="app-header">
-        <h1>Focused <span className="dashboard-brand-accent">Tube</span></h1>
-        <div className="dashboard-header-controls">
-          <ProfileSwitcher />
-          {user && (
-            <div className="dashboard-header-user">
-              {user.avatarUrl && <img src={user.avatarUrl} alt={user.name} className="dashboard-avatar" />}
-            </div>
-          )}
-          <SettingsMenu />
-        </div>
-      </header>
+      <AppHeader>
+        <ProfileSwitcher />
+      </AppHeader>
       <div className="page-container">
 
       {activeProfile ? (

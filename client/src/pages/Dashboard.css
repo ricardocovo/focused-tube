@@ -1,26 +1,3 @@
-.dashboard-brand-accent {
-  color: var(--ft-brand);
-}
-
-.dashboard-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dashboard-header-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dashboard-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--ft-border);
-}
-
 .dashboard-empty {
   text-align: center;
   padding: 60px 20px;

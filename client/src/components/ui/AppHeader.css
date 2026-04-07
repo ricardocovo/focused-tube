@@ -1,0 +1,76 @@
+.app-header-brand {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ft-brand);
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.app-header-brand:hover {
+  opacity: 0.8;
+}
+
+.app-header-brand-accent {
+  color: var(--ft-brand);
+}
+
+.app-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--ft-border);
+}
+
+/* Breadcrumb navigation */
+.app-header-breadcrumb ol {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app-header-breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-header-breadcrumb li + li::before {
+  content: '›';
+  color: var(--ft-text-tertiary);
+  font-size: 14px;
+}
+
+.app-header-breadcrumb a {
+  color: var(--ft-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.15s;
+}
+
+.app-header-breadcrumb a:hover {
+  color: var(--ft-text);
+}
+
+.app-header-breadcrumb [aria-current="page"] {
+  color: var(--ft-text);
+  font-weight: 600;
+  font-size: 14px;
+}
