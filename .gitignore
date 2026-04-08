@@ -20,3 +20,6 @@ dist/
 
 # Source maps
 *.js.map
+
+# Azure Developer CLI
+.azure/

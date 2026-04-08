@@ -55,7 +55,7 @@ graph TB
             YouTubeRoutes["YouTube Routes"]
         end
         subgraph data["Data & External APIs"]
-            Prisma["Prisma\n(SQLite)"]
+            Prisma["Prisma\n(Azure SQL)"]
             YTClient["YouTube Data API v3\n(googleapis)"]
         end
         subgraph infra["Infrastructure"]

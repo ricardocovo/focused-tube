@@ -13,7 +13,7 @@ function requireEnv(name: string): string {
 export const config = {
   PORT: parseInt(process.env.PORT || '3001', 10),
   CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
-  DATABASE_URL: process.env.DATABASE_URL || 'file:./prisma/dev.db',
+  DATABASE_URL: requireEnv('DATABASE_URL'),
   NODE_ENV: process.env.NODE_ENV || 'development',
 
   // These are required in Phase 2+ but optional during Phase 1

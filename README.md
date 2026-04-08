@@ -30,7 +30,7 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 | **Language** | TypeScript | 5.7 |
 | **Backend** | Express | 4 |
 | **ORM** | Prisma | 6 |
-| **Database** | SQLite | — |
+| **Database** | Azure SQL / SQL Server | — |
 | **Auth** | Google OAuth 2.0 + Passport | — |
 | **Sessions** | JWT (access + refresh tokens) | — |
 | **YouTube API** | YouTube Data API v3 via `googleapis` | — |
@@ -44,7 +44,7 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 Monorepo with two npm workspaces:
 
 - **`client/`** — React 18 SPA built with Vite and TypeScript
-- **`server/`** — Express REST API in TypeScript, with Prisma ORM over SQLite
+- **`server/`** — Express REST API in TypeScript, with Prisma ORM over Azure SQL (SQL Server)
 
 Communication is via REST JSON API. The server proxies all YouTube Data API v3 calls.
 
@@ -153,7 +153,8 @@ npm install
 cp .env.example .env
 # Fill in your Google OAuth credentials and generated secrets
 
-# 4. Set up the database
+# 4. Set up the database (requires SQL Server — see Azure Deployment below, or use Docker)
+# docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong@Passw0rd' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 cd server
 npx prisma generate
 npx prisma migrate dev
@@ -190,7 +191,7 @@ Create a `.env` file in the project root:
 | `PORT` | No | `3001` | Express server port |
 | `NODE_ENV` | No | `development` | `development` or `production` |
 | `CLIENT_ORIGIN` | No | `http://localhost:5173` | Frontend URL for CORS |
-| `DATABASE_URL` | No | `file:./prisma/dev.db` | SQLite connection string |
+| `DATABASE_URL` | **Yes** | — | SQL Server connection string (see `.env.example`) |
 | `GOOGLE_CLIENT_ID` | **Yes** | — | OAuth 2.0 Client ID |
 | `GOOGLE_CLIENT_SECRET` | **Yes** | — | OAuth 2.0 Client Secret |
 | `GOOGLE_CALLBACK_URL` | No | `http://localhost:3001/api/auth/google/callback` | OAuth redirect URI |
@@ -250,7 +251,13 @@ All routes are prefixed with `/api/`.
 
 ## Database
 
-SQLite via [Prisma ORM](https://www.prisma.io/). Schema at `server/src/prisma/schema.prisma`.
+Azure SQL (SQL Server) via [Prisma ORM](https://www.prisma.io/). Schema at `server/src/prisma/schema.prisma`.
+
+For local development, run SQL Server in Docker:
+
+```bash
+docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong@Passw0rd' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+```
 
 **Models:** `User`, `Profile`, `ProfileChannel`, `ProfileKeyword`
 
@@ -341,6 +348,47 @@ curl http://localhost:3001/api/health
 3. Keep routes thin — business logic belongs in `server/src/services/`
 4. All server communication from the client goes through `services/` API functions
 5. Run `npm run build` to verify the build passes before submitting
+
+---
+
+## Azure Deployment
+
+The app deploys to Azure using Bicep templates and Azure Developer CLI (`azd`).
+
+| Service | Azure Resource | Tier | Monthly Cost |
+|---------|---------------|------|-------------|
+| Frontend | Azure Static Web Apps | Free | $0 |
+| API | Azure App Service (B1 Basic) | Basic | ~$13 |
+| Database | Azure SQL Database (serverless) | Free | $0 |
+
+### Prerequisites
+
+- Azure subscription with billing enabled
+- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (`azd`)
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`)
+
+### Deploy
+
+```bash
+# Provision infrastructure and deploy both services
+azd up
+```
+
+`azd up` prompts for all secrets (Google OAuth credentials, JWT secrets, etc.) and provisions:
+- Azure SQL Server + free serverless database
+- App Service Plan (B1 Linux) + Web App (Node 20 LTS)
+- Static Web App (free) with linked backend to App Service
+
+### Post-deployment
+
+1. **Google Cloud Console**: Add the production callback URL and SWA origin to your OAuth credentials
+   - Authorized redirect URI: `https://<appservice>.azurewebsites.net/api/auth/google/callback`
+   - Authorized JavaScript origin: `https://<swa>.azurestaticapps.net`
+2. **Verify**: `curl https://<swa>.azurestaticapps.net/api/health`
+
+### CI/CD
+
+A GitHub Actions workflow at `.github/workflows/azure-deploy.yml` builds and deploys on every push to `main`. Run `azd pipeline config` to set up the required GitHub secrets automatically.
 
 ---
 
