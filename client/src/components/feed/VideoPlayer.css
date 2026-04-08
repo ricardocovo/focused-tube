@@ -1,0 +1,118 @@
+/* ===== VIDEO PLAYER ===== */
+
+.video-player {
+  position: sticky;
+  top: var(--ft-header-height);
+  z-index: 40;
+  background: var(--ft-surface);
+  border-bottom: 1px solid var(--ft-border);
+  animation: video-player-slide-in 0.25s ease-out;
+}
+
+@keyframes video-player-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.video-player-inner {
+  position: relative;
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 16px 16px 12px;
+}
+
+/* Close button */
+.video-player-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--ft-radius-full);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.video-player-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.video-player-close:focus-visible {
+  outline: 2px solid var(--ft-border-focus);
+  outline-offset: 2px;
+}
+
+/* Iframe wrapper — 16:9 aspect ratio */
+.video-player-iframe-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--ft-radius-sm);
+  overflow: hidden;
+  background: #000;
+}
+
+.video-player-iframe-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Video info below iframe */
+.video-player-info {
+  padding-top: 10px;
+}
+
+.video-player-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--ft-text);
+}
+
+.video-player-channel {
+  font-size: 13px;
+  color: var(--ft-text-secondary);
+  margin: 2px 0 0;
+}
+
+/* Responsive: cap height on very small screens */
+@media (max-width: 479px) {
+  .video-player-iframe-wrapper {
+    max-height: 240px;
+  }
+
+  .video-player-inner {
+    padding: 12px 12px 10px;
+  }
+}
+
+/* Forced colors / high contrast mode */
+@media (forced-colors: active) {
+  .video-player-close {
+    border: 2px solid ButtonBorder;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .video-player {
+    border-bottom: 2px solid CanvasText;
+  }
+}

@@ -12,12 +12,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ProfileProvider>
-          <FeedCacheProvider>
+        <FeedCacheProvider>
+          <ProfileProvider>
             <Toaster position="bottom-right" />
             <App />
-          </FeedCacheProvider>
-        </ProfileProvider>
+          </ProfileProvider>
+        </FeedCacheProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,

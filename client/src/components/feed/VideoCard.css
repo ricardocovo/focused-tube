@@ -1,3 +1,18 @@
+/* Button reset — VideoCard is a <button> */
+button.video-card {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  padding: 0;
+}
+
+button.video-card:focus-visible {
+  outline: 2px solid var(--ft-border-focus);
+  outline-offset: 2px;
+}
+
 .video-card-thumbnail {
   position: relative;
   width: 100%;
@@ -21,4 +36,38 @@
 .video-card-time {
   font-size: 12px;
   color: var(--ft-text-tertiary);
+}
+
+/* Open in YouTube link */
+.video-card-yt-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--ft-radius-sm);
+  color: var(--ft-text-tertiary);
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.video-card-yt-link:hover {
+  color: var(--ft-link);
+  background: var(--ft-brand-light);
+}
+
+.video-card-yt-link:focus-visible {
+  outline: 2px solid var(--ft-border-focus);
+  outline-offset: 1px;
+}
+
+.video-card-yt-link svg {
+  fill: none;
+  stroke: currentColor;
+}
+
+@media (forced-colors: active) {
+  .video-card-yt-link {
+    color: LinkText;
+  }
 }

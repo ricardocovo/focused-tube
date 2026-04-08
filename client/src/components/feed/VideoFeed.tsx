@@ -4,15 +4,17 @@ import { useFeed } from '../../hooks/useFeed';
 import VideoCard from './VideoCard';
 import VideoCardSkeleton from './VideoCardSkeleton';
 import FeedSourceTabs from './FeedSourceTabs';
+import type { FeedVideo } from '../../types/feed';
 import './VideoFeed.css';
 
 interface VideoFeedProps {
   profileId: string;
+  onVideoSelect?: (video: FeedVideo) => void;
 }
 
 // Grid layout handled by .video-grid CSS class with responsive breakpoints
 
-export default function VideoFeed({ profileId }: VideoFeedProps) {
+export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) {
   const [source, setSource] = useState<string | undefined>(undefined);
   const { videos, isLoading, isFetchingMore, error, nextPageToken, loadMore, reset, hasLoadedOnce } =
     useFeed(profileId, source);
@@ -123,7 +125,7 @@ export default function VideoFeed({ profileId }: VideoFeedProps) {
         <>
           <div className="video-grid">
             {videos.map((video) => (
-              <VideoCard key={video.videoId} video={video} />
+              <VideoCard key={video.videoId} video={video} onSelect={onVideoSelect} />
             ))}
             {/* Extra skeletons while fetching more */}
             {isFetchingMore &&
