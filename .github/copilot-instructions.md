@@ -4,6 +4,10 @@
 
 Focused Tube is a YouTube overlay web app that lets users create curated profiles — each with subscribed channels and keywords — to bypass YouTube's recommendation algorithm. Users sign in with Google to import their YouTube subscriptions, organize them into profiles, and view a combined feed of subscription-based and keyword-search videos.
 
+## Diagrams
+
+Any diagrams should be done in Mermaid syntax.
+
 ## Architecture
 
 Monorepo with two workspaces:

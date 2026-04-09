@@ -106,3 +106,11 @@ dependencies:
   deployed_files:
   - .github/skills/youtube-api
   content_hash: sha256:5071693a26060bfb87d91147492e5e081c2684cbf9c13d53d47c24a0b575e5a4
+- repo_url: ricardocovo/agent-primitives
+  host: github.com
+  virtual_path: instructions/mermaid-diagrams.instructions.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/instructions/mermaid-diagrams.instructions.md
+  content_hash: sha256:c3ca3ec1daf2c0dd19540d72bf8448807357aef49ff2d94df7c44597770feeb5

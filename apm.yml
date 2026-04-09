@@ -16,5 +16,6 @@ dependencies:
   - anthropics/skills/skills/frontend-design
   - github/awesome-copilot/skills/javascript-typescript-jest
   - github/awesome-copilot/agents/github-actions-expert.agent.md
+  - ricardocovo/agent-primitives/instructions/mermaid-diagrams.instructions.md
   mcp: []
 scripts: {}
