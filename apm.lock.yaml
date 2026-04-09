@@ -66,6 +66,14 @@ dependencies:
   deployed_files:
   - .github/skills/javascript-typescript-jest
   content_hash: sha256:0073d19ab0275eb6a8200aced6789a53744667bd717b5d1f44ce708a1740e5d4
+- repo_url: github/awesome-copilot
+  host: github.com
+  virtual_path: agents/github-actions-expert.agent.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .github/agents/github-actions-expert.agent.md
+  content_hash: sha256:db70a683c98c9b81e5790580e6b36c65dd7de7c704be3bb234c40381daf9ff7c
 - repo_url: ricardocovo/agent-primitives
   host: github.com
   virtual_path: agents/developer.agent.md

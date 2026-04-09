@@ -15,5 +15,6 @@ dependencies:
   - github/awesome-copilot/skills/readme-blueprint-generator
   - anthropics/skills/skills/frontend-design
   - github/awesome-copilot/skills/javascript-typescript-jest
+  - github/awesome-copilot/agents/github-actions-expert.agent.md
   mcp: []
 scripts: {}
