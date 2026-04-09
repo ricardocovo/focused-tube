@@ -3,11 +3,11 @@ version: 1.0.0
 description: APM project for focused-tube
 author: Ricardo.Covo
 dependencies:
-  apm: 
+  apm:
   - ricardocovo/agent-primitives/agents/developer.agent.md
   - ricardocovo/agent-primitives/agents/feature-spec-generator.agent.md
   - ricardocovo/agent-primitives/skills/google-authentication
-  - ricardocovo/agent-primitives/skills/youtube-api  
+  - ricardocovo/agent-primitives/skills/youtube-api
   - github/awesome-copilot/instructions/nodejs-javascript-vitest.instructions.md
   - github/awesome-copilot/instructions/a11y.instructions.md
   - github/awesome-copilot/instructions/playwright-typescript.instructions.md
@@ -15,5 +15,6 @@ dependencies:
   - github/awesome-copilot/skills/readme-blueprint-generator
   - github/awesome-copilot/skills/azure-architecture-autopilot
   - anthropics/skills/skills/frontend-design
+  - github/awesome-copilot/skills/javascript-typescript-jest
   mcp: []
 scripts: {}
