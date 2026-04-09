@@ -153,7 +153,7 @@ npm install
 cp .env.example .env
 # Fill in your Google OAuth credentials and generated secrets
 
-# 4. Set up the database (requires SQL Server — see Azure Deployment below, or use Docker)
+# 4. Set up the database (requires SQL Server — use Docker for local dev)
 # docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong@Passw0rd' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 cd server
 npx prisma generate
@@ -348,47 +348,6 @@ curl http://localhost:3001/api/health
 3. Keep routes thin — business logic belongs in `server/src/services/`
 4. All server communication from the client goes through `services/` API functions
 5. Run `npm run build` to verify the build passes before submitting
-
----
-
-## Azure Deployment
-
-The app deploys to Azure using Bicep templates and Azure Developer CLI (`azd`).
-
-| Service | Azure Resource | Tier | Monthly Cost |
-|---------|---------------|------|-------------|
-| Frontend | Azure Static Web Apps | Free | $0 |
-| API | Azure App Service (B1 Basic) | Basic | ~$13 |
-| Database | Azure SQL Database (serverless) | Free | $0 |
-
-### Prerequisites
-
-- Azure subscription with billing enabled
-- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (`azd`)
-- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`)
-
-### Deploy
-
-```bash
-# Provision infrastructure and deploy both services
-azd up
-```
-
-`azd up` prompts for all secrets (Google OAuth credentials, JWT secrets, etc.) and provisions:
-- Azure SQL Server + free serverless database
-- App Service Plan (B1 Linux) + Web App (Node 20 LTS)
-- Static Web App (free) with linked backend to App Service
-
-### Post-deployment
-
-1. **Google Cloud Console**: Add the production callback URL and SWA origin to your OAuth credentials
-   - Authorized redirect URI: `https://<appservice>.azurewebsites.net/api/auth/google/callback`
-   - Authorized JavaScript origin: `https://<swa>.azurestaticapps.net`
-2. **Verify**: `curl https://<swa>.azurestaticapps.net/api/health`
-
-### CI/CD
-
-A GitHub Actions workflow at `.github/workflows/azure-deploy.yml` builds and deploys on every push to `main`. Run `azd pipeline config` to set up the required GitHub secrets automatically.
 
 ---
 
