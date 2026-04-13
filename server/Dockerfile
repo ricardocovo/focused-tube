@@ -1,11 +1,14 @@
 # ── Stage 1: Build ────────────────────────────────────
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Copy workspace root files needed for install and build
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY server/package.json server/
+
+# Copy Prisma schema before install so the postinstall script can find it
+COPY server/src/prisma server/src/prisma/
 
 # Install all dependencies (including dev, needed for tsc + prisma generate)
 RUN npm ci --workspace=server --include-workspace-root
@@ -18,7 +21,7 @@ RUN npx prisma generate --schema=server/src/prisma/schema.prisma
 RUN npm run build --workspace=server
 
 # ── Stage 2: Production runtime ──────────────────────
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
