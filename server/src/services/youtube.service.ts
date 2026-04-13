@@ -65,6 +65,10 @@ async function getAuthenticatedClient(userId: string): Promise<{
     throw new Error('User not found');
   }
 
+  if (!user.accessToken || !user.refreshToken) {
+    throw new Error('YouTube credentials are missing. Please log out and sign in again.');
+  }
+
   const accessToken = decrypt(user.accessToken);
   const refreshToken = decrypt(user.refreshToken);
 

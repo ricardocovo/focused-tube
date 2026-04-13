@@ -21,6 +21,7 @@ For setup instructions, see [CONFIGURATION.md](CONFIGURATION.md). For a feature 
 11. [YouTube API Quota Management](#11-youtube-api-quota-management)
 12. [TypeScript Configuration](#12-typescript-configuration)
 13. [Key Technical Decisions](#13-key-technical-decisions)
+14. [Deployment Architecture](#14-deployment-architecture)
 
 ---
 
@@ -556,3 +557,40 @@ graph TB
 | **Request ID tracking in `useFeed`** | Prevents stale responses from overwriting newer data during rapid navigation |
 | **Vite dev proxy** | Client uses relative `/api/*` URLs; no CORS complexity in development |
 | **Spec-driven development workflow** | Feature specs and user stories in `specs/` ensure deliberate design before implementation |
+
+---
+
+## 14. Deployment Architecture
+
+The application deploys to Azure via a GitHub Actions CI/CD pipeline. See [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step setup.
+
+### Infrastructure
+
+| Component | Azure Service | Purpose |
+|-----------|--------------|----------|
+| **Frontend** | Azure Static Web App | Global CDN for the React SPA |
+| **Backend API** | Azure Container App | Runs the Express API as a Docker container |
+| **Container Images** | Azure Container Registry (ACR) | Stores versioned server Docker images |
+| **Database** | Azure SQL | Persistent relational storage (Prisma ORM) |
+
+### CI/CD Pipeline
+
+```mermaid
+flowchart LR
+    Push["Push to main"] --> Test["Test\n(lint, build, test)"]
+    Test --> DB["Deploy Database\n(Prisma migrate deploy)"]
+    Test --> Client["Deploy Client\n(Static Web App)"]
+    DB --> API["Deploy API\n(Docker build → ACR → Container App)"]
+```
+
+- **On pull requests:** runs tests only (no deployment)
+- **On push to `main`:** runs tests, then deploys database, client (parallel with database), and API (after database)
+- **OIDC authentication:** GitHub Actions authenticates to Azure via federated credentials — no long-lived secrets
+- **Immutable image tags:** every deployment uses the Git commit SHA as the image tag for traceability
+
+### Server Dockerfile
+
+The server uses a multi-stage Docker build (`server/Dockerfile`):
+
+1. **Builder stage** — installs all dependencies, generates Prisma client, compiles TypeScript
+2. **Runtime stage** — installs production dependencies only, copies compiled output, runs as non-root user

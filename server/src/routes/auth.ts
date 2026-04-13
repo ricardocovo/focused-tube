@@ -17,17 +17,12 @@ const REFRESH_COOKIE_OPTIONS = {
 
 // GET /api/auth/google — redirect to Google OAuth consent screen
 router.get('/google', (req: Request, res: Response, next: NextFunction) => {
-  const isReturning = req.query.returning === 'true';
-
   const authOptions: Record<string, unknown> = {
     session: false,
     scope: ['profile', 'email', 'https://www.googleapis.com/auth/youtube.readonly'],
+    accessType: 'offline',
+    prompt: 'consent',
   };
-
-  if (!isReturning) {
-    authOptions.accessType = 'offline';
-    authOptions.prompt = 'consent';
-  }
 
   passport.authenticate('google', authOptions)(req, res, next);
 });
@@ -40,6 +35,11 @@ router.get(
     const user = req.user as any;
     if (!user || !user.id) {
       res.redirect(`${config.CLIENT_ORIGIN}/login?error=auth_failed`);
+      return;
+    }
+
+    if (!user.accessToken || !user.refreshToken) {
+      res.redirect(`${config.CLIENT_ORIGIN}/login?error=youtube_credentials_missing`);
       return;
     }
 
@@ -56,14 +56,6 @@ router.get(
       secure: config.NODE_ENV === 'production',
       path: '/',
       maxAge: 60 * 1000, // 60 seconds
-    });
-
-    res.cookie('ft_returning_user', '1', {
-      httpOnly: false,
-      sameSite: 'lax',
-      secure: config.NODE_ENV === 'production',
-      path: '/',
-      maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
     });
 
     res.redirect(config.CLIENT_ORIGIN);
@@ -93,7 +85,6 @@ router.get('/me', authenticateJwt, async (req: Request, res: Response, next: Nex
 router.post('/logout', (_req: Request, res: Response) => {
   res.clearCookie('ft_refresh_token', { path: '/api/auth' });
   res.clearCookie('ft_access_token', { path: '/' });
-  res.clearCookie('ft_returning_user', { path: '/' });
   res.json({ message: 'Logged out' });
 });
 

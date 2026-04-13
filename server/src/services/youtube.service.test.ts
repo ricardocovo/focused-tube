@@ -111,6 +111,24 @@ describe('isInsufficientScopeError', () => {
   });
 });
 
+describe('getUserSubscriptions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('throws a re-authentication error when the stored refresh token is missing', async () => {
+    mockedUserFindUnique.mockResolvedValue({
+      ...mockUser,
+      refreshToken: '',
+    } as any);
+
+    await expect(getUserSubscriptions('user-1')).rejects.toThrow(
+      'YouTube credentials are missing. Please log out and sign in again.',
+    );
+    expect(mockSubscriptionsList).not.toHaveBeenCalled();
+  });
+});
+
 describe('getChannelVideos', () => {
   beforeEach(() => {
     vi.clearAllMocks();

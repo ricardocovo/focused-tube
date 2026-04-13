@@ -48,33 +48,36 @@ Monorepo with two npm workspaces:
 
 Communication is via REST JSON API. The server proxies all YouTube Data API v3 calls.
 
-```
-┌─────────────────────────────────────────────────┐
-│                   React SPA                      │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  Auth    │  │ Profile  │  │  Video Feed   │  │
-│  │  Context │  │ Manager  │  │  (Combined)   │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-│  ┌──────────────────────────────────────────────┐│
-│  │           Feed Cache Context (5-min TTL)     ││
-│  └──────────────────────────────────────────────┘│
-└────────────────────┬────────────────────────────┘
-                     │ REST API
-┌────────────────────▼────────────────────────────┐
-│              Express Server                      │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  Auth    │  │ Profile  │  │  YouTube      │  │
-│  │  Routes  │  │ Routes   │  │  Routes       │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-│  ┌──────────┐  ┌──────────────────────────────┐  │
-│  │  Prisma  │  │  YouTube Data API v3 Client  │  │
-│  │  (SQLite)│  │  (googleapis)                │  │
-│  └──────────┘  └──────────────────────────────┘  │
-│  ┌─────────────────┐  ┌──────────────────────┐   │
-│  │  In-Memory Cache │  │  Quota Tracker       │   │
-│  │  (TTL + LRU)    │  │  (daily counter)     │   │
-│  └─────────────────┘  └──────────────────────┘   │
-└──────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph client["React SPA"]
+        AuthCtx["Auth Context"]
+        ProfileMgr["Profile Manager"]
+        VideoFeed["Video Feed\n(Combined)"]
+        FeedCache["Feed Cache Context\n(5-min TTL)"]
+    end
+
+    subgraph server["Express Server"]
+        AuthRoutes["Auth Routes"]
+        ProfileRoutes["Profile Routes"]
+        YouTubeRoutes["YouTube Routes"]
+        Prisma["Prisma\n(Azure SQL)"]
+        YTClient["YouTube Data API v3 Client\n(googleapis)"]
+        Cache["In-Memory Cache\n(TTL + LRU)"]
+        Quota["Quota Tracker\n(daily counter)"]
+    end
+
+    client -- "REST API (/api/*)" --> server
+
+    classDef frontend fill:#7B68EE,color:#fff
+    classDef service fill:#4A90D9,color:#fff
+    classDef database fill:#2ECC71,color:#fff
+    classDef external fill:#95A5A6,color:#fff
+
+    class AuthCtx,ProfileMgr,VideoFeed,FeedCache frontend
+    class AuthRoutes,ProfileRoutes,YouTubeRoutes,Cache,Quota service
+    class Prisma database
+    class YTClient external
 ```
 
 ### Data flow
@@ -338,6 +341,27 @@ Monitor real-time usage via the health endpoint:
 ```bash
 curl http://localhost:3001/api/health
 ```
+
+---
+
+## Deployment
+
+Focused Tube deploys to Azure via a GitHub Actions CI/CD pipeline:
+
+| Component | Azure Service | Trigger |
+|-----------|--------------|----------|
+| **Frontend** | Azure Static Web App | Push to `main` |
+| **Backend API** | Azure Container App (via ACR) | Push to `main` |
+| **Database** | Azure SQL (Prisma migrations) | Push to `main` |
+
+The pipeline runs tests on every push and PR, and deploys to production only on `main`:
+
+1. **Test** — build and test both workspaces
+2. **Deploy Database** — apply Prisma migrations to Azure SQL
+3. **Deploy Client** — build the SPA and deploy to Static Web App
+4. **Deploy API** — build Docker image, push to ACR, update Container App
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full step-by-step setup guide.
 
 ---
 

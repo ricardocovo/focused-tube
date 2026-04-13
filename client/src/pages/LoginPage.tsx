@@ -19,8 +19,7 @@ export default function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
-  const isReturningUser = document.cookie.split('; ').some((c) => c.startsWith('ft_returning_user='));
-  const googleAuthHref = isReturningUser ? '/api/auth/google?returning=true' : '/api/auth/google';
+  const googleAuthHref = '/api/auth/google';
 
   return (
     <div className="login-page">

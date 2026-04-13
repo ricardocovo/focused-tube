@@ -9,7 +9,7 @@
   "engines": {
     "node": ">=18"
   },
-  "scripts": {
+  "scripts": {    
     "dev": "concurrently \"npm run dev --workspace=client\" \"npm run dev --workspace=server\"",
     "build": "npm run build --workspace=client && npm run build --workspace=server",
     "test": "npm run test --workspaces"

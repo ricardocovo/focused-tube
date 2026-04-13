@@ -20,26 +20,33 @@ Communication: REST JSON API. Auth via Google OAuth 2.0 with JWT session tokens.
 
 ## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────┐
-│                   React SPA                      │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  Auth    │  │ Profile  │  │  Video Feed   │  │
-│  │  Context │  │ Manager  │  │  (Combined)   │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-└────────────────────┬────────────────────────────┘
-                     │ REST API
-┌────────────────────▼────────────────────────────┐
-│              Express Server                      │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
-│  │  Auth    │  │ Profile  │  │  YouTube      │  │
-│  │  Routes  │  │ Routes   │  │  Routes       │  │
-│  └──────────┘  └──────────┘  └───────────────┘  │
-│  ┌──────────┐  ┌──────────────────────────────┐  │
-│  │  Prisma  │  │  YouTube Data API v3 Client  │  │
-│  │  (SQLite)│  │  (google-apis)               │  │
-│  └──────────┘  └──────────────────────────────┘  │
-└──────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph ReactSPA["React SPA"]
+        AuthContext[Auth Context]
+        ProfileManager[Profile Manager]
+        VideoFeed[Video Feed\nCombined]
+    end
+
+    subgraph ExpressServer["Express Server"]
+        AuthRoutes[Auth Routes]
+        ProfileRoutes[Profile Routes]
+        YouTubeRoutes[YouTube Routes]
+        Prisma[Prisma\nSQLite]
+        YouTubeClient[YouTube Data API v3 Client\ngoogle-apis]
+    end
+
+    ReactSPA -- "REST API" --> ExpressServer
+
+    classDef frontend fill:#7B68EE,color:#fff
+    classDef service fill:#4A90D9,color:#fff
+    classDef database fill:#2ECC71,color:#fff
+    classDef external fill:#95A5A6,color:#fff
+
+    class AuthContext,ProfileManager,VideoFeed frontend
+    class AuthRoutes,ProfileRoutes,YouTubeRoutes service
+    class Prisma database
+    class YouTubeClient external
 ```
 
 ---
