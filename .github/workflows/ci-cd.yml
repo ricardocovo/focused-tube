@@ -1,23 +1,13 @@
-# CI/CD pipeline for Focused Tube
-# Deploys: Static Web App (client), Container App (server), Azure SQL (migrations)
-
 name: CI/CD
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 env:
-  NODE_VERSION: "18"
+  NODE_VERSION: "24"
 
 jobs:
   # ── Lint & Test ──────────────────────────────────────
@@ -26,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -49,18 +39,17 @@ jobs:
     needs: [test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production
+    environment: DEV
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies
@@ -76,32 +65,31 @@ jobs:
   deploy-api:
     name: Deploy API
     needs: [test, deploy-database]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production
+    environment: DEV
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v6
 
       - name: Azure Login (OIDC)
-        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to Azure Container Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        uses: docker/login-action@v3
         with:
           registry: ${{ vars.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198e19c3bc3c36 # v6.18.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           file: server/Dockerfile
@@ -111,7 +99,7 @@ jobs:
             ${{ vars.ACR_LOGIN_SERVER }}/focused-tube-api:latest
 
       - name: Deploy to Container App
-        uses: azure/cli@089eac9d8cc39f5d003e94f8b65efc51076c9cbd # v2.1.0
+        uses: azure/cli@v2
         with:
           inlineScript: |
             az containerapp update \
@@ -123,18 +111,17 @@ jobs:
   deploy-client:
     name: Deploy Client
     needs: [test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production
+    environment: DEV
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -146,7 +133,7 @@ jobs:
         run: npm run build --workspace=client
 
       - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0763e2212f8272f4 # v1
+        uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
