@@ -26,12 +26,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/
 
-# Install production dependencies only
-RUN npm ci --workspace=server --include-workspace-root --omit=dev
-
-# Copy Prisma schema + migrations (needed for prisma generate and migrate deploy)
+# Copy Prisma schema + migrations before install so the postinstall script can find it
 COPY server/src/prisma server/src/prisma/
-RUN npx prisma generate --schema=server/src/prisma/schema.prisma
+
+# Install production dependencies only (postinstall runs prisma generate)
+RUN npm ci --workspace=server --include-workspace-root --omit=dev
 
 # Copy compiled output from builder stage
 COPY --from=builder /app/server/dist server/dist/
