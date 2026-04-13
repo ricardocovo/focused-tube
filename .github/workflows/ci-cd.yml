@@ -36,7 +36,7 @@ jobs:
   # ── Deploy API (Container App) ──────────────────────
   deploy-api:
     name: Deploy API
-    needs: [test, deploy-database]
+    needs: [test]
     runs-on: ubuntu-latest
     environment: DEV
     permissions:
