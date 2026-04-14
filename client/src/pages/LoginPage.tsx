@@ -19,7 +19,7 @@ export default function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
-  const googleAuthHref = '/api/auth/google';
+  const googleAuthHref = `${import.meta.env.VITE_API_URL ?? ''}/api/auth/google`;
 
   return (
     <div className="login-page">
