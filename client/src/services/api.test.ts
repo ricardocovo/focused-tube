@@ -65,7 +65,7 @@ describe('api module', () => {
       expect(api.defaults.withCredentials).toBe(true);
     });
 
-    it('has an empty string baseURL', () => {
+    it('defaults baseURL to empty string when VITE_API_URL is not set', () => {
       expect(api.defaults.baseURL).toBe('');
     });
   });

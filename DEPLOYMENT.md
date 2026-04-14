@@ -173,6 +173,7 @@ Navigate to your GitHub repository → **Settings → Secrets and variables → 
 | `ACR_LOGIN_SERVER` | ACR login server hostname | `myregistry.azurecr.io` |
 | `AZURE_RESOURCE_GROUP` | Resource group name | `rg-focused-tube` |
 | `CONTAINER_APP_NAME` | Container App name | `ca-focused-tube-api` |
+| `CONTAINER_APP_FQDN` | Container App base URL (no trailing slash) | `https://ca-focused-tube-api.example.eastus.azurecontainerapps.io` |
 
 ### Create a GitHub environment
 
