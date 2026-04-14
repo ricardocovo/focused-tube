@@ -35,7 +35,7 @@ router.get('/google', (req: Request, res: Response, next: NextFunction) => {
 // GET /api/auth/google/callback — handle OAuth callback
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  passport.authenticate('google', { session: false, failureRedirect: `${config.CLIENT_ORIGIN}/login` }),
   (req: Request, res: Response) => {
     const user = req.user as any;
     if (!user || !user.id) {
@@ -88,8 +88,16 @@ router.get('/me', authenticateJwt, async (req: Request, res: Response, next: Nex
 
 // POST /api/auth/logout — clear session
 router.post('/logout', (_req: Request, res: Response) => {
-  res.clearCookie('ft_refresh_token', { path: '/api/auth' });
-  res.clearCookie('ft_access_token', { path: '/' });
+  res.clearCookie('ft_refresh_token', {
+    path: '/api/auth',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
+  });
+  res.clearCookie('ft_access_token', {
+    path: '/',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
+  });
   res.json({ message: 'Logged out' });
 });
 
@@ -121,7 +129,11 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
     res.json({ accessToken: newAccessToken });
   } catch {
-    res.clearCookie('ft_refresh_token', { path: '/api/auth' });
+    res.clearCookie('ft_refresh_token', {
+      path: '/api/auth',
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
+    });
     res.status(401).json({ error: 'Invalid refresh token' });
   }
 });
