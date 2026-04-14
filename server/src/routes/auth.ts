@@ -7,10 +7,15 @@ import prisma from '../utils/prisma';
 
 const router = Router();
 
+const isProduction = config.NODE_ENV === 'production';
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: config.NODE_ENV === 'production',
+  // Cross-origin deployment (SWA + Container App): SameSite=None;Secure is required
+  // so the browser sends the cookie on cross-origin POST requests from the SPA.
+  // In development (same-site localhost), Lax is sufficient and avoids the Secure requirement.
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  secure: isProduction,
   path: '/api/auth',
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
@@ -52,8 +57,8 @@ router.get(
     // Set short-lived access token cookie for initial handoff
     res.cookie('ft_access_token', accessToken, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: config.NODE_ENV === 'production',
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
       path: '/',
       maxAge: 60 * 1000, // 60 seconds
     });
