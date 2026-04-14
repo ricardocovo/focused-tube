@@ -1,10 +1,18 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
+
+const ERROR_MESSAGES: Record<string, string> = {
+  oauth_failed: 'Google sign-in failed. Please try again.',
+  auth_failed: 'Authentication failed. Please try again.',
+  youtube_credentials_missing: 'Could not retrieve YouTube credentials. Please try again.',
+};
 
 export default function LoginPage() {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const errorCode = searchParams.get('error');
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
   if (isLoading) {
@@ -24,6 +32,11 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-content">
+        {errorCode && (
+          <div role="alert" className="login-error-banner">
+            {ERROR_MESSAGES[errorCode] || 'An unexpected error occurred. Please try again.'}
+          </div>
+        )}
         {/* Brand row: logo + Focused-Tube */}
         <div className="login-brand-row">
           <img src="/ft-logo.png" alt="FocusedTube" className="login-brand-logo" />

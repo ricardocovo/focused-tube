@@ -20,12 +20,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function restoreSession() {
     try {
+      console.log('[restoreSession] calling /api/auth/refresh…');
       const { data } = await api.post('/api/auth/refresh');
+      console.log('[restoreSession] refresh succeeded, got accessToken:', !!data.accessToken);
       setAccessToken(data.accessToken);
 
       const { data: userData } = await api.get('/api/auth/me');
+      console.log('[restoreSession] /me succeeded, user:', userData?.email);
       setUser(userData);
-    } catch {
+    } catch (err: any) {
+      console.warn('[restoreSession] failed:', err?.response?.status, err?.response?.data || err?.message);
       setUser(null);
       setAccessToken(null);
     } finally {

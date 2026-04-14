@@ -11,6 +11,7 @@ passport.use(
       callbackURL: config.GOOGLE_CALLBACK_URL,
     },
     async (_accessToken, _refreshToken, profile, done) => {
+      console.log('[passport] Google tokens — accessToken:', !!_accessToken, 'refreshToken:', !!_refreshToken);
       try {
         const user = await upsertUser(
           {

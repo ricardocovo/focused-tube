@@ -1,3 +1,14 @@
+.login-error-banner {
+  background: #3c1111;
+  color: #f87171;
+  border: 1px solid #7f1d1d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .login-spinner-container {
   display: flex;
   justify-content: center;

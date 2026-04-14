@@ -35,15 +35,20 @@ router.get('/google', (req: Request, res: Response, next: NextFunction) => {
 // GET /api/auth/google/callback — handle OAuth callback
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${config.CLIENT_ORIGIN}/login` }),
+  passport.authenticate('google', { session: false, failureRedirect: `${config.CLIENT_ORIGIN}/login?error=oauth_failed` }),
   (req: Request, res: Response) => {
     const user = req.user as any;
+    console.log('[auth callback] user present:', !!user, 'id:', user?.id);
+
     if (!user || !user.id) {
+      console.warn('[auth callback] no user or id — redirecting to login');
       res.redirect(`${config.CLIENT_ORIGIN}/login?error=auth_failed`);
       return;
     }
 
+    console.log('[auth callback] accessToken truthy:', !!user.accessToken, 'refreshToken truthy:', !!user.refreshToken);
     if (!user.accessToken || !user.refreshToken) {
+      console.warn('[auth callback] missing YouTube credentials — redirecting to login');
       res.redirect(`${config.CLIENT_ORIGIN}/login?error=youtube_credentials_missing`);
       return;
     }
@@ -104,6 +109,7 @@ router.post('/logout', (_req: Request, res: Response) => {
 // POST /api/auth/refresh — rotate refresh token and issue new access token
 router.post('/refresh', async (req: Request, res: Response) => {
   const token = req.cookies?.ft_refresh_token;
+  console.log('[auth refresh] cookie present:', !!token, '| cookies keys:', Object.keys(req.cookies || {}));
 
   if (!token) {
     res.status(401).json({ error: 'No refresh token' });
@@ -112,6 +118,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
   try {
     const payload = verifyRefreshToken(token);
+    console.log('[auth refresh] token verified, sub:', payload.sub);
 
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
