@@ -18,6 +18,9 @@ export default function AppHeader({ children }: AppHeaderProps) {
         Focused <span className="app-header-brand-accent">Tube</span>
       </Link>
       <nav className="app-header-nav" aria-label="Main">
+        <NavLink to="/" end className={({ isActive }) => `app-header-nav-link${isActive ? ' app-header-nav-link--active' : ''}`}>
+          Home
+        </NavLink>
         <NavLink to="/community" className={({ isActive }) => `app-header-nav-link${isActive ? ' app-header-nav-link--active' : ''}`}>
           Community
         </NavLink>

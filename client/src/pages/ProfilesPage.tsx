@@ -98,6 +98,11 @@ export default function ProfilesPage() {
                     Default
                   </span>
                 )}
+                {p.isPublic && (
+                  <span className="profiles-item-public" aria-label="Public profile">
+                    🌐 Public
+                  </span>
+                )}
                 <div className="profiles-item-meta">
                   {p._count?.channels ?? 0} channels
                 </div>

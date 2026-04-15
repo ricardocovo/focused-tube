@@ -43,7 +43,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
         <div className="video-player-iframe-wrapper">
           <iframe
             key={video.videoId}
-            src={`https://www.youtube-nocookie.com/embed/${video.videoId}?autoplay=1`}
+            src={`https://www.youtube-nocookie.com/embed/${video.videoId}?autoplay=1&origin=${encodeURIComponent(window.location.origin)}`}
             title={video.title}
             allow="autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
