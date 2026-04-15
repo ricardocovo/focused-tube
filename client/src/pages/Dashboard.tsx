@@ -28,13 +28,14 @@ export default function Dashboard() {
 
   return (
     <>
-      <AppHeader>
-        <ProfileSwitcher />
-      </AppHeader>
+      <AppHeader />
       {selectedVideo && (
         <VideoPlayer video={selectedVideo} onClose={handleClose} />
       )}
       <div className="page-container">
+        <div className="dashboard-toolbar">
+          <ProfileSwitcher />
+        </div>
 
       {activeProfile ? (
         <VideoFeed profileId={activeProfile.id} onVideoSelect={handleVideoSelect} />
