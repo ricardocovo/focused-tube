@@ -18,7 +18,7 @@ export async function createProfile(name: string): Promise<Profile> {
 
 export async function updateProfile(
   id: string,
-  updates: { name?: string; isDefault?: boolean },
+  updates: { name?: string; isDefault?: boolean; isPublic?: boolean },
 ): Promise<Profile> {
   const { data } = await api.put(`/api/profiles/${id}`, updates);
   return data;

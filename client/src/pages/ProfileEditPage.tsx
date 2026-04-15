@@ -18,6 +18,7 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [newKeyword, setNewKeyword] = useState('');
   const [error, setError] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -30,6 +31,7 @@ export default function ProfileEditPage() {
       const data = await fetchProfile(profileId);
       setProfile(data);
       setName(data.name);
+      setIsPublic(data.isPublic ?? false);
     } catch {
       setError('Failed to load profile.');
     } finally {
@@ -80,6 +82,20 @@ export default function ProfileEditPage() {
     } catch {
       setError('Failed to remove keyword.');
       notify.error('Failed to remove keyword');
+    }
+  }
+
+  async function handleTogglePublic() {
+    if (!id) return;
+    const newValue = !isPublic;
+    setIsPublic(newValue);
+    try {
+      await updateProfile(id, { isPublic: newValue });
+      await loadProfile(id);
+      notify.success(newValue ? 'Profile is now public' : 'Profile is now private');
+    } catch {
+      setIsPublic(!newValue);
+      notify.error('Failed to update visibility');
     }
   }
 
@@ -138,6 +154,32 @@ export default function ProfileEditPage() {
               </button>
             </form>
 
+            {/* Visibility section */}
+            <section className="profile-edit-section">
+              <h2 className="profile-edit-section-title">Visibility</h2>
+              <div className="profile-edit-visibility">
+                <div className="profile-edit-visibility-toggle">
+                  <button
+                    role="switch"
+                    aria-checked={isPublic}
+                    onClick={handleTogglePublic}
+                    className={`profile-edit-switch${isPublic ? ' profile-edit-switch--on' : ''}`}
+                  >
+                    <span className="profile-edit-switch-thumb" />
+                  </button>
+                  <span className="profile-edit-switch-label">Make this profile public</span>
+                </div>
+                <p className="profile-edit-visibility-help">
+                  Public profiles appear on the Community page and can be followed by other users.
+                </p>
+                {isPublic && profile && (
+                  <p className="profile-edit-followers-count">
+                    {profile._count?.followers ?? 0} {(profile._count?.followers ?? 0) === 1 ? 'follower' : 'followers'}
+                  </p>
+                )}
+              </div>
+            </section>
+
             {/* Channels section */}
             <section className="profile-edit-section">
               <div className="profile-edit-section-header">
@@ -184,50 +226,7 @@ export default function ProfileEditPage() {
               )}
             </section>
 
-            {/* Keywords section */}
-            <section>
-              <h2 className="profile-edit-keywords-title">
-                Keywords ({profile.keywords?.length ?? 0})
-              </h2>
-
-              <form
-                onSubmit={handleAddKeyword}
-                className="profile-edit-keyword-form"
-              >
-                <input
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  placeholder="Add keyword…"
-                  className="profile-edit-input"
-                />
-                <button
-                  type="submit"
-                  disabled={!newKeyword.trim()}
-                  className="profile-edit-add-btn"
-                >
-                  Add
-                </button>
-              </form>
-
-              {!profile.keywords || profile.keywords.length === 0 ? (
-                <p className="profile-edit-empty-text">No keywords yet.</p>
-              ) : (
-                <div className="profile-edit-keywords-list">
-                  {profile.keywords.map((kw) => (
-                    <span key={kw.id} className="keyword-tag">
-                      {kw.keyword}
-                      <button
-                        onClick={() => handleRemoveKeyword(kw.id)}
-                        className="profile-edit-keyword-remove"
-                        title="Remove keyword"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </section>
+            {/* Keywords section — hidden: search UI disabled */}
           </>
         )}
       </div>

@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import ProfilesPage from './pages/ProfilesPage';
 import ProfileEditPage from './pages/ProfileEditPage';
 import SubscriptionPickerPage from './pages/SubscriptionPickerPage';
+import CommunityPage from './pages/CommunityPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 
@@ -48,6 +49,16 @@ function App() {
             <ProtectedRoute>
               <ErrorBoundary>
                 <SubscriptionPickerPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <CommunityPage />
               </ErrorBoundary>
             </ProtectedRoute>
           }

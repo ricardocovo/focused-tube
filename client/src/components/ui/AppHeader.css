@@ -32,6 +32,34 @@
   min-width: 0;
 }
 
+/* Main navigation */
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.app-header-nav-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ft-text-secondary);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: var(--ft-radius-full);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.app-header-nav-link:hover {
+  color: var(--ft-text);
+  background: var(--ft-surface-hover);
+}
+
+.app-header-nav-link--active {
+  color: var(--ft-text);
+  background: var(--ft-chip-bg);
+}
+
 .app-header-controls {
   display: flex;
   align-items: center;

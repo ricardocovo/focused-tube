@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const profiles = await prisma.profile.findMany({
       where: { userId: req.user!.id },
-      include: { _count: { select: { channels: true, keywords: true } } },
+      include: { _count: { select: { channels: true, keywords: true, followers: true } } },
       orderBy: { createdAt: 'asc' },
     });
     res.json(profiles);
@@ -50,7 +50,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const id = p(req, 'id');
     const profile = await prisma.profile.findFirst({
       where: { id, userId: req.user!.id },
-      include: { channels: true, keywords: true },
+      include: { channels: true, keywords: true, _count: { select: { followers: true } } },
     });
     if (!profile) { res.status(404).json({ error: 'Profile not found' }); return; }
     res.json(profile);
@@ -64,7 +64,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const existing = await prisma.profile.findFirst({ where: { id, userId: req.user!.id } });
     if (!existing) { res.status(404).json({ error: 'Profile not found' }); return; }
 
-    const { name, isDefault } = req.body;
+    const { name, isDefault, isPublic } = req.body;
     const data: Prisma.ProfileUpdateInput = {};
 
     if (name !== undefined) {
@@ -77,6 +77,12 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       data.name = name.trim();
     }
     if (isDefault !== undefined) data.isDefault = Boolean(isDefault);
+    if (isPublic !== undefined) {
+      if (typeof isPublic !== 'boolean') {
+        res.status(400).json({ error: 'isPublic must be a boolean' }); return;
+      }
+      data.isPublic = isPublic;
+    }
 
     let profile;
     if (isDefault === true) {

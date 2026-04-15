@@ -27,3 +27,97 @@
   color: var(--ft-text-tertiary);
   margin-left: 6px;
 }
+
+/* Following section */
+.profile-switcher-divider {
+  height: 1px;
+  background: var(--ft-border);
+  margin: 4px 0;
+}
+
+.profile-switcher-group-label {
+  display: block;
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ft-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-switcher-option--followed {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.profile-switcher-followed-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-family: var(--ft-font);
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  color: var(--ft-text);
+  background: transparent;
+  min-height: 44px;
+}
+
+.profile-switcher-followed-btn:hover {
+  background: var(--ft-surface-hover);
+}
+
+.profile-switcher-followed-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.profile-switcher-followed-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile-switcher-followed-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-switcher-followed-owner {
+  font-size: 11px;
+  color: var(--ft-text-tertiary);
+}
+
+.profile-switcher-unfollow-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--ft-text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--ft-radius-full);
+  min-height: 28px;
+  min-width: 28px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.profile-switcher-option--followed:hover .profile-switcher-unfollow-btn,
+.profile-switcher-option--followed:focus-within .profile-switcher-unfollow-btn {
+  opacity: 1;
+}
+
+.profile-switcher-unfollow-btn:hover {
+  color: var(--ft-danger);
+  background: var(--ft-danger-bg);
+}
+
+.profile-switcher-unfollow-btn:focus-visible {
+  opacity: 1;
+}

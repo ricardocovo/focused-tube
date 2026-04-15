@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfiles } from '../../context/ProfileContext';
 import { Link } from 'react-router-dom';
+import { notify } from '../../lib/toast';
 import ProfileSwitcherSkeleton from './ProfileSwitcherSkeleton';
 import './ProfileSwitcher.css';
 
 export default function ProfileSwitcher() {
-  const { profiles, activeProfile, setActiveProfile, isLoading } = useProfiles();
+  const { profiles, activeProfile, setActiveProfile, isLoading, followedProfiles, unfollowProfile } = useProfiles();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -61,6 +62,49 @@ export default function ProfileSwitcher() {
               )}
             </button>
           ))}
+          {followedProfiles.length > 0 && (
+            <>
+              <div className="profile-switcher-divider" role="separator" />
+              <div role="group" aria-label="Following">
+                <span className="profile-switcher-group-label">Following</span>
+                {followedProfiles.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`profile-switcher-option profile-switcher-option--followed${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
+                  >
+                    <button
+                      onClick={() => {
+                        setActiveProfile(p.id);
+                        setOpen(false);
+                      }}
+                      className="profile-switcher-followed-btn"
+                    >
+                      <span className="profile-switcher-followed-icon" aria-hidden="true">👥</span>
+                      <span className="profile-switcher-followed-info">
+                        <span className="profile-switcher-followed-name">{p.name}</span>
+                        <span className="profile-switcher-followed-owner">by {p.user.name}</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await unfollowProfile(p.id);
+                          notify.success(`Unfollowed ${p.name}`);
+                        } catch {
+                          notify.error('Failed to unfollow');
+                        }
+                      }}
+                      className="profile-switcher-unfollow-btn"
+                      aria-label={`Unfollow ${p.name}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  googleId     String    @unique
-  email        String    @unique
+  id           String          @id @default(uuid())
+  googleId     String          @unique
+  email        String          @unique
   name         String
   avatarUrl    String?
-  accessToken  String    // TODO: Encrypt at rest (Phase 2)
-  refreshToken String    // TODO: Encrypt at rest (Phase 2)
+  accessToken  String          // TODO: Encrypt at rest (Phase 2)
+  refreshToken String          // TODO: Encrypt at rest (Phase 2)
   profiles     Profile[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  follows      ProfileFollow[] @relation("UserFollows")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
 model Profile {
@@ -28,7 +29,9 @@ model Profile {
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   channels  ProfileChannel[]
   keywords  ProfileKeyword[]
+  followers ProfileFollow[]  @relation("ProfileFollowers")
   isDefault Boolean          @default(false)
+  isPublic  Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -53,4 +56,15 @@ model ProfileKeyword {
   keyword   String
 
   @@unique([profileId, keyword])
+}
+
+model ProfileFollow {
+  id         String   @id @default(uuid())
+  followerId String
+  profileId  String
+  follower   User     @relation("UserFollows", fields: [followerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profile    Profile  @relation("ProfileFollowers", fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([followerId, profileId])
 }

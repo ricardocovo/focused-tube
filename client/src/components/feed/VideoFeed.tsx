@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useFeed } from '../../hooks/useFeed';
 import VideoCard from './VideoCard';
 import VideoCardSkeleton from './VideoCardSkeleton';
-import FeedSourceTabs from './FeedSourceTabs';
+// Hidden: search UI disabled
+// import FeedSourceTabs from './FeedSourceTabs';
 import type { FeedVideo } from '../../types/feed';
 import './VideoFeed.css';
 
@@ -15,9 +16,9 @@ interface VideoFeedProps {
 // Grid layout handled by .video-grid CSS class with responsive breakpoints
 
 export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) {
-  const [source, setSource] = useState<string | undefined>(undefined);
+  // Hidden: source tabs disabled — always show all sources
   const { videos, isLoading, isFetchingMore, error, nextPageToken, loadMore, reset, hasLoadedOnce } =
-    useFeed(profileId, source);
+    useFeed(profileId);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -64,15 +65,10 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
     }
   }, [videos.length]);
 
-  const handleSourceChange = (newSource?: string) => {
-    setSource(newSource);
-  };
-
   // Error state
   if (error && !isLoading && videos.length === 0) {
     return (
       <div>
-        <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
         <div className="video-feed-error">
           <p className="video-feed-error-text">{error}</p>
           <button
@@ -90,11 +86,10 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
   if (!isLoading && hasLoadedOnce && videos.length === 0) {
     return (
       <div>
-        <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
         <div className="video-feed-empty">
           <div className="video-feed-empty-icon">📺</div>
           <p className="video-feed-empty-text">
-            No videos found. Add channels or keywords to your profile to see videos here.
+            No videos found. Add channels to your profile to see videos here.
           </p>
           <Link
             to="/profiles"
@@ -109,8 +104,6 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
 
   return (
     <div>
-      <FeedSourceTabs activeSource={source} onSourceChange={handleSourceChange} />
-
       {/* Initial loading state */}
       {isLoading && (
         <div className="video-grid">

@@ -41,9 +41,26 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
       return;
     }
 
+    let feedUserId = req.user!.id;
+
     if (profile.userId !== req.user!.id) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
+      // Check if user follows this profile and it's public
+      const follow = await prisma.profileFollow.findUnique({
+        where: {
+          followerId_profileId: {
+            followerId: req.user!.id,
+            profileId: profileId,
+          },
+        },
+      });
+
+      if (!follow || !profile.isPublic) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+
+      // Use the profile owner's credentials for YouTube API calls
+      feedUserId = profile.userId;
     }
 
     if (profile.channels.length === 0 && profile.keywords.length === 0) {
@@ -51,7 +68,7 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    const userId = req.user!.id;
+    const userId = feedUserId;
     const promises: Promise<{ videos: Video[]; nextPageToken?: string }>[] = [];
     const promiseLabels: ('subscription' | 'search')[] = [];
 

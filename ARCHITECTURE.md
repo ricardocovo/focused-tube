@@ -97,6 +97,7 @@ All routes are prefixed with `/api/`. Files live in `server/src/routes/`.
 | `profiles.ts` | `/api/profiles` | JWT | Profile CRUD, channel/keyword management |
 | `subscriptions.ts` | `/api/subscriptions` | JWT | Fetch user's YouTube subscriptions |
 | `feed.ts` | `/api/feed` | JWT | Combined video feed per profile |
+| `community.ts` | `/api/community` | JWT | Public profile discovery, follow/unfollow |
 
 #### Auth Routes
 
@@ -118,11 +119,20 @@ All routes are prefixed with `/api/`. Files live in `server/src/routes/`.
 
 #### Profile Routes
 
-Full CRUD for profiles plus channel and keyword management. All routes validate profile ownership via `assertProfileOwnership()`. Profile names are unique per user (1–100 characters). Keywords are normalized to lowercase. Setting `isDefault: true` atomically unsets all other profiles.
+Full CRUD for profiles plus channel and keyword management. All routes validate profile ownership via `assertProfileOwnership()`. Profile names are unique per user (1–100 characters). Keywords are normalized to lowercase. Setting `isDefault: true` atomically unsets all other profiles. The `isPublic` flag controls whether a profile is visible on the Community page.
+
+#### Community Routes
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/community/profiles` | List public profiles (paginated, keyword search via `?keyword=`, excludes caller's own). Returns `isFollowing` per profile. |
+| `POST /api/community/profiles/:profileId/follow` | Follow a public profile (validates: exists, public, not own, not duplicate) |
+| `DELETE /api/community/profiles/:profileId/follow` | Unfollow a profile |
+| `GET /api/community/following` | List profiles the current user follows with owner info |
 
 #### Feed Route
 
-`GET /api/feed/:profileId` — accepts `?source=subscriptions|search` and `?pageToken=` query parameters. The pipeline is described in [section 6](#6-feed-generation-pipeline).
+`GET /api/feed/:profileId` — accepts `?source=subscriptions|search` and `?pageToken=` query parameters. Accessible for owned profiles and for followed public profiles (using the profile owner's YouTube credentials). The pipeline is described in [section 6](#6-feed-generation-pipeline).
 
 ### 3.3 Service Layer
 
@@ -132,6 +142,7 @@ Business logic lives in `server/src/services/`, keeping route handlers thin.
 |------|---------|----------------|
 | `auth.service.ts` | `upsertUser()` | Create or update user with encrypted Google tokens |
 | `profile.service.ts` | `assertProfileOwnership()`, custom error classes | Profile ownership validation, `NotFoundError`, `ConflictError`, `BadRequestError` |
+| `community.service.ts` | `listPublicProfiles()`, `followProfile()`, `unfollowProfile()`, `listFollowedProfiles()` | Community profile discovery and follow management |
 | `youtube.service.ts` | `getUserSubscriptions()`, `getChannelVideos()`, `searchVideos()` | All YouTube API interaction, token refresh, caching |
 
 **`youtube.service.ts`** is the most complex module. Key behaviors:
@@ -187,6 +198,7 @@ graph TB
 | `/profiles` | `ProfilesPage` | Yes |
 | `/profiles/:id/edit` | `ProfileEditPage` | Yes |
 | `/profiles/:profileId/subscriptions` | `SubscriptionPickerPage` | Yes |
+| `/community` | `CommunityPage` | Yes |
 | `*` | Redirect to `/` | — |
 
 ### 4.3 State Management
@@ -203,8 +215,10 @@ State is managed through three React contexts in `client/src/context/`.
 #### ProfileContext
 
 - Manages `profiles[]`, `activeProfile`, and `isLoading`
-- Active profile selection priority: localStorage key → `isDefault` profile → first profile → `null`
+- Also loads `followedProfiles[]` via `useFollowedProfiles` hook — profiles from other users that this user follows
+- Active profile selection priority: localStorage key → `isDefault` profile → first profile → `null` (also checks followed profiles for saved ID)
 - Provides `createProfile()`, `updateProfile()`, `deleteProfile()`, `refreshProfiles()`
+- Provides `followedProfiles`, `unfollowProfile()`, `refreshFollowed()` for follow management
 - Invalidates the feed cache when profiles are mutated
 
 #### FeedCacheContext
@@ -223,6 +237,8 @@ Hooks live in `client/src/hooks/`.
 | `useFeed(profileId, source?)` | Fetch and paginate the video feed. Checks client cache first, deduplicates videos by ID, tracks request IDs to prevent stale responses. Exposes `loadMore()` and `reset()`. |
 | `useSubscriptions()` | Fetch user's YouTube subscriptions on mount with `fetchWithRetry`. Exposes `refetch()`. |
 | `useProfiles()` | Re-export of `ProfileContext` consumer hook. |
+| `useCommunity()` | Manages Community page state: search (debounced), pagination, profile list, optimistic follow/unfollow. |
+| `useFollowedProfiles()` | Fetches profiles the user follows, provides optimistic unfollow action. Used by `ProfileContext`. |
 
 ### 4.5 API Services
 
@@ -241,6 +257,7 @@ All server communication goes through Axios-based functions in `client/src/servi
 | `feedApi.ts` | `fetchFeed(profileId, params?)` — wraps with `fetchWithRetry` |
 | `profilesApi.ts` | `fetchProfiles()`, `fetchProfile()`, `createProfile()`, `updateProfile()`, `deleteProfile()`, `addChannel()`, `removeChannel()`, `addKeyword()`, `removeKeyword()` |
 | `subscriptionsApi.ts` | `fetchSubscriptions()` — wraps with `fetchWithRetry` |
+| `communityApi.ts` | `fetchCommunityProfiles(params?)`, `followProfile()`, `unfollowProfile()`, `fetchFollowedProfiles()` |
 
 ### 4.6 Utility Libraries
 
@@ -267,13 +284,13 @@ components/
 │   ├── VideoPlayer.tsx             # Sticky in-app YouTube iframe player
 │   └── VideoPlayer.css             # Player styles (sticky, responsive, a11y)
 ├── profile/
-│   ├── ProfileSwitcher.tsx         # Profile selector dropdown
+│   ├── ProfileSwitcher.tsx         # Profile selector dropdown (owned + followed)
 │   └── ProfileSwitcherSkeleton.tsx # Loading skeleton
 ├── subscriptions/
 │   ├── SubscriptionChannelRow.tsx  # Single subscription item
 │   └── SubscriptionItemSkeleton.tsx# Loading skeleton
 └── ui/
-    ├── AppHeader.tsx               # Top navigation bar
+    ├── AppHeader.tsx               # Top navigation bar with Community link
     ├── ErrorBoundary.tsx           # React error boundary with fallback
     ├── SettingsMenu.tsx            # User menu (logout, etc.)
     └── Skeleton.tsx                # Generic skeleton loader
@@ -328,7 +345,7 @@ When the client requests `GET /api/feed/:profileId`:
 
 ```mermaid
 flowchart TB
-    A["1. Validate profile ownership"] --> B["2. Check source filter\n(?source=subscriptions|search)"]
+    A["1. Validate access\n(owner or follower)"] --> B["2. Check source filter\n(?source=subscriptions|search)"]
     B --> C{"3. Quota guard\nEstimate cost"}
     C -- "Over limit" --> Reject["Reject 429"]
     C -- "Within limit" --> D["4. Fan out parallel promises"]
@@ -415,8 +432,10 @@ SQLite via Prisma ORM. Schema at `server/src/prisma/schema.prisma`.
 ```mermaid
 erDiagram
     User ||--o{ Profile : "has many"
+    User ||--o{ ProfileFollow : "follows"
     Profile ||--o{ ProfileChannel : "has many"
     Profile ||--o{ ProfileKeyword : "has many"
+    Profile ||--o{ ProfileFollow : "followed by"
 
     User {
         uuid id PK
@@ -435,6 +454,7 @@ erDiagram
         string name "unique per user"
         uuid userId FK
         boolean isDefault
+        boolean isPublic "default false"
         datetime createdAt
         datetime updatedAt
     }
@@ -454,9 +474,16 @@ erDiagram
         string keyword "unique per profile, lowercase"
         datetime createdAt
     }
+
+    ProfileFollow {
+        uuid id PK
+        uuid followerId FK "User who follows"
+        uuid profileId FK "Profile being followed"
+        datetime createdAt
+    }
 ```
 
-**Cascade deletes:** Deleting a User cascades to Profiles; deleting a Profile cascades to its Channels and Keywords.
+**Cascade deletes:** Deleting a User cascades to Profiles; deleting a Profile cascades to its Channels, Keywords, and Follows. The ProfileFollow→User (follower) relation uses `NoAction` to avoid cyclic cascade paths.
 
 ---
 
@@ -465,7 +492,7 @@ erDiagram
 | Layer | Mechanism | Details |
 |-------|-----------|---------|
 | **Authentication** | Google OAuth 2.0 + JWT | Passport strategy; JWT access + refresh token pair |
-| **Authorization** | Profile ownership checks | `assertProfileOwnership()` on every profile/feed route |
+| **Authorization** | Profile ownership + follow checks | `assertProfileOwnership()` on profile routes; feed allows owners and followers of public profiles |
 | **Token storage (server)** | AES-256-GCM encryption | Google tokens encrypted at rest with random IV and auth tag |
 | **Token storage (client)** | In-memory only | Access token never stored in localStorage or cookies by the client |
 | **Session cookies** | httpOnly, path-scoped | Refresh token cookie scoped to `/api/auth`; inaccessible to JavaScript |

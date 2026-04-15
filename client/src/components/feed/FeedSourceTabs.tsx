@@ -8,7 +8,7 @@ interface Tab {
 const TABS: Tab[] = [
   { label: 'All', value: undefined },
   { label: 'Subscriptions', value: 'subscriptions' },
-  { label: 'Search', value: 'search' },
+  // { label: 'Search', value: 'search' }, // Hidden: search UI disabled
 ];
 
 interface FeedSourceTabsProps {

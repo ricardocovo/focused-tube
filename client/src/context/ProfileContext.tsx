@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useFeedCache } from './FeedCacheContext';
-import type { Profile } from '../types/profile';
+import { useFollowedProfiles } from '../hooks/useFollowedProfiles';
+import type { Profile, CommunityProfile } from '../types/profile';
 import * as profilesApi from '../services/profilesApi';
 
 const STORAGE_KEY = 'ft_active_profile_id';
@@ -12,9 +13,13 @@ interface ProfileContextType {
   isLoading: boolean;
   setActiveProfile: (id: string) => void;
   createProfile: (name: string) => Promise<Profile>;
-  updateProfile: (id: string, data: { name?: string; isDefault?: boolean }) => Promise<Profile>;
+  updateProfile: (id: string, data: { name?: string; isDefault?: boolean; isPublic?: boolean }) => Promise<Profile>;
   deleteProfile: (id: string) => Promise<void>;
   refreshProfiles: () => Promise<void>;
+  followedProfiles: CommunityProfile[];
+  followedLoading: boolean;
+  unfollowProfile: (profileId: string) => Promise<void>;
+  refreshFollowed: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -25,6 +30,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfile, setActiveProfileState] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { followedProfiles, isLoading: followedLoading, loadFollowed: refreshFollowed, handleUnfollow } = useFollowedProfiles();
 
   const pickActive = useCallback((list: Profile[]) => {
     if (list.length === 0) {
@@ -39,9 +45,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const followed = savedId ? followedProfiles.find((p) => p.id === savedId) : undefined;
+    if (followed) {
+      setActiveProfileState({
+        id: followed.id,
+        name: followed.name,
+        isDefault: false,
+        isPublic: true,
+        userId: '',
+        createdAt: '',
+        updatedAt: '',
+        isFollowing: true,
+        owner: { name: followed.user.name, avatarUrl: followed.user.avatarUrl ?? undefined },
+      });
+      return;
+    }
+
     const defaultProfile = list.find((p) => p.isDefault);
     setActiveProfileState(defaultProfile ?? list[0]);
-  }, []);
+  }, [followedProfiles]);
 
   const loadProfiles = useCallback(async () => {
     setIsLoading(true);
@@ -72,9 +94,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (profile) {
         setActiveProfileState(profile);
         localStorage.setItem(STORAGE_KEY, id);
+        return;
+      }
+      const followed = followedProfiles.find((p) => p.id === id);
+      if (followed) {
+        setActiveProfileState({
+          id: followed.id,
+          name: followed.name,
+          isDefault: false,
+          isPublic: true,
+          userId: '',
+          createdAt: '',
+          updatedAt: '',
+          isFollowing: true,
+          owner: { name: followed.user.name, avatarUrl: followed.user.avatarUrl ?? undefined },
+        });
+        localStorage.setItem(STORAGE_KEY, id);
       }
     },
-    [profiles],
+    [profiles, followedProfiles],
   );
 
   const createProfileFn = useCallback(
@@ -87,7 +125,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   );
 
   const updateProfileFn = useCallback(
-    async (id: string, data: { name?: string; isDefault?: boolean }) => {
+    async (id: string, data: { name?: string; isDefault?: boolean; isPublic?: boolean }) => {
       const updated = await profilesApi.updateProfile(id, data);
       feedCache.invalidate(id);
       await loadProfiles();
@@ -119,6 +157,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         updateProfile: updateProfileFn,
         deleteProfile: deleteProfileFn,
         refreshProfiles: loadProfiles,
+        followedProfiles,
+        followedLoading,
+        unfollowProfile: handleUnfollow,
+        refreshFollowed,
       }}
     >
       {children}
