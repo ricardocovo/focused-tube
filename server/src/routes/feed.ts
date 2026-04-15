@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import { authenticateJwt } from '../middleware/auth';
-import { searchVideos, getChannelVideos, Video, isInsufficientScopeError } from '../services/youtube.service';
+import { searchVideos, getChannelVideos, filterEmbeddableVideos, Video, isInsufficientScopeError } from '../services/youtube.service';
 import { config } from '../utils/config';
 import { quotaTracker, QUOTA_COSTS } from '../utils/quota';
 
@@ -161,8 +161,12 @@ router.get('/:profileId', async (req: Request, res: Response, next: NextFunction
       }
     }
 
+    // Filter out non-embeddable videos (fails open on API error)
+    const deduped = Array.from(videoMap.values());
+    const embeddable = await filterEmbeddableVideos(userId, deduped);
+
     // Sort by publishedAt descending
-    const videos = Array.from(videoMap.values()).sort(
+    const videos = embeddable.sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     );
 

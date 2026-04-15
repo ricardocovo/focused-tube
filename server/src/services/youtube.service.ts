@@ -367,3 +367,74 @@ async function executeSearch(
     nextPageToken: response.data.nextPageToken ?? undefined,
   };
 }
+
+const EMBEDDABLE_CACHE_TTL_SECONDS = 3600; // 1 hour
+
+/**
+ * Filter a list of videos to only those that are embeddable.
+ * Uses videos.list with part=status in batches of 50.
+ * Caches results per video ID. Fails open on API errors.
+ */
+export async function filterEmbeddableVideos(
+  userId: string,
+  videos: Video[],
+): Promise<Video[]> {
+  if (videos.length === 0) return videos;
+
+  const uncachedVideoIds: string[] = [];
+  const embeddableMap = new Map<string, boolean>();
+
+  // Check cache for each video
+  for (const video of videos) {
+    const cacheKey = `embeddable:${video.videoId}`;
+    const cached = await cache.get<boolean>(cacheKey);
+    if (cached !== undefined) {
+      embeddableMap.set(video.videoId, cached);
+    } else {
+      uncachedVideoIds.push(video.videoId);
+    }
+  }
+
+  // Fetch embeddability for uncached videos in batches of 50
+  if (uncachedVideoIds.length > 0) {
+    try {
+      const { youtube } = await getAuthenticatedClient(userId);
+      const BATCH_SIZE = 50;
+
+      for (let i = 0; i < uncachedVideoIds.length; i += BATCH_SIZE) {
+        const batch = uncachedVideoIds.slice(i, i + BATCH_SIZE);
+        const response = await youtube.videos.list({
+          part: ['status'],
+          id: batch,
+        });
+        quotaTracker.record('videos.list');
+
+        const items = response.data.items ?? [];
+        const returnedIds = new Set<string>();
+
+        for (const item of items) {
+          if (item.id) {
+            const isEmbeddable = item.status?.embeddable === true;
+            embeddableMap.set(item.id, isEmbeddable);
+            returnedIds.add(item.id);
+            await cache.set(`embeddable:${item.id}`, isEmbeddable, EMBEDDABLE_CACHE_TTL_SECONDS);
+          }
+        }
+
+        // Videos not returned by the API are likely deleted/private — mark non-embeddable
+        for (const id of batch) {
+          if (!returnedIds.has(id)) {
+            embeddableMap.set(id, false);
+            await cache.set(`embeddable:${id}`, false, EMBEDDABLE_CACHE_TTL_SECONDS);
+          }
+        }
+      }
+    } catch (error) {
+      // Fail open: if we can't check embeddability, return all videos
+      console.warn('[filterEmbeddableVideos] Failed to check embeddability, returning all videos:', error);
+      return videos;
+    }
+  }
+
+  return videos.filter((v) => embeddableMap.get(v.videoId) !== false);
+}

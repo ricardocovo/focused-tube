@@ -8,6 +8,7 @@ export const QUOTA_COSTS = {
   'playlistItems.list': 1,
   'channels.list': 1,
   'subscriptions.list': 1,
+  'videos.list': 1,
 } as const;
 
 export type QuotaEndpoint = keyof typeof QUOTA_COSTS;
