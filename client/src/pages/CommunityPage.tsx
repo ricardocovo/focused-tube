@@ -19,13 +19,7 @@ export default function CommunityPage() {
 
   return (
     <>
-      <AppHeader>
-        <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
-          <ol>
-            <li><span aria-current="page">Community</span></li>
-          </ol>
-        </nav>
-      </AppHeader>
+      <AppHeader />
       <main className="page-container">
         <div className="community-header">
           <h1 className="community-title">Community Profiles</h1>
