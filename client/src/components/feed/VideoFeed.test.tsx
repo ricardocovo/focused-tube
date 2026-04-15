@@ -91,14 +91,14 @@ describe('VideoFeed', () => {
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
-  it('renders source tabs (All, Subscriptions, Search)', () => {
+  it('does not render source tabs (feature disabled)', () => {
     mockUseFeed.mockReturnValue(defaultFeedReturn({ isLoading: true }));
 
     renderWithRouter(<VideoFeed profileId="p1" />);
 
-    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Subscriptions' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Subscriptions' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Search' })).not.toBeInTheDocument();
   });
 
   it('shows "all caught up" when no more pages', () => {
