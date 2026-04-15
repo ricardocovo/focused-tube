@@ -10,6 +10,7 @@ import authRouter from './routes/auth';
 import profilesRouter from './routes/profiles';
 import subscriptionsRouter from './routes/subscriptions';
 import feedRouter from './routes/feed';
+import communityRouter from './routes/community';
 import { config } from './utils/config';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/profiles', profilesRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/feed', feedRouter);
+app.use('/api/community', communityRouter);
 
 // 404 and error handling
 app.use(notFoundHandler);
