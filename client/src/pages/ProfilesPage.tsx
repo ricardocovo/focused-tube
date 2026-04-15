@@ -99,7 +99,7 @@ export default function ProfilesPage() {
                   </span>
                 )}
                 <div className="profiles-item-meta">
-                  {p._count?.channels ?? 0} channels · {p._count?.keywords ?? 0} keywords
+                  {p._count?.channels ?? 0} channels
                 </div>
               </div>
               <div className="profiles-item-actions">

@@ -94,7 +94,7 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
         <div className="video-feed-empty">
           <div className="video-feed-empty-icon">📺</div>
           <p className="video-feed-empty-text">
-            No videos found. Add channels or keywords to your profile to see videos here.
+            No videos found. Add channels to your profile to see videos here.
           </p>
           <Link
             to="/profiles"

@@ -184,50 +184,7 @@ export default function ProfileEditPage() {
               )}
             </section>
 
-            {/* Keywords section */}
-            <section>
-              <h2 className="profile-edit-keywords-title">
-                Keywords ({profile.keywords?.length ?? 0})
-              </h2>
-
-              <form
-                onSubmit={handleAddKeyword}
-                className="profile-edit-keyword-form"
-              >
-                <input
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  placeholder="Add keyword…"
-                  className="profile-edit-input"
-                />
-                <button
-                  type="submit"
-                  disabled={!newKeyword.trim()}
-                  className="profile-edit-add-btn"
-                >
-                  Add
-                </button>
-              </form>
-
-              {!profile.keywords || profile.keywords.length === 0 ? (
-                <p className="profile-edit-empty-text">No keywords yet.</p>
-              ) : (
-                <div className="profile-edit-keywords-list">
-                  {profile.keywords.map((kw) => (
-                    <span key={kw.id} className="keyword-tag">
-                      {kw.keyword}
-                      <button
-                        onClick={() => handleRemoveKeyword(kw.id)}
-                        className="profile-edit-keyword-remove"
-                        title="Remove keyword"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </section>
+            {/* Keywords section — hidden: search UI disabled */}
           </>
         )}
       </div>
