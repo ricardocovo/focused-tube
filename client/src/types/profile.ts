@@ -20,6 +20,7 @@ export interface CommunityProfile {
   user: { name: string; avatarUrl: string | null };
   _count: { followers: number };
   isFollowing: boolean;
+  isOwn?: boolean;
 }
 
 export interface CommunityProfilesResponse {

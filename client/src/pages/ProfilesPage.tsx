@@ -2,16 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
 import AppHeader from '../components/ui/AppHeader';
+import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
+import { notify } from '../lib/toast';
 import './ProfilesPage.css';
 
 export default function ProfilesPage() {
-  const { profiles, isLoading, createProfile, deleteProfile } = useProfiles();
+  const { profiles, isLoading, createProfile, deleteProfile, updateProfile } = useProfiles();
   const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
+  const [newIsPublic, setNewIsPublic] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [savingVisibilityId, setSavingVisibilityId] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -20,9 +24,11 @@ export default function ProfilesPage() {
     setCreating(true);
     setError('');
     try {
-      await createProfile(trimmed);
+      await createProfile({ name: trimmed, isPublic: newIsPublic });
       setNewName('');
+      setNewIsPublic(false);
       setShowForm(false);
+      notify.success('Profile created');
     } catch {
       setError('Failed to create profile.');
     } finally {
@@ -36,6 +42,21 @@ export default function ProfilesPage() {
       await deleteProfile(id);
     } catch {
       alert('Failed to delete profile.');
+    }
+  }
+
+  async function handleTogglePublic(id: string, currentValue: boolean | undefined) {
+    setSavingVisibilityId(id);
+    setError('');
+    const newValue = !currentValue;
+    try {
+      await updateProfile(id, { isPublic: newValue });
+      notify.success(newValue ? 'Profile is now public' : 'Profile is now private');
+    } catch {
+      setError('Failed to update visibility.');
+      notify.error('Failed to update visibility');
+    } finally {
+      setSavingVisibilityId(null);
     }
   }
 
@@ -64,13 +85,26 @@ export default function ProfilesPage() {
           onSubmit={handleCreate}
           className="profiles-create-form"
         >
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Profile name"
-            autoFocus
-            className="profiles-create-input"
-          />
+          <div className="profiles-create-fields">
+            <label className="profiles-create-label" htmlFor="new-profile-name">
+              Profile name
+            </label>
+            <input
+              id="new-profile-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Profile name"
+              autoFocus
+              className="profiles-create-input"
+            />
+            <ProfileVisibilitySwitch
+              checked={newIsPublic}
+              compact
+              label="List this profile in Community"
+              helpText="Private is the default. You can change this again later."
+              onToggle={() => setNewIsPublic((prev) => !prev)}
+            />
+          </div>
           <button
             type="submit"
             disabled={creating || !newName.trim()}
@@ -91,35 +125,53 @@ export default function ProfilesPage() {
         <div className="profiles-list">
           {profiles.map((p) => (
             <div key={p.id} className="profiles-item">
-              <div>
-                <span className="profiles-item-name">{p.name}</span>
-                {p.isDefault && (
-                  <span className="profiles-item-default">
-                    Default
-                  </span>
-                )}
-                {p.isPublic && (
-                  <span className="profiles-item-public" aria-label="Public profile">
-                    🌐 Public
-                  </span>
-                )}
+              <div className="profiles-item-main">
+                <div className="profiles-item-heading">
+                  <span className="profiles-item-name">{p.name}</span>
+                  <div className="profiles-item-badges">
+                    {p.isDefault && (
+                      <span className="profiles-item-default">
+                        Default
+                      </span>
+                    )}
+                    <span className={`profiles-item-public${p.isPublic ? ' profiles-item-public--on' : ''}`}>
+                      {p.isPublic ? 'Public' : 'Private'}
+                    </span>
+                  </div>
+                </div>
                 <div className="profiles-item-meta">
-                  {p._count?.channels ?? 0} channels
+                  <span>{p._count?.channels ?? 0} channels</span>
+                  <span>{p._count?.followers ?? 0} followers</span>
                 </div>
               </div>
-              <div className="profiles-item-actions">
-                <button
-                  onClick={() => navigate(`/profiles/${p.id}/edit`)}
-                  className="profiles-edit-btn"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id, p.name)}
-                  className="profiles-delete-btn"
-                >
-                  Delete
-                </button>
+              <div className="profiles-item-side">
+                <div className="profiles-item-visibility">
+                  <ProfileVisibilitySwitch
+                    checked={p.isPublic ?? false}
+                    compact
+                    disabled={savingVisibilityId === p.id}
+                    label="Community visibility"
+                    helpText={(p.isPublic ?? false)
+                      ? 'People can discover and follow this profile.'
+                      : 'Only you can see this profile in your list.'}
+                    followersCount={p._count?.followers}
+                    onToggle={() => handleTogglePublic(p.id, p.isPublic)}
+                  />
+                </div>
+                <div className="profiles-item-actions">
+                  <button
+                    onClick={() => navigate(`/profiles/${p.id}/edit`)}
+                    className="profiles-edit-btn"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id, p.name)}
+                    className="profiles-delete-btn"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

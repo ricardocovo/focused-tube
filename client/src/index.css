@@ -228,30 +228,9 @@ img {
 
 .video-card-meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-top: 8px;
-}
-
-/* ===== SOURCE BADGES ===== */
-
-.source-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: var(--ft-radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.source-badge-subscription {
-  background: var(--ft-badge-sub-bg);
-  color: var(--ft-badge-sub-text);
-}
-
-.source-badge-search {
-  background: var(--ft-badge-search-bg);
-  color: var(--ft-badge-search-text);
 }
 
 /* ===== FEED TABS — YouTube-style chips ===== */
@@ -314,7 +293,7 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 16px;
+  padding: 8px 18px;
   font-size: 14px;
   font-weight: 600;
   font-family: var(--ft-font);
@@ -324,7 +303,7 @@ img {
   border-radius: var(--ft-radius-full);
   cursor: pointer;
   min-height: 36px;
-  min-width: 44px;
+  min-width: 280px;
   transition: background 0.15s, border-color 0.15s;
 }
 
@@ -338,7 +317,9 @@ img {
   top: 100%;
   left: 0;
   margin-top: 6px;
-  min-width: 200px;
+  min-width: 360px;
+  width: max-content;
+  max-width: min(92vw, 460px);
   background: var(--ft-surface);
   border: 1px solid var(--ft-border);
   border-radius: var(--ft-radius-md);
@@ -364,7 +345,7 @@ img {
 .profile-switcher-option {
   display: block;
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 14px;
   font-family: var(--ft-font);
   text-align: left;
@@ -433,6 +414,11 @@ img {
 
 .subscription-row:hover {
   background: var(--ft-surface-hover);
+}
+
+.subscription-row--selected {
+  border-color: rgba(30, 142, 62, 0.22);
+  background: linear-gradient(180deg, rgba(230, 244, 234, 0.7), var(--ft-surface));
 }
 
 .subscription-row img {

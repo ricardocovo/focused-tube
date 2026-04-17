@@ -2,7 +2,7 @@
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
@@ -15,18 +15,17 @@
   background-color: var(--ft-primary-hover);
 }
 
-.sub-channel-btn--added {
+.sub-channel-btn--selected {
   background-color: var(--ft-success-bg);
   color: var(--ft-success);
-  cursor: default;
-  opacity: 0.9;
+  border-color: rgba(30, 142, 62, 0.18);
 }
 
-.sub-channel-btn--added:hover {
+.sub-channel-btn--selected:hover {
   background-color: var(--ft-success-bg);
 }
 
-.sub-channel-btn--adding {
+.sub-channel-btn--saving {
   opacity: 0.6;
   cursor: not-allowed;
 }

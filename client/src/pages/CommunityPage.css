@@ -1,10 +1,23 @@
 .community-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.community-header > div {
+  width: 100%;
 }
 
 .community-title {
   color: var(--ft-text);
+  margin: 0 0 8px;
+}
+
+.community-subtitle {
   margin: 0;
+  color: var(--ft-text-secondary);
 }
 
 .community-search {
@@ -55,52 +68,59 @@
 }
 
 .community-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .community-card {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
   background: var(--ft-surface);
   border: 1px solid var(--ft-border);
-  border-radius: var(--ft-radius-md);
-  transition: box-shadow 0.15s;
+  border-radius: 24px;
+  transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: var(--ft-shadow-sm);
 }
 
 .community-card:hover {
-  box-shadow: var(--ft-shadow-sm);
+  box-shadow: var(--ft-shadow-md);
+  transform: translateY(-2px);
 }
 
 .community-card-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 12px;
+  width: 100%;
   min-width: 0;
 }
 
 .community-card-name {
+  display: block;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 18px;
   color: var(--ft-text);
+  margin-bottom: 4px;
 }
 
 .community-card-owner {
+  display: block;
   font-size: 13px;
   color: var(--ft-text-secondary);
 }
 
 .community-card-followers {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ft-text-tertiary);
 }
 
 .community-card-btn {
-  padding: 6px 16px;
-  font-size: 13px;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
   background-color: var(--ft-primary);
@@ -129,6 +149,20 @@
   background-color: var(--ft-surface-hover);
   border-color: var(--ft-danger);
   color: var(--ft-danger);
+}
+
+.community-card-btn--own {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ft-text-secondary);
+  background-color: var(--ft-surface);
+  border: 1px solid var(--ft-border);
+  cursor: default;
+}
+
+.community-card-btn--own:hover {
+  background-color: var(--ft-surface);
 }
 
 /* Pagination */
@@ -171,12 +205,6 @@
 
 /* Responsive: reflow at 320px */
 @media (max-width: 480px) {
-  .community-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
   .community-card-btn {
     align-self: stretch;
     text-align: center;

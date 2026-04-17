@@ -68,6 +68,8 @@ describe('VideoFeed', () => {
 
     expect(screen.getByText('Video 1')).toBeInTheDocument();
     expect(screen.getByText('Video 2')).toBeInTheDocument();
+    expect(screen.queryByText('Subscription')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Open .* on YouTube/i)).not.toBeInTheDocument();
   });
 
   it('shows empty state when no videos and loading is done', () => {

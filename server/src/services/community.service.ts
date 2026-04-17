@@ -13,7 +13,6 @@ export async function listPublicProfiles(params: {
 
   const where: Prisma.ProfileWhereInput = {
     isPublic: true,
-    userId: { not: params.currentUserId },
   };
 
   if (params.keyword) {
@@ -41,6 +40,7 @@ export async function listPublicProfiles(params: {
   const mapped = profiles.map(({ followers, ...rest }) => ({
     ...rest,
     isFollowing: followers.length > 0,
+    isOwn: rest.userId === params.currentUserId,
   }));
 
   return { profiles: mapped, total, page, limit };

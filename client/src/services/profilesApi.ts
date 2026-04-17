@@ -11,8 +11,8 @@ export async function fetchProfile(id: string): Promise<Profile> {
   return data;
 }
 
-export async function createProfile(name: string): Promise<Profile> {
-  const { data } = await api.post('/api/profiles', { name });
+export async function createProfile(input: { name: string; isPublic?: boolean }): Promise<Profile> {
+  const { data } = await api.post('/api/profiles', input);
   return data;
 }
 

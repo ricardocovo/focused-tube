@@ -27,14 +27,23 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 // POST / - Create profile
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name } = req.body;
+    const { name, isPublic } = req.body;
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       res.status(400).json({ error: 'Name is required' }); return;
     }
     if (name.trim().length > 100) {
       res.status(400).json({ error: 'Name must be 100 characters or less' }); return;
     }
-    const profile = await prisma.profile.create({ data: { name: name.trim(), userId: req.user!.id } });
+    if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+      res.status(400).json({ error: 'isPublic must be a boolean' }); return;
+    }
+    const profile = await prisma.profile.create({
+      data: {
+        name: name.trim(),
+        userId: req.user!.id,
+        isPublic: isPublic ?? false,
+      },
+    });
     res.status(201).json(profile);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

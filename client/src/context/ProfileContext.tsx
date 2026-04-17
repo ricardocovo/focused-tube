@@ -12,7 +12,7 @@ interface ProfileContextType {
   activeProfile: Profile | null;
   isLoading: boolean;
   setActiveProfile: (id: string) => void;
-  createProfile: (name: string) => Promise<Profile>;
+  createProfile: (input: { name: string; isPublic?: boolean }) => Promise<Profile>;
   updateProfile: (id: string, data: { name?: string; isDefault?: boolean; isPublic?: boolean }) => Promise<Profile>;
   deleteProfile: (id: string) => Promise<void>;
   refreshProfiles: () => Promise<void>;
@@ -116,8 +116,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   );
 
   const createProfileFn = useCallback(
-    async (name: string) => {
-      const created = await profilesApi.createProfile(name);
+    async (input: { name: string; isPublic?: boolean }) => {
+      const created = await profilesApi.createProfile(input);
       await loadProfiles();
       return created;
     },

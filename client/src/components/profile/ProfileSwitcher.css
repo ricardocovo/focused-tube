@@ -8,9 +8,29 @@
   text-decoration: underline;
 }
 
+.profile-switcher-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-switcher-trigger-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ft-text-tertiary);
+}
+
+.profile-switcher-trigger-value {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .profile-switcher-arrow {
   font-size: 10px;
-  margin-left: 4px;
+  margin-left: auto;
 }
 
 .profile-switcher-option--active {
@@ -22,22 +42,20 @@
   background-color: var(--ft-surface-raised);
 }
 
-.profile-switcher-default-label {
-  font-size: 11px;
-  color: var(--ft-text-tertiary);
-  margin-left: 6px;
-}
-
-/* Following section */
 .profile-switcher-divider {
   height: 1px;
   background: var(--ft-border);
   margin: 4px 0;
 }
 
+.profile-switcher-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .profile-switcher-group-label {
   display: block;
-  padding: 8px 14px 4px;
+  padding: 8px 16px 6px;
   font-size: 11px;
   font-weight: 700;
   color: var(--ft-text-tertiary);
@@ -45,30 +63,52 @@
   letter-spacing: 0.05em;
 }
 
-.profile-switcher-option--followed {
+.profile-switcher-option {
   display: flex;
   align-items: center;
-  padding: 0;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.profile-switcher-followed-btn {
-  flex: 1;
+.profile-switcher-option-main {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
-  font-size: 14px;
-  font-family: var(--ft-font);
-  text-align: left;
-  border: none;
-  cursor: pointer;
-  color: var(--ft-text);
-  background: transparent;
-  min-height: 44px;
+  min-width: 0;
 }
 
-.profile-switcher-followed-btn:hover {
-  background: var(--ft-surface-hover);
+.profile-switcher-option-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-switcher-visibility-badge,
+.profile-switcher-followed-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ft-border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ft-text-secondary);
+  background: var(--ft-surface);
+  flex-shrink: 0;
+}
+
+.profile-switcher-visibility-badge--public,
+.profile-switcher-followed-state {
+  color: var(--ft-link);
+  background: rgba(6, 95, 212, 0.08);
+  border-color: transparent;
+}
+
+.profile-switcher-option--followed {
+  padding: 10px 16px;
 }
 
 .profile-switcher-followed-icon {
@@ -80,6 +120,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .profile-switcher-followed-name {
@@ -92,32 +133,4 @@
 .profile-switcher-followed-owner {
   font-size: 11px;
   color: var(--ft-text-tertiary);
-}
-
-.profile-switcher-unfollow-btn {
-  padding: 4px 10px;
-  font-size: 12px;
-  color: var(--ft-text-tertiary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  border-radius: var(--ft-radius-full);
-  min-height: 28px;
-  min-width: 28px;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-}
-
-.profile-switcher-option--followed:hover .profile-switcher-unfollow-btn,
-.profile-switcher-option--followed:focus-within .profile-switcher-unfollow-btn {
-  opacity: 1;
-}
-
-.profile-switcher-unfollow-btn:hover {
-  color: var(--ft-danger);
-  background: var(--ft-danger-bg);
-}
-
-.profile-switcher-unfollow-btn:focus-visible {
-  opacity: 1;
 }

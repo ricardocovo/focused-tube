@@ -3,27 +3,27 @@ import './SubscriptionChannelRow.css';
 
 interface Props {
   channel: SubscriptionChannel;
-  isAdded: boolean;
-  isAdding: boolean;
-  onAdd: () => void;
+  isSelected: boolean;
+  isSaving: boolean;
+  onToggle: () => void;
 }
 
-export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onAdd }: Props) {
-  const disabled = isAdded || isAdding;
+export default function SubscriptionChannelRow({ channel, isSelected, isSaving, onToggle }: Props) {
+  const disabled = isSaving;
 
-  let btnLabel = 'Add to Profile';
+  let btnLabel = 'Select';
   let btnClass = 'sub-channel-btn';
 
-  if (isAdded) {
-    btnLabel = 'Added ✓';
-    btnClass += ' sub-channel-btn--added';
-  } else if (isAdding) {
-    btnLabel = 'Adding…';
-    btnClass += ' sub-channel-btn--adding';
+  if (isSaving) {
+    btnLabel = isSelected ? 'Updating…' : 'Updating…';
+    btnClass += ' sub-channel-btn--saving';
+  } else if (isSelected) {
+    btnLabel = 'Selected';
+    btnClass += ' sub-channel-btn--selected';
   }
 
   return (
-    <div className="subscription-row">
+    <div className={`subscription-row${isSelected ? ' subscription-row--selected' : ''}`}>
       <img
         src={channel.thumbnailUrl ?? undefined}
         alt={channel.channelTitle}
@@ -40,7 +40,13 @@ export default function SubscriptionChannelRow({ channel, isAdded, isAdding, onA
         )}
       </div>
 
-      <button disabled={disabled} onClick={onAdd} className={btnClass}>
+      <button
+        type="button"
+        aria-pressed={isSelected}
+        disabled={disabled}
+        onClick={onToggle}
+        className={btnClass}
+      >
         {btnLabel}
       </button>
     </div>

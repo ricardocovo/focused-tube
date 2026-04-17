@@ -2,13 +2,13 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSubscriptions } from '../hooks/useSubscriptions';
 import { useProfiles } from '../context/ProfileContext';
-import { addChannel } from '../services/profilesApi';
+import { addChannel, removeChannel } from '../services/profilesApi';
 import { fetchProfile } from '../services/profilesApi';
 import SubscriptionChannelRow from '../components/subscriptions/SubscriptionChannelRow';
 import SubscriptionItemSkeleton from '../components/subscriptions/SubscriptionItemSkeleton';
 import AppHeader from '../components/ui/AppHeader';
 import { notify } from '../lib/toast';
-import type { Profile } from '../types/profile';
+import type { Profile, ProfileChannel } from '../types/profile';
 import './SubscriptionPickerPage.css';
 
 export default function SubscriptionPickerPage() {
@@ -20,8 +20,8 @@ export default function SubscriptionPickerPage() {
   const [profileLoading, setProfileLoading] = useState(true);
 
   const [search, setSearch] = useState('');
-  const [addedChannelIds, setAddedChannelIds] = useState<Set<string>>(new Set());
-  const [addingChannelIds, setAddingChannelIds] = useState<Set<string>>(new Set());
+  const [selectedChannels, setSelectedChannels] = useState<Map<string, ProfileChannel>>(new Map());
+  const [savingChannelIds, setSavingChannelIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!profileId) return;
@@ -29,10 +29,9 @@ export default function SubscriptionPickerPage() {
     fetchProfile(profileId)
       .then((data) => {
         setProfile(data);
-        const existing = new Set(
-          (data.channels ?? []).map((ch) => ch.youtubeChannelId),
+        setSelectedChannels(
+          new Map((data.channels ?? []).map((ch) => [ch.youtubeChannelId, ch])),
         );
-        setAddedChannelIds(existing);
       })
       .catch(() => {
         setProfile(null);
@@ -48,42 +47,72 @@ export default function SubscriptionPickerPage() {
     );
   }, [subscriptions, search]);
 
-  const handleAdd = useCallback(
+  const handleToggle = useCallback(
     async (channel: (typeof subscriptions)[number]) => {
       if (!profileId) return;
+      const existing = selectedChannels.get(channel.youtubeChannelId);
 
-      // Optimistic update
-      setAddingChannelIds((prev) => new Set(prev).add(channel.youtubeChannelId));
-      setAddedChannelIds((prev) => new Set(prev).add(channel.youtubeChannelId));
+      setSavingChannelIds((prev) => new Set(prev).add(channel.youtubeChannelId));
 
       try {
-        await addChannel(profileId, {
-          youtubeChannelId: channel.youtubeChannelId,
-          channelTitle: channel.channelTitle,
-          thumbnailUrl: channel.thumbnailUrl,
-        });
+        if (existing) {
+          setSelectedChannels((prev) => {
+            const next = new Map(prev);
+            next.delete(channel.youtubeChannelId);
+            return next;
+          });
+          await removeChannel(profileId, existing.id);
+          notify.success(`Removed ${channel.channelTitle}`);
+        } else {
+          setSelectedChannels((prev) => {
+            const next = new Map(prev);
+            next.set(channel.youtubeChannelId, {
+              id: `pending-${channel.youtubeChannelId}`,
+              profileId,
+              youtubeChannelId: channel.youtubeChannelId,
+              channelTitle: channel.channelTitle,
+              thumbnailUrl: channel.thumbnailUrl ?? null,
+              createdAt: '',
+            });
+            return next;
+          });
+          const created = await addChannel(profileId, {
+            youtubeChannelId: channel.youtubeChannelId,
+            channelTitle: channel.channelTitle,
+            thumbnailUrl: channel.thumbnailUrl,
+          });
+          setSelectedChannels((prev) => {
+            const next = new Map(prev);
+            next.set(channel.youtubeChannelId, created);
+            return next;
+          });
+          notify.success(`Added ${channel.channelTitle}`);
+        }
         await refreshProfiles();
-        notify.success(`Added ${channel.channelTitle}`);
       } catch {
-        // Revert on error
-        setAddedChannelIds((prev) => {
-          const next = new Set(prev);
-          next.delete(channel.youtubeChannelId);
+        setSelectedChannels((prev) => {
+          const next = new Map(prev);
+          if (existing) {
+            next.set(channel.youtubeChannelId, existing);
+          } else {
+            next.delete(channel.youtubeChannelId);
+          }
           return next;
         });
-        notify.error(`Failed to add ${channel.channelTitle}`);
+        notify.error(`Failed to update ${channel.channelTitle}`);
       } finally {
-        setAddingChannelIds((prev) => {
+        setSavingChannelIds((prev) => {
           const next = new Set(prev);
           next.delete(channel.youtubeChannelId);
           return next;
         });
       }
     },
-    [profileId, refreshProfiles],
+    [profileId, refreshProfiles, selectedChannels],
   );
 
   const showLoading = isLoading || profileLoading;
+  const selectedCount = selectedChannels.size;
 
   return (
     <>
@@ -97,10 +126,26 @@ export default function SubscriptionPickerPage() {
         </nav>
       </AppHeader>
       <div className="page-container-narrow">
-        <h1 className="sub-picker-title">Browse Subscriptions</h1>
+        <div className="sub-picker-header">
+          <div>
+            <h1 className="sub-picker-title">Browse Subscriptions</h1>
+            <p className="sub-picker-subtitle">
+              Select the channels that should appear in {profile?.name ?? 'this profile'}.
+            </p>
+          </div>
+          <div className="sub-picker-summary" aria-live="polite">
+            <span className="sub-picker-summary-count">{selectedCount}</span>
+            <span className="sub-picker-summary-label">
+              {selectedCount === 1 ? 'channel selected' : 'channels selected'}
+            </span>
+          </div>
+        </div>
 
-        {/* Search input */}
+        <label className="sub-picker-search-label" htmlFor="subscription-search">
+          Search subscriptions
+        </label>
         <input
+          id="subscription-search"
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -151,9 +196,9 @@ export default function SubscriptionPickerPage() {
               <SubscriptionChannelRow
                 key={ch.youtubeChannelId}
                 channel={ch}
-                isAdded={addedChannelIds.has(ch.youtubeChannelId)}
-                isAdding={addingChannelIds.has(ch.youtubeChannelId)}
-                onAdd={() => handleAdd(ch)}
+                isSelected={selectedChannels.has(ch.youtubeChannelId)}
+                isSaving={savingChannelIds.has(ch.youtubeChannelId)}
+                onToggle={() => handleToggle(ch)}
               />
             ))}
           </div>

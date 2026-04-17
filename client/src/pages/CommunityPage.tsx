@@ -22,7 +22,12 @@ export default function CommunityPage() {
       <AppHeader />
       <main className="page-container">
         <div className="community-header">
-          <h1 className="community-title">Community Profiles</h1>
+          <div>
+            <h1 className="community-title">Community Profiles</h1>
+            <p className="community-subtitle">
+              Discover focused setups from other people, then follow the ones you want in your own rotation.
+            </p>
+          </div>
         </div>
 
         <div className="community-search">
@@ -53,22 +58,34 @@ export default function CommunityPage() {
               {profiles.map((profile) => (
                 <div key={profile.id} className="community-card">
                   <div className="community-card-info">
-                    <span className="community-card-name">{profile.name}</span>
-                    <span className="community-card-owner">by {profile.user.name}</span>
+                    <div>
+                      <span className="community-card-name">{profile.name}</span>
+                      <span className="community-card-owner">{profile.isOwn ? 'Yours' : `by ${profile.user.name}`}</span>
+                    </div>
                     <span className="community-card-followers">
                       {profile._count.followers} {profile._count.followers === 1 ? 'follower' : 'followers'}
                     </span>
                   </div>
-                  <button
-                    onClick={() => profile.isFollowing
-                      ? handleUnfollow(profile.id)
-                      : handleFollow(profile.id)
-                    }
-                    className={profile.isFollowing ? 'community-card-btn community-card-btn--following' : 'community-card-btn'}
-                    aria-label={`${profile.isFollowing ? 'Unfollow' : 'Follow'} ${profile.name}`}
-                  >
-                    {profile.isFollowing ? 'Unfollow' : 'Follow'}
-                  </button>
+                  {profile.isOwn ? (
+                    <span
+                      className="community-card-btn community-card-btn--own"
+                      aria-label={`${profile.name} is your profile`}
+                    >
+                      Your profile
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => profile.isFollowing
+                        ? handleUnfollow(profile.id)
+                        : handleFollow(profile.id)
+                      }
+                      className={profile.isFollowing ? 'community-card-btn community-card-btn--following' : 'community-card-btn'}
+                      aria-label={`${profile.isFollowing ? 'Unfollow' : 'Follow'} ${profile.name}`}
+                    >
+                      {profile.isFollowing ? 'Unfollow' : 'Follow'}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

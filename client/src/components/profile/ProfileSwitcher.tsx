@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfiles } from '../../context/ProfileContext';
 import { Link } from 'react-router-dom';
-import { notify } from '../../lib/toast';
 import ProfileSwitcherSkeleton from './ProfileSwitcherSkeleton';
 import './ProfileSwitcher.css';
 
 export default function ProfileSwitcher() {
-  const { profiles, activeProfile, setActiveProfile, isLoading, followedProfiles, unfollowProfile } = useProfiles();
+  const { profiles, activeProfile, setActiveProfile, isLoading, followedProfiles } = useProfiles();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -38,69 +37,59 @@ export default function ProfileSwitcher() {
   return (
     <div ref={ref} className="profile-switcher">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="profile-switcher-trigger"
       >
-        {activeProfile?.name ?? 'Select profile'}
+        <span className="profile-switcher-trigger-label">Watching</span>
+        <span className="profile-switcher-trigger-value">{activeProfile?.name ?? 'Select profile'}</span>
         <span className="profile-switcher-arrow">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div className="profile-switcher-dropdown">
-          {profiles.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => {
-                setActiveProfile(p.id);
-                setOpen(false);
-              }}
-              className={`profile-switcher-option${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
-            >
-              {p.name}
-              {p.isDefault && (
-                <span className="profile-switcher-default-label">(default)</span>
-              )}
-            </button>
-          ))}
+          <div className="profile-switcher-section">
+            <span className="profile-switcher-group-label">Your profiles</span>
+            {profiles.map((p) => (
+              <button
+                type="button"
+                key={p.id}
+                onClick={() => {
+                  setActiveProfile(p.id);
+                  setOpen(false);
+                }}
+                className={`profile-switcher-option${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
+              >
+                <span className="profile-switcher-option-name">{p.name}</span>
+                &nbsp;&nbsp;<span className={`profile-switcher-visibility-badge${p.isPublic ? ' profile-switcher-visibility-badge--public' : ''}`}>
+                  {p.isPublic ? 'Public' : 'Private'}
+                </span>
+              </button>
+            ))}
+          </div>
+
           {followedProfiles.length > 0 && (
             <>
               <div className="profile-switcher-divider" role="separator" />
-              <div role="group" aria-label="Following">
-                <span className="profile-switcher-group-label">Following</span>
+              <div role="group" aria-label="Community profiles you follow" className="profile-switcher-section">
+                <span className="profile-switcher-group-label">Community profiles you follow</span>
                 {followedProfiles.map((p) => (
-                  <div
+                  <button
+                    type="button"
                     key={p.id}
+                    onClick={() => {
+                      setActiveProfile(p.id);
+                      setOpen(false);
+                    }}
                     className={`profile-switcher-option profile-switcher-option--followed${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
                   >
-                    <button
-                      onClick={() => {
-                        setActiveProfile(p.id);
-                        setOpen(false);
-                      }}
-                      className="profile-switcher-followed-btn"
-                    >
-                      <span className="profile-switcher-followed-icon" aria-hidden="true">👥</span>
-                      <span className="profile-switcher-followed-info">
-                        <span className="profile-switcher-followed-name">{p.name}</span>
-                        <span className="profile-switcher-followed-owner">by {p.user.name}</span>
-                      </span>
-                    </button>
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        try {
-                          await unfollowProfile(p.id);
-                          notify.success(`Unfollowed ${p.name}`);
-                        } catch {
-                          notify.error('Failed to unfollow');
-                        }
-                      }}
-                      className="profile-switcher-unfollow-btn"
-                      aria-label={`Unfollow ${p.name}`}
-                    >
-                      ✕
-                    </button>
-                  </div>
+                    <span className="profile-switcher-followed-icon" aria-hidden="true">👥</span>
+                    <span className="profile-switcher-followed-info">
+                      <span className="profile-switcher-followed-name">{p.name}</span>
+                      <span className="profile-switcher-followed-owner">by {p.user.name}</span>
+                    </span>
+                    <span className="profile-switcher-followed-state">Following</span>
+                  </button>
                 ))}
               </div>
             </>

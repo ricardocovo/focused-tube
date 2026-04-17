@@ -4,6 +4,7 @@ import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../servi
 import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
 import AppHeader from '../components/ui/AppHeader';
+import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
 import type { Profile } from '../types/profile';
 import './ProfileEditPage.css';
 
@@ -158,25 +159,13 @@ export default function ProfileEditPage() {
             <section className="profile-edit-section">
               <h2 className="profile-edit-section-title">Visibility</h2>
               <div className="profile-edit-visibility">
-                <div className="profile-edit-visibility-toggle">
-                  <button
-                    role="switch"
-                    aria-checked={isPublic}
-                    onClick={handleTogglePublic}
-                    className={`profile-edit-switch${isPublic ? ' profile-edit-switch--on' : ''}`}
-                  >
-                    <span className="profile-edit-switch-thumb" />
-                  </button>
-                  <span className="profile-edit-switch-label">Make this profile public</span>
-                </div>
-                <p className="profile-edit-visibility-help">
-                  Public profiles appear on the Community page and can be followed by other users.
-                </p>
-                {isPublic && profile && (
-                  <p className="profile-edit-followers-count">
-                    {profile._count?.followers ?? 0} {(profile._count?.followers ?? 0) === 1 ? 'follower' : 'followers'}
-                  </p>
-                )}
+                <ProfileVisibilitySwitch
+                  checked={isPublic}
+                  label="Make this profile public"
+                  helpText="Public profiles appear on the Community page and can be followed by other users."
+                  followersCount={profile?._count?.followers ?? 0}
+                  onToggle={handleTogglePublic}
+                />
               </div>
             </section>
 
