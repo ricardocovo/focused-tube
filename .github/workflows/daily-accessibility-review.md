@@ -40,10 +40,11 @@ steps:
       persist-credentials: false
   - name: Build and run app in background
     run: |
-      # This step should set up the runtime environment for your app, 
-      # including installing any necessary dependencies, and it should
-      # start your app in the background (e.g., using `&` at the end of the command).
-      echo "Building and running the app in background..."
+      npm install
+      npm run build
+      CLIENT_ORIGIN=http://localhost:3000 PORT=3001 npm run start --workspace=server > /tmp/focused-tube-server.log 2>&1 &
+      npm run preview --workspace=client -- --host 0.0.0.0 --port 3000 > /tmp/focused-tube-client.log 2>&1 &
+      until curl -sf http://localhost:3000 >/dev/null; do sleep 2; done
 source: githubnext/agentics/workflows/daily-accessibility-review.md@96b9d4c39aa22359c0b38265927eadb31dcf4e2a
 ---
 
