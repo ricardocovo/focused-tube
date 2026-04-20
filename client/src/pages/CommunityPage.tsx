@@ -25,7 +25,7 @@ export default function CommunityPage() {
           <div>
             <h1 className="community-title">Community Profiles</h1>
             <p className="community-subtitle">
-              Discover focused setups from other people, then follow the ones you want in your own rotation.
+              Discover focused viewing profiles from other people, then follow the ones you want in your own rotation.
             </p>
           </div>
         </div>

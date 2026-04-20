@@ -8,6 +8,7 @@ export default function ProfileSwitcher() {
   const { profiles, activeProfile, setActiveProfile, isLoading, followedProfiles } = useProfiles();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hasAnyProfiles = profiles.length > 0 || followedProfiles.length > 0;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -23,7 +24,7 @@ export default function ProfileSwitcher() {
     return <ProfileSwitcherSkeleton />;
   }
 
-  if (profiles.length === 0) {
+  if (!hasAnyProfiles) {
     return (
       <span className="profile-switcher-empty">
         No profiles yet —{' '}
@@ -48,29 +49,31 @@ export default function ProfileSwitcher() {
 
       {open && (
         <div className="profile-switcher-dropdown">
-          <div className="profile-switcher-section">
-            <span className="profile-switcher-group-label">Your profiles</span>
-            {profiles.map((p) => (
-              <button
-                type="button"
-                key={p.id}
-                onClick={() => {
-                  setActiveProfile(p.id);
-                  setOpen(false);
-                }}
-                className={`profile-switcher-option${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
-              >
-                <span className="profile-switcher-option-name">{p.name}</span>
-                &nbsp;&nbsp;<span className={`profile-switcher-visibility-badge${p.isPublic ? ' profile-switcher-visibility-badge--public' : ''}`}>
-                  {p.isPublic ? 'Public' : 'Private'}
-                </span>
-              </button>
-            ))}
-          </div>
+          {profiles.length > 0 && (
+            <div className="profile-switcher-section">
+              <span className="profile-switcher-group-label">Your profiles</span>
+              {profiles.map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  onClick={() => {
+                    setActiveProfile(p.id);
+                    setOpen(false);
+                  }}
+                  className={`profile-switcher-option${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
+                >
+                  <span className="profile-switcher-option-name">{p.name}</span>
+                  &nbsp;&nbsp;<span className={`profile-switcher-visibility-badge${p.isPublic ? ' profile-switcher-visibility-badge--public' : ''}`}>
+                    {p.isPublic ? 'Public' : 'Private'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {followedProfiles.length > 0 && (
             <>
-              <div className="profile-switcher-divider" role="separator" />
+              {profiles.length > 0 && <div className="profile-switcher-divider" role="separator" />}
               <div role="group" aria-label="Community profiles you follow" className="profile-switcher-section">
                 <span className="profile-switcher-group-label">Community profiles you follow</span>
                 {followedProfiles.map((p) => (
@@ -83,12 +86,13 @@ export default function ProfileSwitcher() {
                     }}
                     className={`profile-switcher-option profile-switcher-option--followed${p.id === activeProfile?.id ? ' profile-switcher-option--active' : ''}`}
                   >
-                    <span className="profile-switcher-followed-icon" aria-hidden="true">👥</span>
-                    <span className="profile-switcher-followed-info">
-                      <span className="profile-switcher-followed-name">{p.name}</span>
-                      <span className="profile-switcher-followed-owner">by {p.user.name}</span>
+                    <span className="profile-switcher-option-main">
+                      <span className="profile-switcher-followed-info">
+                        <span className="profile-switcher-followed-name">{p.name}</span>
+                        <span className="profile-switcher-followed-owner">by {p.user.name}</span>
+                      </span>
+                      &nbsp;&nbsp;<span className="profile-switcher-followed-state">Following</span>
                     </span>
-                    <span className="profile-switcher-followed-state">Following</span>
                   </button>
                 ))}
               </div>

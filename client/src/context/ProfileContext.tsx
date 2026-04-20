@@ -7,6 +7,20 @@ import * as profilesApi from '../services/profilesApi';
 
 const STORAGE_KEY = 'ft_active_profile_id';
 
+function toFollowedProfile(profile: CommunityProfile): Profile {
+  return {
+    id: profile.id,
+    name: profile.name,
+    isDefault: false,
+    isPublic: true,
+    userId: '',
+    createdAt: '',
+    updatedAt: '',
+    isFollowing: true,
+    owner: { name: profile.user.name, avatarUrl: profile.user.avatarUrl ?? undefined },
+  };
+}
+
 interface ProfileContextType {
   profiles: Profile[];
   activeProfile: Profile | null;
@@ -33,11 +47,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { followedProfiles, isLoading: followedLoading, loadFollowed: refreshFollowed, handleUnfollow } = useFollowedProfiles();
 
   const pickActive = useCallback((list: Profile[]) => {
-    if (list.length === 0) {
-      setActiveProfileState(null);
-      return;
-    }
-
     const savedId = localStorage.getItem(STORAGE_KEY);
     const saved = savedId ? list.find((p) => p.id === savedId) : undefined;
     if (saved) {
@@ -47,17 +56,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     const followed = savedId ? followedProfiles.find((p) => p.id === savedId) : undefined;
     if (followed) {
-      setActiveProfileState({
-        id: followed.id,
-        name: followed.name,
-        isDefault: false,
-        isPublic: true,
-        userId: '',
-        createdAt: '',
-        updatedAt: '',
-        isFollowing: true,
-        owner: { name: followed.user.name, avatarUrl: followed.user.avatarUrl ?? undefined },
-      });
+      setActiveProfileState(toFollowedProfile(followed));
+      return;
+    }
+
+    if (list.length === 0) {
+      setActiveProfileState(followedProfiles[0] ? toFollowedProfile(followedProfiles[0]) : null);
       return;
     }
 
@@ -98,17 +102,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
       const followed = followedProfiles.find((p) => p.id === id);
       if (followed) {
-        setActiveProfileState({
-          id: followed.id,
-          name: followed.name,
-          isDefault: false,
-          isPublic: true,
-          userId: '',
-          createdAt: '',
-          updatedAt: '',
-          isFollowing: true,
-          owner: { name: followed.user.name, avatarUrl: followed.user.avatarUrl ?? undefined },
-        });
+        setActiveProfileState(toFollowedProfile(followed));
         localStorage.setItem(STORAGE_KEY, id);
       }
     },

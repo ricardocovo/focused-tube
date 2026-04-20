@@ -152,4 +152,27 @@ describe('Dashboard', () => {
     expect(screen.getByLabelText('Active profile summary')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Hide details' })).toBeInTheDocument();
   });
+
+  it('shows a followed profile feed when the user has no owned profiles', () => {
+    mockUseProfiles.mockReturnValue({
+      activeProfile: {
+        id: 'followed-1',
+        name: 'News Roundup',
+        isDefault: false,
+        isPublic: true,
+        userId: '',
+        createdAt: '',
+        updatedAt: '',
+        isFollowing: true,
+        owner: { name: 'Taylor' },
+      },
+      profiles: [],
+      updateProfile: vi.fn(),
+    });
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'News Roundup feed' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open video' })).toBeInTheDocument();
+  });
 });
