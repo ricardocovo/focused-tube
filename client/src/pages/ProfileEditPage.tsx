@@ -141,18 +141,24 @@ export default function ProfileEditPage() {
 
             {/* Name section */}
             <form onSubmit={handleSaveName} className="profile-edit-name-form">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="profile-edit-input"
-              />
-              <button
-                type="submit"
-                disabled={saving || !name.trim() || name.trim() === profile.name}
-                className="profile-edit-save-btn"
-              >
-                {saving ? 'Saving…' : 'Save Name'}
-              </button>
+              <label htmlFor="profile-edit-name" className="profile-edit-label">
+                Profile name
+              </label>
+              <div className="profile-edit-name-controls">
+                <input
+                  id="profile-edit-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="profile-edit-input"
+                />
+                <button
+                  type="submit"
+                  disabled={saving || !name.trim() || name.trim() === profile.name}
+                  className="profile-edit-save-btn"
+                >
+                  {saving ? 'Saving…' : 'Save Name'}
+                </button>
+              </div>
             </form>
 
             {/* Visibility section */}

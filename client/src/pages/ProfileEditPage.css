@@ -32,8 +32,20 @@
 
 .profile-edit-name-form {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 32px;
+}
+
+.profile-edit-label {
+  color: var(--ft-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-edit-name-controls {
+  display: flex;
+  gap: 8px;
 }
 
 .profile-edit-input {
