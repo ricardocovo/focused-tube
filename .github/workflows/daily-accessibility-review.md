@@ -19,9 +19,8 @@ safe-outputs:
     title-prefix: "[Daily Accessibility] "
     labels: [report, daily-accessibility]
     close-older-issues: false
-  link-sub-issue:
-    parent-required-labels: [daily-accessibility]
-
+    max: 5
+    
 tools:
   playwright:
   web-fetch:
@@ -43,7 +42,6 @@ steps:
       CLIENT_ORIGIN=http://localhost:3000 PORT=3001 npm run start --workspace=server > /tmp/focused-tube-server.log 2>&1 &
       npm run preview --workspace=client -- --host 0.0.0.0 --port 3000 > /tmp/focused-tube-client.log 2>&1 &
       until curl -sf http://localhost:3000 >/dev/null; do sleep 2; done
-source: githubnext/agentics/workflows/daily-accessibility-review.md@96b9d4c39aa22359c0b38265927eadb31dcf4e2a
 ---
 
 # Daily Accessibility Review
@@ -75,10 +73,9 @@ still contains a placeholder, then:
 
 2. Review the source code of the application to look for accessibility issues in the code.  Use the Grep, LS, Read, etc. tools.
 
-3. Use the GitHub MCP tool to create an issue for any accessibility problems you find. You should create one main issue with a summary and sub-issues.
-   1. Main Issue should contain:
-      - Summary of the issues found, if any
-   2. Sub-Issues should contain:
+3. Select the top 5 most most critical issues to fix.
+
+4. Use the GitHub MCP tool to create necessary issues any accessibility problems you find. Each issue should conttain:
       - A clear description of the problem
       - References to the appropriate section(s) of WCAG 2.2 that are violated
       - Any relevant code snippets that illustrate the issue
