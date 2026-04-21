@@ -18,11 +18,9 @@ safe-outputs:
   create-issue:
     title-prefix: "[Daily Accessibility] "
     labels: [report, daily-accessibility]
-    max: 1
     close-older-issues: false
   link-sub-issue:
-    parent-required-labels: [daily-accessibility]     
-    max: 5
+    parent-required-labels: [daily-accessibility]
 
 tools:
   playwright:
