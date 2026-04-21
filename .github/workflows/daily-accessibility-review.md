@@ -15,13 +15,12 @@ permissions: read-all
 network: defaults
 
 safe-outputs:
-  mentions: false
-  allowed-github-references: []
-  create-discussion:
-    title-prefix: "${{ github.workflow }}"
-    category: "Accessibility"
-    max: 5
-  add-comment:
+  create-issue:
+    title-prefix: "[Daily Accessibility] "
+    labels: [report, daily-accessibility]
+    close-older-issues: false
+  link-sub-issue:
+    parent-required-labels: [daily-accessibility]     
     max: 5
 
 tools:
@@ -77,7 +76,11 @@ still contains a placeholder, then:
 
 2. Review the source code of the application to look for accessibility issues in the code.  Use the Grep, LS, Read, etc. tools.
 
-3. Use the GitHub MCP tool to create discussions for any accessibility problems you find.  Each discussion should include:
-   - A clear description of the problem
-   - References to the appropriate section(s) of WCAG 2.2 that are violated
-   - Any relevant code snippets that illustrate the issue
+3. Use the GitHub MCP tool to create an issue for any accessibility problems you find. You should create one main issue with a summary and sub-issues.
+   1. Main Issue should contain:
+      - Summary of the issues found, if any
+   2. Sub-Issues should contain:
+      - A clear description of the problem
+      - References to the appropriate section(s) of WCAG 2.2 that are violated
+      - Any relevant code snippets that illustrate the issue
+      - Specifications on the fix
