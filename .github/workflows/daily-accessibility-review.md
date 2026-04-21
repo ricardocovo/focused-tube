@@ -18,7 +18,7 @@ safe-outputs:
   create-issue:
     title-prefix: "[Daily Accessibility] "
     labels: [report, daily-accessibility]
-    max: 6
+    max: 1
     close-older-issues: false
   link-sub-issue:
     parent-required-labels: [daily-accessibility]     
