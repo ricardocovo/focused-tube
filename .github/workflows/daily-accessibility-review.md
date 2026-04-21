@@ -19,7 +19,7 @@ safe-outputs:
   allowed-github-references: []
   create-discussion:
     title-prefix: "${{ github.workflow }}"
-    category: "q-a"
+    category: "Accessibility"
     max: 5
   add-comment:
     max: 5
