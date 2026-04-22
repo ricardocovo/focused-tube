@@ -39,22 +39,26 @@ export default function ProfileSwitcher() {
     <div ref={ref} className="profile-switcher">
       <button
         type="button"
+        aria-expanded={open}
+        aria-haspopup="listbox"
         onClick={() => setOpen(!open)}
         className="profile-switcher-trigger"
       >
         <span className="profile-switcher-trigger-label">Watching</span>
         <span className="profile-switcher-trigger-value">{activeProfile?.name ?? 'Select profile'}</span>
-        <span className="profile-switcher-arrow">{open ? '▲' : '▼'}</span>
+        <span aria-hidden="true" className="profile-switcher-arrow">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
-        <div className="profile-switcher-dropdown">
+        <div role="listbox" className="profile-switcher-dropdown">
           {profiles.length > 0 && (
-            <div className="profile-switcher-section">
+            <div role="group" aria-label="Your profiles" className="profile-switcher-section">
               <span className="profile-switcher-group-label">Your profiles</span>
               {profiles.map((p) => (
                 <button
                   type="button"
+                  role="option"
+                  aria-selected={p.id === activeProfile?.id}
                   key={p.id}
                   onClick={() => {
                     setActiveProfile(p.id);
@@ -79,6 +83,8 @@ export default function ProfileSwitcher() {
                 {followedProfiles.map((p) => (
                   <button
                     type="button"
+                    role="option"
+                    aria-selected={p.id === activeProfile?.id}
                     key={p.id}
                     onClick={() => {
                       setActiveProfile(p.id);

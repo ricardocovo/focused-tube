@@ -73,16 +73,20 @@ describe('ProfileSwitcher', () => {
 
     renderSwitcher();
 
-    expect(screen.getByRole('button', { name: /watching\s*news roundup/i })).toBeInTheDocument();
+    const trigger = screen.getByRole('button', { name: /^watching\s*news roundup$/i });
+    expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
-    await user.click(screen.getByRole('button', { name: /watching\s*news roundup/i }));
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
 
     expect(screen.getByText('Community profiles you follow')).toBeInTheDocument();
     expect(screen.getByText('Following')).toBeInTheDocument();
     expect(screen.getByText('by Taylor')).toBeInTheDocument();
     expect(screen.queryByText('👥')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /following\s*news roundup\s*by\s*taylor/i }));
+    await user.click(screen.getByRole('option', { name: /news roundup\s*by\s*taylor\s*following/i }));
 
     expect(setActiveProfile).toHaveBeenCalledWith('followed-1');
   });
