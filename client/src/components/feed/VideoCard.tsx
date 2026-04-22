@@ -21,14 +21,14 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
       <div className="video-card-thumbnail">
         <img
           src={video.thumbnailUrl}
-          alt={video.title}
+          alt=""
           loading="lazy"
         />
       </div>
 
       {/* Info */}
       <div className="video-card-info">
-        <h3 className="video-card-title">{video.title}</h3>
+        <p className="video-card-title">{video.title}</p>
         <p className="video-card-channel">{video.channelTitle}</p>
         <div className="video-card-meta">
           <span className="video-card-time">{relativeTime}</span>
