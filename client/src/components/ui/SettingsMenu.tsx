@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './SettingsMenu.css';
@@ -7,6 +7,8 @@ export default function SettingsMenu() {
   const { logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const dropdownId = useId();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -14,15 +16,31 @@ export default function SettingsMenu() {
         setOpen(false);
       }
     }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && open) {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
 
   return (
     <div ref={ref} className="settings-menu">
       <button
+        ref={toggleRef}
         onClick={() => setOpen(!open)}
         aria-label="Settings"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={dropdownId}
         className={`settings-menu-toggle${open ? ' settings-menu-toggle--open' : ''}`}
       >
         <svg
@@ -41,10 +59,11 @@ export default function SettingsMenu() {
       </button>
 
       {open && (
-        <div className="settings-menu-dropdown">
+        <div id={dropdownId} role="menu" className="settings-menu-dropdown">
           <Link
             to="/profiles"
             onClick={() => setOpen(false)}
+            role="menuitem"
             className="settings-menu-link"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,12 +72,13 @@ export default function SettingsMenu() {
             </svg>
             Manage Profiles
           </Link>
-          <div className="settings-menu-divider" />
+          <div role="separator" className="settings-menu-divider" />
           <button
             onClick={() => {
               setOpen(false);
               logout();
             }}
+            role="menuitem"
             className="settings-menu-btn"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
