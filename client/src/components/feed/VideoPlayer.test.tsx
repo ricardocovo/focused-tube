@@ -56,17 +56,39 @@ describe('VideoPlayer', () => {
       </>,
     );
 
+    const dialog = screen.getByRole('dialog', { name: video.title });
     const closeButton = screen.getByRole('button', { name: /close video player/i });
     const backgroundButton = screen.getByRole('button', { name: /background action/i });
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button, [href], iframe, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((element) => !element.hasAttribute('disabled') && !element.hasAttribute('hidden'));
+    const firstFocusableElement = focusableElements[0];
+    const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+    expect(focusableElements.length).toBeGreaterThan(1);
 
     await waitFor(() => expect(closeButton).toHaveFocus());
 
     await user.tab();
-    expect(closeButton).toHaveFocus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
     expect(backgroundButton).not.toHaveFocus();
 
+    firstFocusableElement.focus();
+    expect(firstFocusableElement).toHaveFocus();
+
     await user.tab({ shift: true });
-    expect(closeButton).toHaveFocus();
+    expect(lastFocusableElement).toHaveFocus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(backgroundButton).not.toHaveFocus();
+
+    lastFocusableElement.focus();
+    expect(lastFocusableElement).toHaveFocus();
+
+    await user.tab();
+    expect(firstFocusableElement).toHaveFocus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
     expect(backgroundButton).not.toHaveFocus();
   });
 });
