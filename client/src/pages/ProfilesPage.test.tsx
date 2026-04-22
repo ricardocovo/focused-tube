@@ -90,4 +90,11 @@ describe('ProfilesPage', () => {
       expect(updateProfile).toHaveBeenCalledWith('profile-1', { isPublic: true });
     });
   });
+
+  it('provides contextual labels for profile action buttons', () => {
+    renderPage();
+
+    expect(screen.getByRole('button', { name: 'Edit Deep Work' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete Deep Work' })).toBeInTheDocument();
+  });
 });

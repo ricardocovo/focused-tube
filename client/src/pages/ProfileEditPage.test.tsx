@@ -60,9 +60,18 @@ describe('ProfileEditPage', () => {
       userId: 'user-1',
       createdAt: '',
       updatedAt: '',
-      channels: [],
+      channels: [
+        {
+          id: 'membership-1',
+          profileId: 'profile-1',
+          youtubeChannelId: 'ch-1',
+          channelTitle: 'Calm Coding',
+          thumbnailUrl: null,
+          createdAt: '',
+        },
+      ],
       keywords: [],
-      _count: { channels: 0, keywords: 0, followers: 0 },
+      _count: { channels: 1, keywords: 0, followers: 0 },
     });
   });
 
@@ -76,5 +85,13 @@ describe('ProfileEditPage', () => {
     const nameInput = screen.getByLabelText('Profile name');
     expect(nameInput).toHaveAttribute('id', 'profile-edit-name');
     expect(nameInput).toHaveValue('Deep Work');
+  });
+
+  it('provides contextual labels for channel removal buttons', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Remove Calm Coding' })).toBeInTheDocument();
+    });
   });
 });

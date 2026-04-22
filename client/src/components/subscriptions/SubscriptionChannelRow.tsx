@@ -43,6 +43,7 @@ export default function SubscriptionChannelRow({ channel, isSelected, isSaving, 
       <button
         type="button"
         aria-pressed={isSelected}
+        aria-label={isSelected ? `Remove ${channel.channelTitle}` : `Add ${channel.channelTitle}`}
         disabled={disabled}
         onClick={onToggle}
         className={btnClass}
