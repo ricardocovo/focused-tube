@@ -177,7 +177,9 @@ export default function Dashboard() {
         )}
 
         {activeProfile ? (
-          <VideoFeed profileId={activeProfile.id} onVideoSelect={handleVideoSelect} />
+          <div id="feed-tabpanel" role="tabpanel" aria-label="Feed videos">
+            <VideoFeed profileId={activeProfile.id} onVideoSelect={handleVideoSelect} />
+          </div>
         ) : (
           <div className="dashboard-empty">
             <div className="dashboard-empty-icon">🎬</div>
