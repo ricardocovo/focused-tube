@@ -210,6 +210,7 @@ export default function ProfileEditPage() {
                         <span className="profile-edit-channel-name">{ch.channelTitle}</span>
                       </div>
                       <button
+                        aria-label={`Remove ${ch.channelTitle}`}
                         onClick={() => handleRemoveChannel(ch.id)}
                         className="profile-edit-remove-btn"
                       >

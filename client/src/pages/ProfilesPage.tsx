@@ -160,12 +160,14 @@ export default function ProfilesPage() {
                 </div>
                 <div className="profiles-item-actions">
                   <button
+                    aria-label={`Edit ${p.name}`}
                     onClick={() => navigate(`/profiles/${p.id}/edit`)}
                     className="profiles-edit-btn"
                   >
                     Edit
                   </button>
                   <button
+                    aria-label={`Delete ${p.name}`}
                     onClick={() => handleDelete(p.id, p.name)}
                     className="profiles-delete-btn"
                   >
