@@ -89,5 +89,6 @@ describe('ProfileSwitcher', () => {
     await user.click(screen.getByRole('option', { name: /news roundup\s*by\s*taylor\s*following/i }));
 
     expect(setActiveProfile).toHaveBeenCalledWith('followed-1');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 });

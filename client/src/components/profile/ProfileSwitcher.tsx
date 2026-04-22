@@ -52,7 +52,7 @@ export default function ProfileSwitcher() {
       {open && (
         <div role="listbox" className="profile-switcher-dropdown">
           {profiles.length > 0 && (
-            <div role="group" aria-label="Your profiles" className="profile-switcher-section">
+            <div role="group" className="profile-switcher-section">
               <span className="profile-switcher-group-label">Your profiles</span>
               {profiles.map((p) => (
                 <button
