@@ -52,7 +52,7 @@ function loadYouTubeIFrameApi(): Promise<void> {
 const EMBED_BLOCKED_CODES = new Set([101, 150, 153]);
 const VIDEO_PLAYER_TITLE_ID = 'video-player-title-id';
 const FOCUSABLE_ELEMENTS_SELECTOR =
-  'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+  'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, details, summary, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"]):not([disabled])';
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -168,7 +168,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
 
     const focusableElements = Array.from(
       dialog.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENTS_SELECTOR),
-    ).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+    ).filter((element) => {
+      if (
+        element.hasAttribute('hidden')
+        || element.getAttribute('aria-hidden') === 'true'
+        || element.closest('[aria-hidden="true"]')
+        || element.hasAttribute('inert')
+        || element.closest('[inert]')
+      ) {
+        return false;
+      }
+
+      const style = window.getComputedStyle(element);
+      return (
+        style.display !== 'none'
+        && style.visibility !== 'hidden'
+      );
+    });
 
     if (focusableElements.length === 0) {
       e.preventDefault();
