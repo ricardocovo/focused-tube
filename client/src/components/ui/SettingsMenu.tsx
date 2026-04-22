@@ -1,12 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef, useEffect, useId, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './SettingsMenu.css';
 
 export default function SettingsMenu() {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const menuItemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const openInteractionRef = useRef<'keyboard' | 'pointer'>();
+  const dropdownId = useId();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -14,15 +20,88 @@ export default function SettingsMenu() {
         setOpen(false);
       }
     }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && open) {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setActiveIndex(0);
+      if (openInteractionRef.current === 'keyboard') {
+        requestAnimationFrame(() => {
+          focusMenuItem(0);
+        });
+      }
+    }
+  }, [open]);
+
+  function focusMenuItem(index: number) {
+    const normalizedIndex = (index + menuItemRefs.current.length) % menuItemRefs.current.length;
+    setActiveIndex(normalizedIndex);
+    menuItemRefs.current[normalizedIndex]?.focus();
+  }
+
+  function handleMenuItemKeyDown(index: number, e: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusMenuItem(index + 1);
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusMenuItem(index - 1);
+      return;
+    }
+
+    if (e.key === 'Home') {
+      e.preventDefault();
+      focusMenuItem(0);
+      return;
+    }
+
+    if (e.key === 'End') {
+      e.preventDefault();
+      focusMenuItem(menuItemRefs.current.length - 1);
+    }
+  }
 
   return (
     <div ref={ref} className="settings-menu">
       <button
+        ref={toggleRef}
+        onPointerDown={() => {
+          openInteractionRef.current = 'pointer';
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            openInteractionRef.current = 'keyboard';
+            setOpen(true);
+            return;
+          }
+
+          if (e.key === 'Enter' || e.key === ' ') {
+            openInteractionRef.current = 'keyboard';
+          }
+        }}
         onClick={() => setOpen(!open)}
         aria-label="Settings"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={dropdownId}
         className={`settings-menu-toggle${open ? ' settings-menu-toggle--open' : ''}`}
       >
         <svg
@@ -41,10 +120,19 @@ export default function SettingsMenu() {
       </button>
 
       {open && (
-        <div className="settings-menu-dropdown">
-          <Link
-            to="/profiles"
-            onClick={() => setOpen(false)}
+        <div id={dropdownId} role="menu" className="settings-menu-dropdown">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              navigate('/profiles');
+            }}
+            onKeyDown={(e) => handleMenuItemKeyDown(0, e)}
+            tabIndex={activeIndex === 0 ? 0 : -1}
+            ref={(node) => {
+              menuItemRefs.current[0] = node;
+            }}
+            role="menuitem"
             className="settings-menu-link"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,13 +140,19 @@ export default function SettingsMenu() {
               <circle cx="12" cy="7" r="4" />
             </svg>
             Manage Profiles
-          </Link>
-          <div className="settings-menu-divider" />
+          </button>
+          <div role="separator" className="settings-menu-divider" />
           <button
             onClick={() => {
               setOpen(false);
               logout();
             }}
+            onKeyDown={(e) => handleMenuItemKeyDown(1, e)}
+            tabIndex={activeIndex === 1 ? 0 : -1}
+            ref={(node) => {
+              menuItemRefs.current[1] = node;
+            }}
+            role="menuitem"
             className="settings-menu-btn"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
