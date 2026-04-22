@@ -50,6 +50,9 @@ function loadYouTubeIFrameApi(): Promise<void> {
 
 /* Embed error codes that signal "cannot play in embedded player" */
 const EMBED_BLOCKED_CODES = new Set([101, 150, 153]);
+const VIDEO_PLAYER_TITLE_ID = 'video-player-title-id';
+const FOCUSABLE_ELEMENTS_SELECTOR =
+  'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -62,6 +65,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayerLike | null>(null);
 
@@ -156,8 +160,53 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
 
   const showFallback = embedError || apiLoadFailed;
 
+  const trapFocus = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab') return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENTS_SELECTOR),
+    ).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+
+    if (focusableElements.length === 0) {
+      e.preventDefault();
+      closeButtonRef.current?.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    const activeElement = document.activeElement as HTMLElement | null;
+
+    if (!activeElement || !dialog.contains(activeElement)) {
+      e.preventDefault();
+      firstElement.focus();
+      return;
+    }
+
+    if (e.shiftKey && activeElement === firstElement) {
+      e.preventDefault();
+      lastElement.focus();
+      return;
+    }
+
+    if (!e.shiftKey && activeElement === lastElement) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  }, []);
+
   return (
-    <div className="video-player">
+    <div
+      ref={dialogRef}
+      className="video-player"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={VIDEO_PLAYER_TITLE_ID}
+      onKeyDown={trapFocus}
+    >
       <div className="video-player-inner">
         <button
           ref={closeButtonRef}
@@ -213,7 +262,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
         </div>
 
         <div className="video-player-info">
-          <h2 className="video-player-title">{video.title}</h2>
+          <h2 id={VIDEO_PLAYER_TITLE_ID} className="video-player-title">{video.title}</h2>
           <p className="video-player-channel">{video.channelTitle}</p>
         </div>
       </div>
