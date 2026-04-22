@@ -18,42 +18,41 @@ interface FeedSourceTabsProps {
 
 const FeedSourceTabs: React.FC<FeedSourceTabsProps> = ({ activeSource, onSourceChange }) => {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const selectedTabIndex = Math.max(TABS.findIndex((tab) => tab.value === activeSource), 0);
+  const rawSelectedTabIndex = TABS.findIndex((tab) => tab.value === activeSource);
+  const selectedTabIndex = rawSelectedTabIndex >= 0 ? rawSelectedTabIndex : 0;
 
   const moveFocus = (index: number) => {
     tabRefs.current[index]?.focus();
   };
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' && event.key !== 'Home' && event.key !== 'End') {
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) {
       return;
     }
 
     event.preventDefault();
     const lastIndex = TABS.length - 1;
 
-    if (event.key === 'ArrowRight') {
-      moveFocus(index === lastIndex ? 0 : index + 1);
-      return;
+    switch (event.key) {
+      case 'ArrowRight':
+        moveFocus(index === lastIndex ? 0 : index + 1);
+        break;
+      case 'ArrowLeft':
+        moveFocus(index === 0 ? lastIndex : index - 1);
+        break;
+      case 'Home':
+        moveFocus(0);
+        break;
+      case 'End':
+        moveFocus(lastIndex);
+        break;
     }
-
-    if (event.key === 'ArrowLeft') {
-      moveFocus(index === 0 ? lastIndex : index - 1);
-      return;
-    }
-
-    if (event.key === 'Home') {
-      moveFocus(0);
-      return;
-    }
-
-    moveFocus(lastIndex);
   };
 
   return (
     <div className="feed-tabs" role="tablist" aria-label="Feed source">
       {TABS.map((tab, index) => {
-        const isActive = activeSource === tab.value;
+        const isActive = index === selectedTabIndex;
         return (
           <button
             key={tab.label}
