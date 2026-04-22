@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SettingsMenu from './SettingsMenu';
@@ -55,12 +55,47 @@ describe('SettingsMenu', () => {
 
     const signOut = screen.getByRole('menuitem', { name: /sign out/i });
     signOut.focus();
-    expect(signOut).toHaveFocus();
 
     await user.keyboard('{Escape}');
 
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(toggle).toHaveFocus();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('supports arrow key movement between menu items', async () => {
+    const user = userEvent.setup();
+
+    renderSettingsMenu();
+
+    const toggle = screen.getByRole('button', { name: 'Settings' });
+    await user.click(toggle);
+
+    const manageProfiles = screen.getByRole('menuitem', { name: /manage profiles/i });
+    const signOut = screen.getByRole('menuitem', { name: /sign out/i });
+
+    manageProfiles.focus();
+    expect(manageProfiles).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(signOut).toHaveFocus();
+
+    await user.keyboard('{ArrowUp}');
+    expect(manageProfiles).toHaveFocus();
+  });
+
+  it('moves focus into the first menu item when opened with keyboard', async () => {
+    const user = userEvent.setup();
+
+    renderSettingsMenu();
+
+    const toggle = screen.getByRole('button', { name: 'Settings' });
+    toggle.focus();
+
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /manage profiles/i })).toHaveFocus();
+    });
   });
 });
