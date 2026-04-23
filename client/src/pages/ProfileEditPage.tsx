@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../services/profilesApi';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
 import AppHeader from '../components/ui/AppHeader';
@@ -20,6 +21,8 @@ export default function ProfileEditPage() {
   const [newKeyword, setNewKeyword] = useState('');
   const [error, setError] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+
+  usePageTitle(profile ? `Edit ${profile.name}` : 'Edit Profile');
 
   useEffect(() => {
     if (!id) return;
