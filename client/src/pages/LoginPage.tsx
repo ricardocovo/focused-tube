@@ -30,7 +30,7 @@ export default function LoginPage() {
   const googleAuthHref = `${import.meta.env.VITE_API_URL ?? ''}/api/auth/google`;
 
   return (
-    <div className="login-page">
+    <main id="main-content" tabIndex={-1} className="login-page">
       <div className="login-content">
         {errorCode && (
           <div role="alert" className="login-error-banner">
@@ -76,6 +76,6 @@ export default function LoginPage() {
           Sign in with Google
         </a>
       </div>
-    </div>
+    </main>
   );
 }
