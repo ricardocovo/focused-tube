@@ -73,7 +73,7 @@ describe('ProfileSwitcher', () => {
 
     renderSwitcher();
 
-    const trigger = screen.getByRole('button', { name: /^watching\s*news roundup$/i });
+    const trigger = screen.getByRole('button', { name: /watching\s*news roundup.*switch profile/i });
     expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
@@ -90,5 +90,42 @@ describe('ProfileSwitcher', () => {
 
     expect(setActiveProfile).toHaveBeenCalledWith('followed-1');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('associates group labels with listbox groups', async () => {
+    const user = userEvent.setup();
+
+    mockUseProfiles.mockReturnValue({
+      profiles: [
+        {
+          id: 'owned-1',
+          name: 'Deep Work',
+          isPublic: false,
+        },
+      ],
+      activeProfile: {
+        id: 'owned-1',
+        name: 'Deep Work',
+      },
+      setActiveProfile: vi.fn(),
+      isLoading: false,
+      followedProfiles: [
+        {
+          id: 'followed-1',
+          name: 'News Roundup',
+          isPublic: true,
+          isFollowing: true,
+          user: { name: 'Taylor', avatarUrl: null },
+          _count: { followers: 3 },
+        },
+      ],
+    });
+
+    renderSwitcher();
+
+    await user.click(screen.getByRole('button', { name: /watching\s*deep work.*switch profile/i }));
+
+    expect(screen.getByRole('group', { name: 'Your profiles' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Community profiles you follow' })).toBeInTheDocument();
   });
 });
