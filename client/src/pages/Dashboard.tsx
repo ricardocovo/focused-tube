@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import AppHeader from '../components/ui/AppHeader';
 import ProfileSwitcher from '../components/profile/ProfileSwitcher';
 import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
@@ -14,6 +15,7 @@ const PROFILE_PANEL_STORAGE_KEY = 'ft_dashboard_profile_panel';
 
 export default function Dashboard() {
   const { activeProfile, profiles, updateProfile } = useProfiles();
+  usePageTitle(activeProfile ? `${activeProfile.name} feed` : 'Dashboard');
   const [selectedVideo, setSelectedVideo] = useState<FeedVideo | null>(null);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [isProfilePanelVisible, setIsProfilePanelVisible] = useState(

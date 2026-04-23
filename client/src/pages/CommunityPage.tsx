@@ -1,8 +1,10 @@
 import AppHeader from '../components/ui/AppHeader';
 import { useCommunity } from '../hooks/useCommunity';
+import { usePageTitle } from '../hooks/usePageTitle';
 import './CommunityPage.css';
 
 export default function CommunityPage() {
+  usePageTitle('Community Profiles');
   const {
     profiles,
     total,

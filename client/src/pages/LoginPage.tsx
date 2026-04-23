@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import './LoginPage.css';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -9,6 +10,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export default function LoginPage() {
+  usePageTitle('Sign in');
   const { user, isLoading } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import AppHeader from '../components/ui/AppHeader';
 import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
 import { notify } from '../lib/toast';
 import './ProfilesPage.css';
 
 export default function ProfilesPage() {
+  usePageTitle('Profiles');
   const { profiles, isLoading, createProfile, deleteProfile, updateProfile } = useProfiles();
   const navigate = useNavigate();
 
