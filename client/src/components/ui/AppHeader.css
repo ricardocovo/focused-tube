@@ -1,3 +1,30 @@
+/* Skip navigation link */
+.skip-link:not(:focus):not(:active) {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--ft-surface);
+  color: var(--ft-text);
+  outline: 2px solid var(--ft-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--ft-radius-sm, 4px);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .app-header-brand {
   display: flex;
   align-items: center;

@@ -123,7 +123,7 @@ export default function ProfileEditPage() {
           </ol>
         </nav>
       </AppHeader>
-      <div className="page-container-narrow">
+      <main id="main-content" tabIndex={-1} className="page-container-narrow">
         {loading ? (
           <p className="profile-edit-loading">Loading…</p>
         ) : !profile ? (
@@ -225,7 +225,7 @@ export default function ProfileEditPage() {
             {/* Keywords section — hidden: search UI disabled */}
           </>
         )}
-      </div>
+      </main>
     </>
   );
 }

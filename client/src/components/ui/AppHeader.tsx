@@ -13,6 +13,7 @@ export default function AppHeader({ children }: AppHeaderProps) {
 
   return (
     <header className="app-header">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Link to="/" className="app-header-brand">
         <img src="/ft-logo.png" alt="" className="app-header-logo" />
         Focused <span className="app-header-brand-accent">Tube</span>
