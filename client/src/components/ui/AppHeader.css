@@ -18,6 +18,7 @@
   background: var(--ft-surface);
   color: var(--ft-text);
   outline: 2px solid var(--ft-border-focus);
+  outline-offset: 2px;
   border-radius: var(--ft-radius-sm, 4px);
   text-decoration: none;
   font-size: 14px;
