@@ -125,7 +125,7 @@ export default function SubscriptionPickerPage() {
           </ol>
         </nav>
       </AppHeader>
-      <div className="page-container-narrow">
+      <main id="main-content" tabIndex={-1} className="page-container-narrow">
         <div className="sub-picker-header">
           <div>
             <h1 className="sub-picker-title">Browse Subscriptions</h1>
@@ -203,7 +203,7 @@ export default function SubscriptionPickerPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </>
   );
 }

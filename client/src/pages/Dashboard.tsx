@@ -71,7 +71,7 @@ export default function Dashboard() {
       {selectedVideo && (
         <VideoPlayer video={selectedVideo} onClose={handleClose} />
       )}
-      <div className="page-container">
+      <main id="main-content" tabIndex={-1} className="page-container">
         <h1 className="dashboard-page-title">
           {activeProfile ? `${activeProfile.name} feed` : 'Dashboard'}
         </h1>
@@ -191,7 +191,7 @@ export default function Dashboard() {
             </Link>
           </div>
         )}
-      </div>
+      </main>
     </>
   );
 }

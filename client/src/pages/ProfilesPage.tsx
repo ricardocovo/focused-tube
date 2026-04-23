@@ -69,7 +69,7 @@ export default function ProfilesPage() {
           </ol>
         </nav>
       </AppHeader>
-      <div className="page-container-narrow">
+      <main id="main-content" tabIndex={-1} className="page-container-narrow">
         <div className="profiles-header">
           <h1 className="profiles-title">Profiles</h1>
           <button
@@ -179,7 +179,7 @@ export default function ProfilesPage() {
           ))}
         </div>
       )}
-      </div>
+      </main>
     </>
   );
 }

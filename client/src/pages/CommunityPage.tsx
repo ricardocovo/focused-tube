@@ -20,7 +20,7 @@ export default function CommunityPage() {
   return (
     <>
       <AppHeader />
-      <main className="page-container">
+      <main id="main-content" tabIndex={-1} className="page-container">
         <div className="community-header">
           <div>
             <h1 className="community-title">Community Profiles</h1>
