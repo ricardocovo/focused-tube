@@ -1,8 +1,10 @@
 import AppHeader from '../components/ui/AppHeader';
 import { useCommunity } from '../hooks/useCommunity';
+import { usePageTitle } from '../hooks/usePageTitle';
 import './CommunityPage.css';
 
 export default function CommunityPage() {
+  usePageTitle('Community Profiles');
   const {
     profiles,
     total,
@@ -20,7 +22,7 @@ export default function CommunityPage() {
   return (
     <>
       <AppHeader />
-      <main className="page-container">
+      <main id="main-content" tabIndex={-1} className="page-container">
         <div className="community-header">
           <div>
             <h1 className="community-title">Community Profiles</h1>

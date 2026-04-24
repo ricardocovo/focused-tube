@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import AppHeader from '../components/ui/AppHeader';
 import ProfileSwitcher from '../components/profile/ProfileSwitcher';
 import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
@@ -14,6 +15,7 @@ const PROFILE_PANEL_STORAGE_KEY = 'ft_dashboard_profile_panel';
 
 export default function Dashboard() {
   const { activeProfile, profiles, updateProfile } = useProfiles();
+  usePageTitle(activeProfile ? `${activeProfile.name} feed` : 'Dashboard');
   const [selectedVideo, setSelectedVideo] = useState<FeedVideo | null>(null);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [isProfilePanelVisible, setIsProfilePanelVisible] = useState(
@@ -71,7 +73,7 @@ export default function Dashboard() {
       {selectedVideo && (
         <VideoPlayer video={selectedVideo} onClose={handleClose} />
       )}
-      <div className="page-container">
+      <main id="main-content" tabIndex={-1} className="page-container">
         <h1 className="dashboard-page-title">
           {activeProfile ? `${activeProfile.name} feed` : 'Dashboard'}
         </h1>
@@ -177,9 +179,9 @@ export default function Dashboard() {
         )}
 
         {activeProfile ? (
-          <div id="feed-tabpanel" role="tabpanel" aria-label="Feed videos">
+          <section aria-label="Video feed">
             <VideoFeed profileId={activeProfile.id} onVideoSelect={handleVideoSelect} />
-          </div>
+          </section>
         ) : (
           <div className="dashboard-empty">
             <div className="dashboard-empty-icon">🎬</div>
@@ -191,7 +193,7 @@ export default function Dashboard() {
             </Link>
           </div>
         )}
-      </div>
+      </main>
     </>
   );
 }

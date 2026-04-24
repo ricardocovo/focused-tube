@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSubscriptions } from '../hooks/useSubscriptions';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useProfiles } from '../context/ProfileContext';
 import { addChannel, removeChannel } from '../services/profilesApi';
 import { fetchProfile } from '../services/profilesApi';
@@ -18,6 +19,8 @@ export default function SubscriptionPickerPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+
+  usePageTitle(profile ? `Subscriptions – ${profile.name}` : 'Browse Subscriptions');
 
   const [search, setSearch] = useState('');
   const [selectedChannels, setSelectedChannels] = useState<Map<string, ProfileChannel>>(new Map());
@@ -125,7 +128,7 @@ export default function SubscriptionPickerPage() {
           </ol>
         </nav>
       </AppHeader>
-      <div className="page-container-narrow">
+      <main id="main-content" tabIndex={-1} className="page-container-narrow">
         <div className="sub-picker-header">
           <div>
             <h1 className="sub-picker-title">Browse Subscriptions</h1>
@@ -203,7 +206,7 @@ export default function SubscriptionPickerPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { useProfiles } from '../../context/ProfileContext';
 import { Link } from 'react-router-dom';
 import ProfileSwitcherSkeleton from './ProfileSwitcherSkeleton';
@@ -8,6 +8,8 @@ export default function ProfileSwitcher() {
   const { profiles, activeProfile, setActiveProfile, isLoading, followedProfiles } = useProfiles();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const ownProfilesGroupLabelId = useId();
+  const followedProfilesGroupLabelId = useId();
   const hasAnyProfiles = profiles.length > 0 || followedProfiles.length > 0;
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function ProfileSwitcher() {
     <div ref={ref} className="profile-switcher">
       <button
         type="button"
+        aria-label={`Watching ${activeProfile?.name ?? 'Select profile'} — switch profile`}
         aria-expanded={open}
         aria-haspopup="listbox"
         onClick={() => setOpen(!open)}
@@ -52,8 +55,8 @@ export default function ProfileSwitcher() {
       {open && (
         <div role="listbox" className="profile-switcher-dropdown">
           {profiles.length > 0 && (
-            <div role="group" className="profile-switcher-section">
-              <span className="profile-switcher-group-label">Your profiles</span>
+            <div role="group" aria-labelledby={ownProfilesGroupLabelId} className="profile-switcher-section">
+              <span id={ownProfilesGroupLabelId} className="profile-switcher-group-label">Your profiles</span>
               {profiles.map((p) => (
                 <button
                   type="button"
@@ -78,8 +81,8 @@ export default function ProfileSwitcher() {
           {followedProfiles.length > 0 && (
             <>
               {profiles.length > 0 && <div className="profile-switcher-divider" role="separator" />}
-              <div role="group" aria-label="Community profiles you follow" className="profile-switcher-section">
-                <span className="profile-switcher-group-label">Community profiles you follow</span>
+              <div role="group" aria-labelledby={followedProfilesGroupLabelId} className="profile-switcher-section">
+                <span id={followedProfilesGroupLabelId} className="profile-switcher-group-label">Community profiles you follow</span>
                 {followedProfiles.map((p) => (
                   <button
                     type="button"

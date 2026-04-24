@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfiles } from '../context/ProfileContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import AppHeader from '../components/ui/AppHeader';
 import ProfileVisibilitySwitch from '../components/profile/ProfileVisibilitySwitch';
 import { notify } from '../lib/toast';
 import './ProfilesPage.css';
 
 export default function ProfilesPage() {
+  usePageTitle('Profiles');
   const { profiles, isLoading, createProfile, deleteProfile, updateProfile } = useProfiles();
   const navigate = useNavigate();
 
@@ -69,7 +71,7 @@ export default function ProfilesPage() {
           </ol>
         </nav>
       </AppHeader>
-      <div className="page-container-narrow">
+      <main id="main-content" tabIndex={-1} className="page-container-narrow">
         <div className="profiles-header">
           <h1 className="profiles-title">Profiles</h1>
           <button
@@ -179,7 +181,7 @@ export default function ProfilesPage() {
           ))}
         </div>
       )}
-      </div>
+      </main>
     </>
   );
 }
