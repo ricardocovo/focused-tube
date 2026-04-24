@@ -65,12 +65,7 @@ The repository has already been checked out into the current working directory.
    - `CONFIGURATION.md`
    - `DEPLOYMENT.md`
    - `.github/copilot-instructions.md`
-   - workspace `package.json`
-   - `client/package.json`
-   - `server/package.json`
-   - relevant files under `client/src/`
-   - relevant files under `server/src/`
-   - relevant files under `specs/`
+   - workspace `**\package.json`
 
 2. List all the prompts you found under `.github/prompts/p1*.md`.
 
