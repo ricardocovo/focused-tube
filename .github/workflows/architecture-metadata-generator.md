@@ -8,15 +8,13 @@ description: |
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: read
+permissions: read-all
 
 network: defaults
 
 tools:
   github:
-    toolsets: [repos, pull_requests]
+    toolsets: [all]
   web-fetch:
   cache-memory: true
   bash: true
