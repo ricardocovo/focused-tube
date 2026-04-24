@@ -28,7 +28,17 @@ steps:
     with:
       fetch-depth: 0
       persist-credentials: false
-  
+
+  - name: Setup Node.js
+    uses: actions/setup-node@v6
+    with:
+      node-version: 24
+
+  - name: Download repo-metadata-generator pack
+    run: |
+      curl -L -o repo-metadata-generator-1.0.0.tar.gz \
+        "https://github.com/ricardocovo/agent-primitives/raw/main/packs/repo-metadata-generator-1.0.0.tar.gz"
+
   - name: Install APM and Unpack Metadata Generator
     run: |
       curl -sSL https://aka.ms/apm-unix | sh
