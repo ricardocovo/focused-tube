@@ -10,15 +10,16 @@ on:
 
 permissions:
   contents: read
-  issues: read
   pull-requests: read
 
 network: defaults
 
 tools:
   github:
-    lockdown: false
-    min-integrity: none
+    toolsets: [repos, pull_requests]
+  web-fetch:
+  cache-memory: true
+  bash: true
 
 timeout-minutes: 20
 
@@ -47,6 +48,7 @@ safe-outputs:
     excluded-files: 
       - "github/**"
     fallback-as-issue: false
+    if-no-changes: "warn"
 ---
 
 # Architecture Metadata Generator
