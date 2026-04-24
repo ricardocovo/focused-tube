@@ -1,0 +1,157 @@
+artifact: api-summary
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+api-style: REST
+base-path: /api
+auth-schemes: [JWT-Bearer, httpOnly-cookie]
+versioning-strategy: none
+endpoints:
+  - path: /api/auth/google
+    method: GET
+    summary: Redirect to Google OAuth consent screen
+    auth-required: false
+    request-schema: null
+    response-schema: "302 redirect to Google"
+    status-codes: [302]
+  - path: /api/auth/google/callback
+    method: GET
+    summary: Handle OAuth callback, issue JWT tokens, set httpOnly cookies
+    auth-required: false
+    request-schema: "query: {code, state}"
+    response-schema: "302 redirect to client origin; sets ft_refresh_token, ft_access_token, ft_returning_user cookies"
+    status-codes: [302]
+  - path: /api/auth/me
+    method: GET
+    summary: Get current authenticated user info
+    auth-required: true
+    request-schema: null
+    response-schema: "{id, email, name, avatarUrl}"
+    status-codes: [200, 401]
+  - path: /api/auth/refresh
+    method: POST
+    summary: Rotate refresh token and issue new access token
+    auth-required: false
+    request-schema: "httpOnly cookie: ft_refresh_token"
+    response-schema: "{accessToken: string}"
+    status-codes: [200, 401]
+  - path: /api/auth/logout
+    method: POST
+    summary: Clear all auth cookies and invalidate session
+    auth-required: false
+    request-schema: null
+    response-schema: "{message: 'Logged out'}"
+    status-codes: [200]
+  - path: /api/profiles
+    method: GET
+    summary: List all profiles for the authenticated user
+    auth-required: true
+    request-schema: null
+    response-schema: "Profile[]"
+    status-codes: [200, 401]
+  - path: /api/profiles
+    method: POST
+    summary: Create a new profile
+    auth-required: true
+    request-schema: "{name: string}"
+    response-schema: "Profile"
+    status-codes: [201, 400, 401, 409]
+  - path: /api/profiles/:id
+    method: GET
+    summary: Get a specific profile by ID
+    auth-required: true
+    request-schema: null
+    response-schema: "Profile with channels and keywords"
+    status-codes: [200, 401, 404]
+  - path: /api/profiles/:id
+    method: PUT
+    summary: Update a profile
+    auth-required: true
+    request-schema: "{name?: string, isDefault?: boolean, isPublic?: boolean}"
+    response-schema: "Profile"
+    status-codes: [200, 400, 401, 404, 409]
+  - path: /api/profiles/:id
+    method: DELETE
+    summary: Delete a profile
+    auth-required: true
+    request-schema: null
+    response-schema: "{message: string}"
+    status-codes: [200, 401, 404]
+  - path: /api/profiles/:id/channels
+    method: POST
+    summary: Add channels to a profile
+    auth-required: true
+    request-schema: "{channels: [{youtubeChannelId, channelTitle, thumbnailUrl?}]}"
+    response-schema: "Profile"
+    status-codes: [200, 401, 404]
+  - path: /api/profiles/:id/channels/:channelId
+    method: DELETE
+    summary: Remove a channel from a profile
+    auth-required: true
+    request-schema: null
+    response-schema: "{message: string}"
+    status-codes: [200, 401, 404]
+  - path: /api/profiles/:id/keywords
+    method: POST
+    summary: Add keywords to a profile
+    auth-required: true
+    request-schema: "{keywords: string[]}"
+    response-schema: "Profile"
+    status-codes: [200, 401, 404]
+  - path: /api/profiles/:id/keywords/:keywordId
+    method: DELETE
+    summary: Remove a keyword from a profile
+    auth-required: true
+    request-schema: null
+    response-schema: "{message: string}"
+    status-codes: [200, 401, 404]
+  - path: /api/subscriptions
+    method: GET
+    summary: Fetch the authenticated user's YouTube subscriptions
+    auth-required: true
+    request-schema: null
+    response-schema: "YouTubeSubscription[]"
+    status-codes: [200, 401, 403]
+  - path: /api/feed/:profileId
+    method: GET
+    summary: Combined video feed for a profile (subscription + keyword search)
+    auth-required: true
+    request-schema: "query: {source?: 'subscriptions'|'search', pageToken?: string}"
+    response-schema: "{videos: Video[], nextPageToken?: string}"
+    status-codes: [200, 400, 401, 403, 404, 429]
+  - path: /api/health
+    method: GET
+    summary: Health check with YouTube API quota usage
+    auth-required: false
+    request-schema: null
+    response-schema: "{status: 'ok', quota: {date, used, limit, remaining}}"
+    status-codes: [200]
+  - path: /api/community/profiles
+    method: GET
+    summary: List public profiles for community discovery
+    auth-required: true
+    request-schema: "query: {keyword?: string, page?: number, limit?: number}"
+    response-schema: "{profiles: PublicProfile[], total: number, page: number}"
+    status-codes: [200, 401]
+  - path: /api/community/profiles/:profileId/follow
+    method: POST
+    summary: Follow a public profile
+    auth-required: true
+    request-schema: null
+    response-schema: "{message: string}"
+    status-codes: [200, 401, 403, 404, 409]
+  - path: /api/community/profiles/:profileId/follow
+    method: DELETE
+    summary: Unfollow a profile
+    auth-required: true
+    request-schema: null
+    response-schema: "{message: string}"
+    status-codes: [200, 401, 404]
+  - path: /api/community/following
+    method: GET
+    summary: List profiles the current user follows
+    auth-required: true
+    request-schema: null
+    response-schema: "FollowedProfile[]"
+    status-codes: [200, 401]

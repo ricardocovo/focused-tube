@@ -1,0 +1,21 @@
+artifact: repo-identity
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+display-name: "Focused Tube"
+repo-type: service
+description: "YouTube overlay web app enabling curated profile-based video feeds to bypass the recommendation algorithm."
+owner:
+  team: ricardocovo
+  contacts: []
+lifecycle-status: active
+primary-language: TypeScript
+tech-stack:
+  languages: [TypeScript, CSS, HTML]
+  frameworks: [React, Express, Prisma, Vite, Passport, React Router]
+  runtime: "Node.js >=22"
+  build-tool: "npm workspaces + tsc + vite"
+repo-url: https://github.com/ricardocovo/focused-tube
+default-branch: main
+tags: [youtube, react, express, prisma, azure, oauth, monorepo]

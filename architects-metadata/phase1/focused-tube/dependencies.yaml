@@ -1,0 +1,223 @@
+artifact: "P1-4"
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+upstream-services:
+  - name: Google OAuth 2.0
+    host: accounts.google.com
+    protocol: HTTPS
+    purpose: User authentication and authorization via Google identity
+    criticality: critical
+    notes: App cannot authenticate users without this service; handles OAuth 2.0 authorization code flow
+    env-vars:
+      - name: GOOGLE_CLIENT_ID
+        sensitivity: secret
+      - name: GOOGLE_CLIENT_SECRET
+        sensitivity: secret
+
+  - name: YouTube Data API v3
+    host: googleapis.com
+    protocol: HTTPS
+    purpose: Fetch user subscriptions, channel uploads via playlistItems.list, and keyword search via search.list
+    criticality: critical
+    notes: Feed generation entirely depends on this API; daily quota is 10,000 units; search.list costs 100 units per call
+    quota:
+      daily-units: 10000
+      search-list-cost-per-call: 100
+    env-vars:
+      - name: GOOGLE_CLIENT_ID
+        sensitivity: secret
+      - name: GOOGLE_CLIENT_SECRET
+        sensitivity: secret
+
+  - name: Azure SQL
+    type: database
+    protocol: TDS
+    dialect: SQL Server
+    purpose: Primary relational data store for users, profiles, channels, keywords, and follows
+    criticality: critical
+    notes: Managed via Prisma ORM; connection string must never be committed to source
+    env-vars:
+      - name: DATABASE_URL
+        sensitivity: secret
+
+downstream-consumers:
+  - name: focused-tube-client
+    type: spa
+    description: React 18 SPA served via Azure Static Web App
+    protocol: HTTP REST
+    consumes:
+      - pattern: /api/auth/*
+        purpose: Google OAuth flow and session management
+      - pattern: /api/profiles/*
+        purpose: Profile CRUD, channel and keyword management
+      - pattern: /api/subscriptions
+        purpose: Fetch authenticated user's YouTube subscriptions
+      - pattern: /api/feed/:profileId
+        purpose: Combined subscription and keyword video feed
+
+infrastructure:
+  - name: Azure SQL
+    type: database
+    provider: Azure
+    service: Azure SQL Database (SQL Server)
+    purpose: Primary persistent data store
+    criticality: critical
+
+  - name: Azure Container Registry
+    type: registry
+    provider: Azure
+    service: ACR
+    purpose: Docker image storage for server container builds
+    criticality: high
+
+  - name: Azure Container App
+    type: compute
+    provider: Azure
+    service: Azure Container Apps
+    purpose: Hosts the Express REST API server as a containerised workload
+    criticality: critical
+
+  - name: Azure Static Web App
+    type: hosting
+    provider: Azure
+    service: Azure Static Web Apps
+    purpose: Serves the React SPA client
+    criticality: critical
+
+packages:
+  runtime:
+    server:
+      - name: express
+        version: "^4.21.2"
+        purpose: HTTP server and routing framework
+
+      - name: "@prisma/client"
+        version: "^6.3.0"
+        purpose: Type-safe ORM client for Azure SQL (SQL Server) database access
+
+      - name: googleapis
+        version: "^171.4.0"
+        purpose: Official Google API client — used for YouTube Data API v3 and OAuth token exchange
+
+      - name: passport
+        version: "^0.7.0"
+        purpose: Authentication middleware framework
+
+      - name: passport-google-oauth20
+        version: "^2.0.0"
+        purpose: Google OAuth 2.0 strategy for Passport
+
+      - name: jsonwebtoken
+        version: "^9.0.3"
+        purpose: JWT creation and verification for session tokens
+
+      - name: cors
+        version: "^2.8.5"
+        purpose: Cross-Origin Resource Sharing middleware for SPA-to-API requests
+
+      - name: cookie-parser
+        version: "^1.4.7"
+        purpose: Parse Cookie header for JWT session cookies
+
+      - name: dotenv
+        version: "^16.4.7"
+        purpose: Load environment variables from .env file
+
+    client:
+      - name: react
+        version: "^18.3.1"
+        purpose: UI component framework
+
+      - name: react-dom
+        version: "^18.3.1"
+        purpose: React DOM renderer
+
+      - name: react-router-dom
+        version: "^7.14.0"
+        purpose: Client-side routing
+
+      - name: axios
+        version: "^1.14.0"
+        purpose: HTTP client for REST API calls to the server
+
+      - name: date-fns
+        version: "^4.1.0"
+        purpose: Date formatting and manipulation for feed timestamps
+
+      - name: react-hot-toast
+        version: "^2.6.0"
+        purpose: Toast notification UI
+
+  dev:
+    shared:
+      - name: typescript
+        version: "^5.7.2"
+        purpose: Static typing for both client and server workspaces
+
+      - name: concurrently
+        version: "^9.1.2"
+        purpose: Run client and server dev servers in parallel from the root
+
+    server:
+      - name: prisma
+        version: "^6.3.0"
+        purpose: Prisma CLI for schema migrations and client generation
+
+      - name: ts-node-dev
+        version: "^2.0.0"
+        purpose: TypeScript execution with hot reload for local development
+
+      - name: vitest
+        version: "^4.1.3"
+        purpose: Unit and integration test runner
+
+    client:
+      - name: vite
+        version: "^6.0.5"
+        purpose: Fast frontend build tool and dev server
+
+      - name: "@vitejs/plugin-react"
+        version: "^4.3.4"
+        purpose: Vite plugin for React JSX transform and fast refresh
+
+      - name: vitest
+        version: "^4.1.3"
+        purpose: Unit test runner (shares config with Vite)
+
+      - name: "@testing-library/react"
+        version: "^16.3.2"
+        purpose: Component testing utilities
+
+      - name: "@testing-library/user-event"
+        version: "^14.6.1"
+        purpose: Simulate user interactions in tests
+
+      - name: jsdom
+        version: "^29.0.2"
+        purpose: DOM environment for Vitest (simulates browser in Node)
+
+build-dependencies:
+  - name: GitHub Actions
+    type: ci-cd
+    purpose: Automated CI/CD pipeline for build, test, and deployment to Azure
+    notes: Workflow definitions in .github/workflows/
+
+  - name: Docker
+    type: container-runtime
+    purpose: Containerises the Express server for deployment to Azure Container App
+    notes: Server Dockerfile used to produce the image pushed to ACR
+
+  - name: Azure CLI
+    type: deployment-tool
+    purpose: Scripted deployment commands documented in DEPLOYMENT.md
+    notes: Used to push images and update Azure Container App and Static Web App
+
+runtime-environment:
+  node-version: ">=22"
+  package-manager: npm
+  workspace-tool: npm workspaces
+  workspaces:
+    - client
+    - server

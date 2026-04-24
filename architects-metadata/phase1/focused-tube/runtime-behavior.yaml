@@ -1,0 +1,225 @@
+artifact: runtime-behavior
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+observation-window: "unavailable - no production telemetry configured"
+
+instrumentation-summary:
+  apm: none
+  structured-logging: false
+  request-tracing: false
+  metrics-export: none
+  platform-metrics: "Azure Monitor (Container Apps CPU/memory/request count) — not ingested into application code"
+  in-app-instrumentation:
+    - name: "QuotaTracker"
+      type: "in-memory counter"
+      description: "Tracks daily YouTube Data API v3 unit consumption. Resets at midnight UTC."
+    - name: "Health endpoint"
+      type: "REST endpoint"
+      path: "GET /api/health"
+      description: "Returns quota snapshot: {status, quota: {date, used, limit, remaining}}"
+    - name: "Console logging"
+      type: "console.log"
+      description: "Logs cache hits/misses, quota resets, and OAuth callback steps to stdout"
+
+traffic:
+  avg-rpm: unavailable
+  peak-rpm: unavailable
+  peak-hours: unavailable
+  notes: "No APM or request counting instrumentation. Quota tracker provides daily YouTube API unit counts only. Azure Monitor provides platform-level request count per Container App revision."
+
+latency:
+  - endpoint: /api/feed/:profileId
+    p50-ms: unavailable
+    p95-ms: unavailable
+    p99-ms: unavailable
+    notes: >
+      Latency is dominated by YouTube API call count and server-side cache state.
+      Uncached feed with N channels + M keywords triggers N playlistItems.list calls
+      (1 unit each, ~200-500ms each) and M search.list calls (100 units each, ~300-800ms each),
+      all issued in parallel. Cached feed skips external calls entirely (sub-millisecond).
+      Cache TTLs: channel videos 600s, keyword search 300s. LRU max 5000 entries.
+  - endpoint: /api/health
+    p50-ms: unavailable
+    p95-ms: unavailable
+    p99-ms: unavailable
+    notes: "In-memory quota counter read only — no external calls. Expected sub-millisecond."
+  - endpoint: /api/auth/me
+    p50-ms: unavailable
+    p95-ms: unavailable
+    p99-ms: unavailable
+    notes: "JWT validation (in-process) + single Azure SQL user lookup (~10-50ms network-dependent)."
+  - endpoint: /api/profiles
+    p50-ms: unavailable
+    p95-ms: unavailable
+    p99-ms: unavailable
+    notes: "Azure SQL query only. No YouTube API calls."
+  - endpoint: /api/subscriptions
+    p50-ms: unavailable
+    p95-ms: unavailable
+    p99-ms: unavailable
+    notes: "Single YouTube subscriptions.list call (~200-500ms). Cached result reused within session."
+
+error-rates:
+  http-5xx-percent: unavailable
+  top-errors:
+    - type: QuotaExceeded
+      http-status: 429
+      frequency: unavailable
+      impact: user-facing
+      notes: "Triggered when daily YouTube API unit consumption reaches the 9,000-unit soft limit (hard cap 10,000). Affects all YouTube-backed endpoints. Resets at midnight UTC."
+    - type: YouTubeInsufficientPermissions
+      http-status: 403
+      frequency: unavailable
+      impact: user-facing
+      notes: "Occurs if the authenticated user revokes the YouTube OAuth scope after initial login."
+    - type: TokenRefreshFailure
+      http-status: 401
+      frequency: unavailable
+      impact: user-facing
+      notes: "JWT access token TTL is 15 minutes; refresh token TTL is 30 days. Failure on expired refresh token requires re-authentication."
+    - type: DatabaseConnectionError
+      http-status: 500
+      frequency: unavailable
+      impact: service-wide
+      notes: "Azure SQL single-instance; connectivity loss affects all authenticated endpoints."
+
+resource-utilization:
+  cpu:
+    avg-percent: unavailable
+    peak-percent: unavailable
+  memory:
+    avg-mb: unavailable
+    peak-mb: unavailable
+    notes: "Server-side LRU cache can hold up to 5000 entries. Memory ceiling depends on response payload sizes. Expected low for a personal-scale app."
+  notes: "Available via Azure Monitor Container Apps metrics but not surfaced in application code or health endpoint."
+
+dependency-calls:
+  - target: "YouTube Data API v3 — playlistItems.list"
+    purpose: "Fetch recent uploads for a subscribed channel"
+    avg-latency-ms: unavailable
+    estimated-latency-ms: "200-500"
+    error-rate-percent: unavailable
+    calls-per-minute: unavailable
+    quota-cost-units: 1
+    cache-ttl-seconds: 600
+    cache-key-strategy: "channelId"
+    parallelism: "All channel calls for a feed request are issued in parallel via Promise.all"
+  - target: "YouTube Data API v3 — search.list"
+    purpose: "Keyword-based video search"
+    avg-latency-ms: unavailable
+    estimated-latency-ms: "300-800"
+    error-rate-percent: unavailable
+    calls-per-minute: unavailable
+    quota-cost-units: 100
+    cache-ttl-seconds: 300
+    cache-key-strategy: "keyword string"
+    parallelism: "All keyword calls for a feed request are issued in parallel via Promise.all"
+  - target: "YouTube Data API v3 — subscriptions.list"
+    purpose: "Import user's YouTube channel subscriptions"
+    avg-latency-ms: unavailable
+    estimated-latency-ms: "200-500"
+    error-rate-percent: unavailable
+    calls-per-minute: unavailable
+    quota-cost-units: 1
+    cache-ttl-seconds: null
+    notes: "Called on-demand from the subscriptions import UI; not cached at service layer"
+  - target: "Azure SQL (via Prisma)"
+    purpose: "User, profile, channel, and keyword persistence"
+    avg-latency-ms: unavailable
+    estimated-latency-ms: "10-50"
+    error-rate-percent: unavailable
+    calls-per-minute: unavailable
+    notes: "Single-instance Azure SQL Database. Latency is Azure region-dependent."
+  - target: "Google OAuth 2.0 — token exchange"
+    purpose: "Initial login code→token exchange and periodic access token refresh"
+    avg-latency-ms: unavailable
+    estimated-latency-ms: "150-300"
+    error-rate-percent: unavailable
+    calls-per-minute: unavailable
+    notes: "Access token TTL: 15 min. Refresh token TTL: 30 days. Tokens stored encrypted in Azure SQL."
+
+quota-model:
+  provider: "YouTube Data API v3"
+  daily-limit-units: 10000
+  soft-limit-units: 9000
+  reset-schedule: "midnight UTC"
+  cost-breakdown:
+    - operation: "playlistItems.list"
+      units: 1
+    - operation: "search.list"
+      units: 100
+    - operation: "subscriptions.list"
+      units: 1
+  worst-case-per-feed-request:
+    channels: 5
+    keywords: 3
+    total-units: 305
+    calculation: "(5 × 1) + (3 × 100) = 305 units"
+    notes: "Caching reduces repeat costs significantly. Second request within TTL window costs 0 units."
+
+cache-model:
+  server-side:
+    implementation: "LRU + TTL (node-lru-cache or equivalent)"
+    max-entries: 5000
+    entries:
+      - key-type: "channelId"
+        ttl-seconds: 600
+        invalidation: "TTL expiry only"
+      - key-type: "keyword"
+        ttl-seconds: 300
+        invalidation: "TTL expiry only"
+  client-side:
+    implementation: "In-memory React state (custom useFeed hook)"
+    ttl-seconds: 300
+    key-strategy: "profileId + source filter"
+    invalidation: "TTL expiry or page reload"
+
+token-lifecycle:
+  access-token-ttl-minutes: 15
+  refresh-token-ttl-days: 30
+  storage: "Encrypted in Azure SQL (server-side); JWT in HTTP-only cookie or Authorization header (client-side)"
+  refresh-strategy: "Server refreshes Google access token transparently on expiry before YouTube API calls"
+
+scaling:
+  model: "Azure Container Apps (serverless)"
+  min-instances: unavailable
+  max-instances: unavailable
+  avg-instances: unavailable
+  scale-up-trigger: "Azure Container Apps automatic HTTP-based scaling (not configured in application code)"
+  notes: "Single Express process per instance. No shared in-process cache across instances — LRU cache is per-instance. Quota tracker is also per-instance; shared quota state would require an external store."
+
+availability:
+  uptime-percent: unavailable
+  last-incident: unavailable
+  known-failure-modes:
+    - "YouTube API quota exhaustion (daily, 10,000 unit cap)"
+    - "Google OAuth scope revocation by user"
+    - "Azure SQL connection failure"
+    - "Refresh token expiry after 30-day inactivity"
+
+instrumentation-gaps:
+  - gap: "No APM platform"
+    description: "No Application Insights, Datadog, New Relic, or equivalent SDK instrumented"
+    impact: "All latency and error-rate fields in this document are unavailable"
+    recommendation: "Add Application Insights SDK (@azure/monitor-opentelemetry) — natural fit given Azure hosting"
+  - gap: "No structured logging"
+    description: "Uses console.log only; no JSON log format, log levels, or log aggregation"
+    impact: "Logs are not queryable; no correlation between requests and log lines"
+    recommendation: "Replace console.log with Pino or Winston in JSON mode; ship to Azure Log Analytics"
+  - gap: "No request/correlation ID"
+    description: "No X-Request-ID or trace context propagation"
+    impact: "Cannot correlate a single user request across server logs"
+    recommendation: "Add express-request-id middleware; propagate to downstream YouTube API calls"
+  - gap: "No dependency health checks in /api/health"
+    description: "Health endpoint only reports quota — does not check Azure SQL connectivity or YouTube API reachability"
+    impact: "Liveness probe cannot distinguish app crash from dependency failure"
+    recommendation: "Add Azure SQL ping and optional YouTube API key validation to health response"
+  - gap: "No custom Prometheus or OpenTelemetry metrics"
+    description: "No histogram, counter, or gauge instruments in application code"
+    impact: "Cannot alert on p95 latency, error rate, or quota burn rate"
+    recommendation: "Instrument feed endpoint latency, quota consumption rate, and cache hit ratio with OpenTelemetry"
+  - gap: "Per-instance quota and cache state"
+    description: "QuotaTracker and LRU cache are in-process; multi-instance deployments have no shared state"
+    impact: "Quota soft-limit enforcement and cache deduplication break under horizontal scale"
+    recommendation: "Migrate QuotaTracker and cache to Azure Cache for Redis when scaling beyond one instance"

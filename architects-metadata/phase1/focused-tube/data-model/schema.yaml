@@ -1,0 +1,271 @@
+artifact: "P1-3"
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+data-stores:
+  - name: azure-sql
+    type: database
+    technology: "Azure SQL (SQL Server)"
+    provider: "Prisma 6 (prisma-client-js)"
+    purpose: "Primary persistent store for users, profiles, channels, keywords, and follows"
+    migrations-path: "server/src/prisma/migrations/"
+    notes: "Single database; all entities owned by this repository"
+
+entities:
+  - name: User
+    table: User
+    owned: true
+    description: "Authenticated user, created via Google OAuth callback. Holds OAuth tokens and links to profiles."
+    fields:
+      - name: id
+        type: String
+        constraints: [primary-key, uuid]
+        classification: internal
+        notes: "UUID v4 auto-generated"
+      - name: googleId
+        type: String
+        constraints: [unique, not-null]
+        classification: internal
+        notes: "Google OAuth subject identifier"
+      - name: email
+        type: String
+        constraints: [unique, not-null]
+        classification: pii
+        notes: "User's Google account email"
+      - name: name
+        type: String
+        constraints: [not-null]
+        classification: pii
+        notes: "Display name from Google profile"
+      - name: avatarUrl
+        type: String
+        constraints: [nullable]
+        classification: pii
+        notes: "Profile picture URL from Google"
+      - name: accessToken
+        type: String
+        constraints: [not-null]
+        classification: sensitive
+        notes: >
+          Google OAuth access token. ARCHITECTURE.md states AES-256-GCM encryption at rest;
+          however, the Prisma schema contains a TODO comment indicating encryption is deferred
+          to Phase 2. Current state: stored in plaintext. Treat as sensitive regardless.
+      - name: refreshToken
+        type: String
+        constraints: [not-null]
+        classification: sensitive
+        notes: >
+          Google OAuth refresh token. Same encryption gap as accessToken — intended to be
+          AES-256-GCM encrypted (per ARCHITECTURE.md) but currently stored in plaintext
+          pending Phase 2 implementation.
+      - name: createdAt
+        type: DateTime
+        constraints: [not-null, default-now]
+        classification: internal
+      - name: updatedAt
+        type: DateTime
+        constraints: [not-null, auto-update]
+        classification: internal
+
+  - name: Profile
+    table: Profile
+    owned: true
+    description: "A named curation profile belonging to a user. Contains a set of channels and keywords used to build the video feed."
+    fields:
+      - name: id
+        type: String
+        constraints: [primary-key, uuid]
+        classification: internal
+      - name: name
+        type: String
+        constraints: [not-null]
+        classification: internal
+        notes: "Unique within the owning user (composite unique: userId + name)"
+      - name: userId
+        type: String
+        constraints: [not-null, foreign-key]
+        classification: internal
+        notes: "FK → User.id; cascade delete"
+      - name: isDefault
+        type: Boolean
+        constraints: [not-null, default-false]
+        classification: internal
+        notes: "Marks the user's default profile"
+      - name: isPublic
+        type: Boolean
+        constraints: [not-null, default-false]
+        classification: internal
+        notes: "When true, profile can be followed by other users"
+      - name: createdAt
+        type: DateTime
+        constraints: [not-null, default-now]
+        classification: internal
+      - name: updatedAt
+        type: DateTime
+        constraints: [not-null, auto-update]
+        classification: internal
+    unique-constraints:
+      - fields: [userId, name]
+
+  - name: ProfileChannel
+    table: ProfileChannel
+    owned: true
+    description: "A YouTube channel pinned to a profile. Used to fetch recent uploads for the subscription feed."
+    fields:
+      - name: id
+        type: String
+        constraints: [primary-key, uuid]
+        classification: internal
+      - name: profileId
+        type: String
+        constraints: [not-null, foreign-key]
+        classification: internal
+        notes: "FK → Profile.id; cascade delete"
+      - name: youtubeChannelId
+        type: String
+        constraints: [not-null]
+        classification: internal
+        notes: "YouTube channel ID (e.g. UCxxxxxx)"
+      - name: channelTitle
+        type: String
+        constraints: [not-null]
+        classification: internal
+        notes: "Display name cached from YouTube API"
+      - name: thumbnailUrl
+        type: String
+        constraints: [nullable]
+        classification: internal
+        notes: "Channel thumbnail URL cached from YouTube API"
+    unique-constraints:
+      - fields: [profileId, youtubeChannelId]
+
+  - name: ProfileKeyword
+    table: ProfileKeyword
+    owned: true
+    description: "A search keyword attached to a profile. Used to run YouTube keyword-search queries for the search feed."
+    fields:
+      - name: id
+        type: String
+        constraints: [primary-key, uuid]
+        classification: internal
+      - name: profileId
+        type: String
+        constraints: [not-null, foreign-key]
+        classification: internal
+        notes: "FK → Profile.id; cascade delete"
+      - name: keyword
+        type: String
+        constraints: [not-null]
+        classification: internal
+        notes: "Free-text search term"
+    unique-constraints:
+      - fields: [profileId, keyword]
+
+  - name: ProfileFollow
+    table: ProfileFollow
+    owned: true
+    description: "Many-to-many join between a follower User and a public Profile. Enables users to follow profiles they did not create."
+    fields:
+      - name: id
+        type: String
+        constraints: [primary-key, uuid]
+        classification: internal
+      - name: followerId
+        type: String
+        constraints: [not-null, foreign-key]
+        classification: internal
+        notes: "FK → User.id; onDelete NoAction (SQL Server self-referencing cycle constraint)"
+      - name: profileId
+        type: String
+        constraints: [not-null, foreign-key]
+        classification: internal
+        notes: "FK → Profile.id; cascade delete"
+      - name: createdAt
+        type: DateTime
+        constraints: [not-null, default-now]
+        classification: internal
+    unique-constraints:
+      - fields: [followerId, profileId]
+
+relationships:
+  - from: User
+    to: Profile
+    type: one-to-many
+    via: Profile.userId
+    on-delete: Cascade
+  - from: User
+    to: ProfileFollow
+    type: one-to-many
+    via: ProfileFollow.followerId
+    label: UserFollows
+    on-delete: NoAction
+    notes: "NoAction required by SQL Server to avoid multi-path cascade cycles"
+  - from: Profile
+    to: ProfileChannel
+    type: one-to-many
+    via: ProfileChannel.profileId
+    on-delete: Cascade
+  - from: Profile
+    to: ProfileKeyword
+    type: one-to-many
+    via: ProfileKeyword.profileId
+    on-delete: Cascade
+  - from: Profile
+    to: ProfileFollow
+    type: one-to-many
+    via: ProfileFollow.profileId
+    label: ProfileFollowers
+    on-delete: Cascade
+
+data-ownership:
+  - entity: User
+    owner: focused-tube
+  - entity: Profile
+    owner: focused-tube
+  - entity: ProfileChannel
+    owner: focused-tube
+  - entity: ProfileKeyword
+    owner: focused-tube
+  - entity: ProfileFollow
+    owner: focused-tube
+
+data-flows:
+  - direction: inbound
+    trigger: "Google OAuth callback (POST /api/auth/google/callback)"
+    entities: [User]
+    description: "Creates or upserts User row; writes googleId, email, name, avatarUrl, accessToken, refreshToken"
+  - direction: inbound
+    trigger: "Token refresh (server-side, transparent)"
+    entities: [User]
+    description: "Updates accessToken (and optionally refreshToken) on the User row"
+  - direction: inbound
+    trigger: "Profile CRUD API (POST/PUT/DELETE /api/profiles)"
+    entities: [Profile, ProfileChannel, ProfileKeyword]
+    description: "Creates, updates, and deletes profiles and their associated channels/keywords"
+  - direction: inbound
+    trigger: "Follow API (POST /api/profiles/:id/follow)"
+    entities: [ProfileFollow]
+    description: "Creates a ProfileFollow row linking follower User to target Profile"
+  - direction: outbound
+    trigger: "Feed API (GET /api/feed/:profileId)"
+    entities: [Profile, ProfileChannel, ProfileKeyword]
+    description: "Reads profile channels and keywords to drive YouTube Data API v3 queries; no writes"
+  - direction: outbound
+    trigger: "Subscriptions API (GET /api/subscriptions)"
+    entities: [User]
+    description: "Reads User accessToken to authenticate YouTube subscriptions.list call; no DB writes"
+
+security-notes:
+  - field: "User.accessToken"
+    intended: "AES-256-GCM encryption at rest (per ARCHITECTURE.md)"
+    actual: "Plaintext — encryption deferred to Phase 2 (TODO comment in schema)"
+    risk: high
+  - field: "User.refreshToken"
+    intended: "AES-256-GCM encryption at rest (per ARCHITECTURE.md)"
+    actual: "Plaintext — encryption deferred to Phase 2 (TODO comment in schema)"
+    risk: high
+  - pii-fields:
+      - "User.email"
+      - "User.name"
+      - "User.avatarUrl"

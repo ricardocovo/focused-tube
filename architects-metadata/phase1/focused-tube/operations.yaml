@@ -1,0 +1,58 @@
+artifact: P1-11
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+monitoring:
+  platform: Azure-Monitor
+  notes: "No dedicated APM platform. Azure Container Apps provides platform-level metrics (CPU, memory, request count) via Azure Monitor."
+  custom-metrics:
+    - name: youtube-quota-used
+      description: "Daily YouTube API quota units consumed, tracked by QuotaTracker"
+      endpoint: /api/health
+      source: QuotaTracker
+  dashboards: []
+
+logging:
+  framework: console
+  structured: false
+  destinations:
+    - stdout
+  correlation-id: false
+  notes: "Uses Node.js built-in console.log/debug/warn/error. No structured logging library (no Winston, Pino, etc.). Logs captured by Azure Container Apps container log stream. Notable log prefixes: [cache] for cache hits/misses, [QuotaTracker] for quota resets, [auth callback] for OAuth diagnostics."
+
+alerting:
+  platform: null
+  rules: []
+  notes: "No alerting rules configured in code. Relies on Azure Monitor platform defaults."
+
+health-checks:
+  endpoint: /api/health
+  method: GET
+  checks:
+    - name: application-status
+      type: self
+      description: "Returns {status: 'ok'} if the server process is running and reachable"
+    - name: youtube-quota
+      type: custom
+      description: "Returns current YouTube API quota usage: date, used units, limit (9000), and remaining units"
+  dependency-checks: []
+  notes: "No database health check or YouTube API connectivity check is performed."
+
+slos: []
+
+runbooks:
+  - name: Container App Rollback
+    location: DEPLOYMENT.md#11-rollback-procedures
+    trigger: "API deployment causes errors; use Azure Container Apps revision activation to roll back"
+  - name: Database Migration Rollback
+    location: DEPLOYMENT.md#11-rollback-procedures
+    trigger: "Failed Prisma migration requires a manual corrective migration to restore schema"
+  - name: Common Troubleshooting
+    location: CONFIGURATION.md#13-troubleshooting
+    trigger: "OAuth errors, database connection failures, CORS errors, or YouTube API quota exceeded"
+
+on-call:
+  rotation: null
+  escalation: null
+  notes: "Not documented; solo/personal project."

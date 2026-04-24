@@ -1,0 +1,203 @@
+artifact: configuration
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+config-sources:
+  - type: dotenv-file
+    path: ".env"
+    loaded-by: "server/src/config.ts"
+    note: "Resolved relative to server/src at startup via dotenv"
+  - type: environment-variables
+    note: "Container App secrets injected as env vars in production"
+
+feature-flags:
+  enabled: false
+  system: null
+
+environment-variables:
+  - name: PORT
+    required: false
+    default: "3001"
+    description: "Express server listening port"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: NODE_ENV
+    required: false
+    default: "development"
+    description: "Runtime environment; controls behaviour such as error verbosity"
+    allowed-values: ["development", "production"]
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: CLIENT_ORIGIN
+    required: false
+    default: "http://localhost:5173"
+    description: "Frontend origin URL; used to configure Express CORS allow-list"
+    sensitivity: public
+    used-in: ["development", "production"]
+    per-environment:
+      development: "http://localhost:5173"
+      production: "<Static Web App HTTPS URL>"
+
+  - name: DATABASE_URL
+    required: true
+    default: null
+    description: "Azure SQL Server connection string used by Prisma"
+    sensitivity: secret
+    used-in: ["development", "production"]
+    per-environment:
+      development: "<local Docker SQL Server connection string>"
+      production: "<Azure SQL connection string — stored as Container App secret>"
+
+  - name: SHADOW_DATABASE_URL
+    required: false
+    default: null
+    description: "Shadow database connection string required by Prisma for migrations"
+    sensitivity: secret
+    used-in: ["development"]
+    per-environment:
+      development: "<shadow SQL Server connection string>"
+
+  - name: GOOGLE_CLIENT_ID
+    required: true
+    default: null
+    description: "Google OAuth 2.0 Client ID; public identifier for the OAuth app"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: GOOGLE_CLIENT_SECRET
+    required: true
+    default: null
+    description: "Google OAuth 2.0 Client Secret used to exchange auth codes for tokens"
+    sensitivity: secret
+    used-in: ["development", "production"]
+    per-environment:
+      production: "<stored as Container App secret>"
+
+  - name: GOOGLE_CALLBACK_URL
+    required: false
+    default: "http://localhost:3001/api/auth/google/callback"
+    description: "OAuth 2.0 redirect URI registered in Google Cloud Console"
+    sensitivity: public
+    used-in: ["development", "production"]
+    per-environment:
+      development: "http://localhost:3001/api/auth/google/callback"
+      production: "<https://<container-app-fqdn>/api/auth/google/callback>"
+
+  - name: JWT_SECRET
+    required: true
+    default: null
+    description: "Secret for signing JWT access tokens; minimum 32 characters"
+    sensitivity: secret
+    used-in: ["development", "production"]
+    per-environment:
+      production: "<stored as Container App secret>"
+
+  - name: JWT_REFRESH_SECRET
+    required: true
+    default: null
+    description: "Separate secret for signing JWT refresh tokens"
+    sensitivity: secret
+    used-in: ["development", "production"]
+    per-environment:
+      production: "<stored as Container App secret>"
+
+  - name: ENCRYPTION_KEY
+    required: true
+    default: null
+    description: "64-character hex string used as AES-256-GCM key to encrypt Google OAuth tokens at rest"
+    sensitivity: secret
+    used-in: ["development", "production"]
+    per-environment:
+      production: "<stored as Container App secret>"
+
+  - name: CACHE_MAX_ENTRIES
+    required: false
+    default: "5000"
+    description: "Maximum number of entries held in the in-memory LRU cache"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: CACHE_TTL_CHANNEL_SECONDS
+    required: false
+    default: "600"
+    description: "Time-to-live in seconds for channel upload cache entries (10 minutes)"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: CACHE_TTL_KEYWORD_SECONDS
+    required: false
+    default: "300"
+    description: "Time-to-live in seconds for keyword search cache entries (5 minutes)"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: FEED_PUBLISHED_AFTER_DAYS
+    required: false
+    default: "14"
+    description: "Feed window in days; only videos published within this period are returned"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+  - name: QUOTA_DAILY_LIMIT
+    required: false
+    default: "9000"
+    description: "Soft guard threshold for YouTube Data API v3 daily quota (hard limit is 10 000 units)"
+    sensitivity: public
+    used-in: ["development", "production"]
+
+secrets:
+  - name: DATABASE_URL
+    purpose: "Prisma database connection to Azure SQL Server"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+      production: "Azure Container App secret"
+
+  - name: SHADOW_DATABASE_URL
+    purpose: "Prisma shadow database used during schema migrations"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+
+  - name: GOOGLE_CLIENT_SECRET
+    purpose: "Exchange Google OAuth 2.0 authorization codes for access/refresh tokens"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+      production: "Azure Container App secret"
+
+  - name: JWT_SECRET
+    purpose: "Sign and verify JWT access tokens for authenticated API requests"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+      production: "Azure Container App secret"
+
+  - name: JWT_REFRESH_SECRET
+    purpose: "Sign and verify JWT refresh tokens for session renewal"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+      production: "Azure Container App secret"
+
+  - name: ENCRYPTION_KEY
+    purpose: "AES-256-GCM encryption of Google OAuth access/refresh tokens stored in the database"
+    source: "env-var"
+    storage:
+      development: ".env file (gitignored)"
+      production: "Azure Container App secret"
+
+per-environment-summary:
+  development:
+    database: "Local SQL Server via Docker"
+    client-origin: "http://localhost:5173"
+    google-callback-url: "http://localhost:3001/api/auth/google/callback"
+    secret-storage: ".env file (gitignored, never committed)"
+  production:
+    database: "Azure SQL (managed)"
+    client-origin: "<Azure Static Web App HTTPS URL>"
+    google-callback-url: "<Azure Container App FQDN>/api/auth/google/callback"
+    secret-storage: "Azure Container App secrets (injected as environment variables at runtime)"

@@ -1,0 +1,187 @@
+artifact: P1-9
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+authentication:
+  mechanisms:
+    - OAuth2
+    - JWT
+  identity-provider: "Google (accounts.google.com)"
+  library: "Passport.js (passport-google-oauth20)"
+  tokens:
+    - type: access-token
+      algorithm: HS256
+      expiry: "15 minutes"
+      storage: "client memory only (never localStorage or sessionStorage)"
+    - type: refresh-token
+      algorithm: HS256
+      expiry: "30 days"
+      storage: "httpOnly cookie, path-scoped to /api/auth"
+  token-validation: "authenticateJwt middleware — server/src/middleware/auth.ts"
+  session-model: stateless
+
+authorization:
+  model: ownership-based
+  rbac: false
+  logical-roles:
+    - name: profile-owner
+      description: "Authenticated user who created the profile"
+      permissions:
+        - "Full CRUD on own profiles"
+        - "Full CRUD on channels within own profiles"
+        - "Full CRUD on keywords within own profiles"
+        - "Access own feed using own YouTube credentials"
+    - name: follower
+      description: "Any authenticated user following a public profile"
+      permissions:
+        - "Read-only feed access for followed public profiles (uses profile owner's YouTube credentials)"
+        - "Follow and unfollow public profiles"
+    - name: authenticated-user
+      description: "Any signed-in user"
+      permissions:
+        - "Discover and browse public profiles"
+        - "Follow/unfollow public profiles"
+  enforcement:
+    - location: "server/src/services/profile.service.ts"
+      mechanism: "assertProfileOwnership() — throws 403 if requesting user is not profile owner"
+    - location: "server/src/routes/feed.ts"
+      mechanism: "Inline ownership + follower check before proxying YouTube credentials"
+    - location: "server/src/routes/community.ts"
+      mechanism: "Inline authentication check for follow/unfollow actions"
+
+data-protection:
+  encryption-in-transit:
+    provided-by: "Azure (Container App HTTPS, Static Web App HTTPS)"
+    app-level: false
+    notes: "TLS termination handled at infrastructure layer; app does not configure TLS directly"
+  encryption-at-rest:
+    status: partial
+    notes: >
+      Prisma schema contains a TODO comment 'Encrypt at rest (Phase 2)', indicating
+      field-level encryption for Google tokens may not be fully implemented.
+      ARCHITECTURE.md documents the intent to use AES-256-GCM.
+    encrypted-fields:
+      - model: User
+        field: accessToken
+        algorithm: AES-256-GCM
+        key-env-var: ENCRYPTION_KEY
+        format: "<iv>:<authTag>:<ciphertext>"
+        classification: sensitive
+      - model: User
+        field: refreshToken
+        algorithm: AES-256-GCM
+        key-env-var: ENCRYPTION_KEY
+        format: "<iv>:<authTag>:<ciphertext>"
+        classification: sensitive
+    encryption-utils: "server/src/utils/ (encryption helpers)"
+  pii-fields:
+    - model: User
+      field: email
+      classification: pii
+      source: "Google OAuth profile"
+    - model: User
+      field: name
+      classification: pii
+      source: "Google OAuth profile"
+    - model: User
+      field: avatarUrl
+      classification: pii
+      source: "Google OAuth profile"
+
+input-validation:
+  framework: "Express built-in + manual validation in route handlers"
+  csrf:
+    protection-method: "SameSite cookie policy"
+    csrf-token: false
+    notes: "SameSite=None+Secure in production; SameSite=Lax in development. Acceptable for SPA pattern."
+  xss:
+    refresh-token-exposure: "httpOnly cookie prevents JavaScript access"
+    access-token-exposure: "Stored in client memory only — not accessible via DOM APIs"
+  injection: "No dedicated ORM-level parameterization notes; Prisma ORM used (parameterized queries by default)"
+
+secret-management:
+  provider-local: ".env file (gitignored)"
+  provider-production: "Azure Container App secrets"
+  secrets:
+    - name: DATABASE_URL
+      purpose: "SQLite database connection string"
+      sensitivity: secret
+    - name: GOOGLE_CLIENT_SECRET
+      purpose: "Google OAuth 2.0 client secret for Passport.js"
+      sensitivity: secret
+    - name: JWT_SECRET
+      purpose: "Signing key for JWT access tokens (HS256)"
+      sensitivity: secret
+    - name: JWT_REFRESH_SECRET
+      purpose: "Signing key for JWT refresh tokens (HS256)"
+      sensitivity: secret
+    - name: ENCRYPTION_KEY
+      purpose: "64-char hex (32 bytes) key for AES-256-GCM encryption of Google OAuth tokens at rest"
+      sensitivity: secret
+    - name: SHADOW_DATABASE_URL
+      purpose: "Shadow database URL used by Prisma during migrations"
+      sensitivity: secret
+  secrets-count: 6
+
+security-headers:
+  cors:
+    config-location: "server/src/middleware/cors.ts"
+    allowed-origins: "CLIENT_ORIGIN environment variable only"
+    credentials: true
+    notes: "Strict single-origin allowlist; wildcard origins not permitted"
+  hsts:
+    configured-in-app: false
+    provided-by: "Azure (Container App, Static Web App enforce HTTPS)"
+  csp:
+    configured-in-app: false
+    notes: "Azure Static Web App provides some default headers; no explicit CSP in app code"
+  cookies:
+    http-only: true
+    secure: true
+    same-site-production: None
+    same-site-development: Lax
+    path-scoped: "/api/auth"
+
+compliance:
+  frameworks: []
+  audit-logging:
+    implemented: false
+    current-state: "console.log only — no structured audit trail"
+  data-retention:
+    policy: null
+    notes: "No data retention policy specified"
+  gdpr-annotations: false
+
+known-risks:
+  - id: RISK-001
+    description: >
+      Google OAuth access and refresh tokens may not be fully encrypted at rest.
+      Prisma schema contains a TODO 'Encrypt at rest (Phase 2)', suggesting the
+      AES-256-GCM encryption documented in ARCHITECTURE.md may be incomplete or
+      not yet applied to all storage paths.
+    severity: high
+    mitigation: "Intended to use AES-256-GCM via server/src/utils/ encryption helpers; verify implementation coverage and complete the TODO."
+  - id: RISK-002
+    description: >
+      No dedicated CSRF token is used. Protection relies solely on SameSite cookie
+      policy (None+Secure in production, Lax in development).
+    severity: low
+    mitigation: "SameSite cookies are an accepted CSRF mitigation for SPA patterns. No action required unless cross-site embedding is introduced."
+  - id: RISK-003
+    description: >
+      No rate limiting on API endpoints (beyond YouTube quota guard). Auth endpoints
+      and profile lookups are exposed to brute-force and enumeration attacks.
+    severity: medium
+    mitigation: "No mitigation currently in place. Recommend adding express-rate-limit or Azure API Management policies on auth and sensitive endpoints."
+  - id: RISK-004
+    description: >
+      No Content-Security-Policy (CSP) header is explicitly configured in application code.
+    severity: low
+    mitigation: "Azure Static Web App provides some default security headers. Recommend adding an explicit CSP via staticwebapp.config.json or a helmet.js integration."
+  - id: RISK-005
+    description: >
+      console.log used throughout server code for debugging. Sensitive request context
+      (user IDs, error details) may appear in production server logs without redaction.
+    severity: low
+    mitigation: "Replace console.log with a structured logger (e.g., pino, winston) that supports log-level control and field redaction in production."

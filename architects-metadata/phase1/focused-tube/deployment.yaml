@@ -1,0 +1,169 @@
+artifact: deployment
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+platform: mixed
+
+deployments:
+  - id: api
+    name: focused-tube-api
+    description: Express REST API — server-side component of the monorepo
+    type: container
+    platform: azure-container-apps
+    source:
+      dockerfile: server/Dockerfile
+      context: . # monorepo root (needed for workspace install)
+      build-stage: multi-stage
+    registry:
+      type: azure-container-registry
+      image-name: focused-tube-api
+      tags:
+        - "{{github.sha}}"
+        - latest
+    port: 3001
+    ingress:
+      type: external
+      target-port: 3001
+      tls: azure-managed
+    health-check:
+      path: /api/health
+      expected-response: '{"status":"ok","quota":{...}}'
+      protocol: http
+    scaling:
+      type: azure-container-apps-managed
+    environment-variables:
+      - name: PORT
+        value: "3001"
+        sensitivity: public
+      - name: NODE_ENV
+        value: production
+        sensitivity: public
+      - name: CLIENT_ORIGIN
+        description: Static Web App URL (HTTPS). Used for CORS and cookie SameSite config.
+        sensitivity: internal
+      - name: GOOGLE_CALLBACK_URL
+        description: Container App FQDN + /api/auth/google/callback
+        sensitivity: internal
+      - name: DATABASE_URL
+        description: Azure SQL Server connection string (Prisma format)
+        sensitivity: secret
+        stored-as: container-app-secret
+      - name: GOOGLE_CLIENT_ID
+        sensitivity: secret
+        stored-as: container-app-secret
+      - name: GOOGLE_CLIENT_SECRET
+        sensitivity: secret
+        stored-as: container-app-secret
+      - name: JWT_SECRET
+        sensitivity: secret
+        stored-as: container-app-secret
+      - name: JWT_REFRESH_SECRET
+        sensitivity: secret
+        stored-as: container-app-secret
+      - name: ENCRYPTION_KEY
+        description: Key used to encrypt Google OAuth tokens at rest
+        sensitivity: secret
+        stored-as: container-app-secret
+    rollback:
+      strategy: revision-activation
+      steps:
+        - List revisions with `az containerapp revision list`
+        - Activate previous revision with `az containerapp revision activate`
+        - Route 100% traffic with `az containerapp ingress traffic set`
+
+  - id: client
+    name: focused-tube-client
+    description: React SPA — statically built and hosted on Azure Static Web Apps
+    type: static-site
+    platform: azure-static-web-apps
+    source:
+      build-command: npm run build --workspace=client
+      output-directory: client/dist
+      routing-config: client/public/staticwebapp.config.json
+    cdn: azure-global-cdn
+    tls: azure-managed
+    spa-fallback:
+      rewrite: /index.html
+      excludes:
+        - /images/*.{png,jpg,gif}
+        - /css/*
+        - /assets/*
+    rollback:
+      strategy: re-run-previous-workflow
+      steps:
+        - Re-run the deploy-client job from a previous successful workflow run in GitHub Actions
+
+database:
+  platform: azure-sql
+  migrations:
+    tool: prisma-migrate
+    command: npx prisma migrate deploy
+    schema: server/src/prisma/schema.prisma
+    triggered-by: manual # no dedicated CI migration job; run before or alongside deployments
+  rollback:
+    strategy: manual-corrective-migration
+    notes: >
+      Prisma does not support automatic down migrations for SQL Server.
+      Rollback requires authoring and applying a corrective migration manually.
+      Always test migrations in a staging environment first.
+
+ci-cd:
+  platform: github-actions
+  workflow-file: .github/workflows/ci-cd.yml
+  trigger: workflow_dispatch
+  node-version: "24"
+  environment: DEV
+  auth:
+    type: oidc
+    provider: microsoft-entra-id
+    federated-credential: true
+  jobs:
+    - id: test
+      name: Lint & Test
+      runs-on: ubuntu-latest
+      steps:
+        - install dependencies (npm ci)
+        - build all workspaces (npm run build)
+        - run tests (npm run test)
+      triggers-on: always
+    - id: deploy-api
+      name: Deploy API
+      runs-on: ubuntu-latest
+      needs: [test]
+      condition: inputs.deploy_api == true
+      steps:
+        - azure login via OIDC
+        - docker login to ACR
+        - docker build-push (tags sha + latest)
+        - az containerapp update with new image sha
+    - id: deploy-client
+      name: Deploy Client
+      runs-on: ubuntu-latest
+      needs: [test]
+      condition: inputs.deploy_client == true
+      steps:
+        - npm ci + npm run build --workspace=client
+        - Azure/static-web-apps-deploy@v1 (skip_app_build, app_location client/dist)
+
+  github-secrets:
+    - AZURE_CLIENT_ID
+    - AZURE_TENANT_ID
+    - AZURE_SUBSCRIPTION_ID
+    - ACR_USERNAME
+    - ACR_PASSWORD
+    - SWA_DEPLOYMENT_TOKEN
+
+  github-variables:
+    - ACR_LOGIN_SERVER
+    - AZURE_RESOURCE_GROUP
+    - CONTAINER_APP_NAME
+    - CONTAINER_APP_FQDN
+
+networking:
+  cross-origin: true
+  notes: >
+    The SPA is served from a different domain than the API. Auth cookies are
+    configured with SameSite=None; Secure to support cross-origin requests.
+    The Container App exposes external ingress on port 3001 with Azure-managed TLS.
+    The Static Web App is served via the global Azure CDN with HTTPS by default.

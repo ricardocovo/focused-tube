@@ -1,0 +1,195 @@
+artifact: P1-12
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+ci-platform: GitHub-Actions
+workflow-file: .github/workflows/ci-cd.yml
+
+trigger:
+  branches:
+    - main
+    - "*"
+  paths:
+    - "*"
+  types:
+    - push
+    - pull_request
+
+stages:
+  - name: test
+    runs-on: push-to-any-branch, pull_request
+    environment: null
+    steps:
+      - name: install-dependencies
+        command: npm install
+      - name: build-client
+        command: npm run build --workspace=client
+      - name: build-server
+        command: npm run build --workspace=server
+      - name: generate-prisma-client
+        command: npx prisma generate
+      - name: test-client
+        command: npm run test --workspace=client
+        runner: Vitest
+        dom: jsdom
+      - name: test-server
+        command: npm run test --workspace=server
+        runner: Vitest
+    gate: null
+
+  - name: deploy-database
+    runs-on: push-to-main
+    environment: production
+    depends-on:
+      - test
+    parallel-with: deploy-client
+    steps:
+      - name: migrate-database
+        tool: Prisma CLI
+        command: npx prisma migrate deploy
+        target: Azure SQL
+    secrets-required:
+      - name: DATABASE_URL
+        sensitivity: secret
+        purpose: Connection string for production Azure SQL database
+
+  - name: deploy-client
+    runs-on: push-to-main
+    environment: production
+    depends-on:
+      - test
+    parallel-with: deploy-database
+    steps:
+      - name: build-client
+        command: npm run build --workspace=client
+      - name: deploy-static-web-app
+        action: Azure/static-web-apps-deploy
+        artifact-path: client/dist/
+        target: Azure Static Web Apps
+    secrets-required:
+      - name: SWA_DEPLOYMENT_TOKEN
+        sensitivity: secret
+        purpose: Deployment token for Azure Static Web Apps
+
+  - name: deploy-api
+    runs-on: push-to-main
+    environment: production
+    depends-on:
+      - test
+      - deploy-database
+    steps:
+      - name: docker-build
+        command: "docker build -f server/Dockerfile -t <acr>/focused-tube-api:<sha> ."
+      - name: docker-push
+        command: "docker push <acr>/focused-tube-api:<sha>"
+        target: Azure Container Registry
+      - name: deploy-container-app
+        command: az containerapp update
+        image: "<acr>/focused-tube-api:<sha>"
+        target: Azure Container Apps
+    secrets-required:
+      - name: AZURE_CLIENT_ID
+        sensitivity: secret
+        purpose: OIDC federated identity client ID for Azure authentication
+      - name: AZURE_TENANT_ID
+        sensitivity: secret
+        purpose: Azure Active Directory tenant ID
+      - name: AZURE_SUBSCRIPTION_ID
+        sensitivity: secret
+        purpose: Azure subscription identifier
+      - name: ACR_LOGIN_SERVER
+        sensitivity: secret
+        purpose: Azure Container Registry login server hostname
+      - name: ACR_USERNAME
+        sensitivity: secret
+        purpose: Azure Container Registry username
+      - name: ACR_PASSWORD
+        sensitivity: secret
+        purpose: Azure Container Registry password
+      - name: CONTAINER_APP_NAME
+        sensitivity: internal
+        purpose: Name of the Azure Container App to update
+      - name: AZURE_RESOURCE_GROUP
+        sensitivity: internal
+        purpose: Azure resource group containing the Container App
+
+test-strategy:
+  unit-tests:
+    enabled: true
+    framework: Vitest
+    workspaces:
+      - name: client
+        tools:
+          - React Testing Library
+          - jsdom
+          - "@testing-library/jest-dom"
+        scope: Component rendering, hooks, UI logic
+      - name: server
+        tools:
+          - Vitest
+        scope: Service logic, utility functions, middleware
+    coverage-threshold: null
+  integration-tests:
+    enabled: false
+    notes: Not implemented
+  e2e-tests:
+    enabled: false
+    notes: Not implemented
+  static-analysis:
+    enabled: false
+  security-scanning:
+    enabled: false
+
+artifacts:
+  - name: focused-tube-api-docker-image
+    type: docker-image
+    registry: Azure Container Registry
+    image-name: "<ACR_LOGIN_SERVER>/focused-tube-api"
+    tag-strategy: commit-sha
+    produced-by: deploy-api
+  - name: focused-tube-client-static-site
+    type: static-site
+    deployment-target: Azure Static Web Apps
+    source-path: client/dist/
+    artifact-registry: null
+    produced-by: deploy-client
+
+quality-gates:
+  - id: tests-pass-before-deploy
+    description: All unit tests must pass before any deployment stage runs
+    blocks:
+      - deploy-database
+      - deploy-client
+      - deploy-api
+  - id: db-migration-before-api-deploy
+    description: Database migration must succeed before API deployment to ensure schema compatibility
+    blocks:
+      - deploy-api
+
+environment-promotion:
+  strategy: sequential
+  environments:
+    - name: production
+      stages:
+        - test
+        - deploy-database
+        - deploy-client
+        - deploy-api
+  staging-environment: null
+  rollback:
+    api:
+      method: Azure Container Apps revision activation
+      notes: Activate the previous revision via Azure portal or CLI
+    client:
+      method: Re-run previous successful deploy-client job in GitHub Actions
+      notes: GitHub Actions job re-run restores the prior static site build
+    database:
+      method: manual-corrective-migration
+      notes: Prisma does not support automatic down migrations for SQL Server; corrective migration must be written manually
+
+authentication:
+  method: OIDC
+  provider: Azure
+  app-registration: focused-tube-github-actions
+  notes: GitHub Actions uses OIDC federated identity to authenticate with Azure; no long-lived credentials are stored as secrets

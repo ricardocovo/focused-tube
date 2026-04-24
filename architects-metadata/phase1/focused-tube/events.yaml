@@ -1,0 +1,12 @@
+artifact: P1-5
+version: "1.0"
+generated: "2026-04-24"
+repo-name: focused-tube
+
+broker-type: none
+
+published-events: []
+
+consumed-events: []
+
+notes: "Focused Tube uses a synchronous REST architecture. No asynchronous message brokers or event streaming are used. All communication between the React SPA client and Express server is via HTTP REST API calls. External communication with YouTube Data API v3 is also synchronous HTTP."
