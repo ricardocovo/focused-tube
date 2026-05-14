@@ -16,7 +16,7 @@ export default function SubscriptionChannelRow({ channel, isSelected, isSaving, 
   let ariaLabel = `Select ${channel.channelTitle}`;
 
   if (isSaving) {
-    btnLabel = isSelected ? 'Updating…' : 'Updating…';
+    btnLabel = 'Updating…';
     btnClass += ' sub-channel-btn--saving';
     ariaLabel = `Updating ${channel.channelTitle}…`;
   } else if (isSelected) {
