@@ -1,6 +1,6 @@
 # Focused Tube
 
-A YouTube overlay web app that lets users create curated profiles — each with subscribed channels and keywords — to bypass YouTube's recommendation algorithm. Users sign in with Google to import their YouTube subscriptions, organize them into profiles, and view a combined feed of subscription-based and keyword-search videos.
+A YouTube overlay web app that lets users create curated profiles, each with subscribed channels and keywords, to bypass YouTube's recommendation algorithm. Users sign in with Google to import their YouTube subscriptions, organize them into private or public profiles, follow public profiles from the community, and view a combined feed of subscription-based and keyword-search videos.
 
 ---
 
@@ -8,6 +8,7 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 
 - **Google OAuth sign-in** — authenticate with your Google account and import your YouTube subscriptions
 - **Profile-based curation** — create multiple named profiles, each with its own set of channels and keywords
+- **Community profiles** — make profiles public, discover public profiles, and follow or unfollow profiles from other users
 - **Combined video feed** — view a deduplicated, date-sorted feed combining subscription uploads and keyword search results
 - **Source tagging** — every video is tagged as `"subscription"` or `"search"` so you know where it came from
 - **In-app video player** — click a video card to watch inline via a sticky YouTube embed without leaving the app; Escape or close button dismisses the player and restores focus
@@ -25,7 +26,8 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| **Frontend** | React (SPA) | 18 |
+| **Runtime** | Node.js | 22+ locally, 24 in CI |
+| **Frontend** | React (SPA) | 18.3 |
 | **Build tool** | Vite | 6 |
 | **Language** | TypeScript | 5.7 |
 | **Backend** | Express | 4 |
@@ -36,6 +38,7 @@ A YouTube overlay web app that lets users create curated profiles — each with 
 | **YouTube API** | YouTube Data API v3 via `googleapis` | — |
 | **HTTP client** | Axios | 1.14 |
 | **Routing** | React Router | 7 |
+| **Testing** | Vitest + Testing Library | 4 / 16 |
 
 ---
 
@@ -49,7 +52,7 @@ Monorepo with two npm workspaces:
 Communication is via REST JSON API. The server proxies all YouTube Data API v3 calls.
 
 ```mermaid
-graph TB
+flowchart TD
     subgraph client["React SPA"]
         AuthCtx["Auth Context"]
         ProfileMgr["Profile Manager"]
@@ -114,7 +117,7 @@ focused-tube/
 │   └── package.json
 ├── server/                    # Express REST API (TypeScript)
 │   ├── src/
-│   │   ├── routes/            # auth, profiles, feed, subscriptions, health
+│   │   ├── routes/            # auth, profiles, feed, subscriptions, community, health
 │   │   ├── middleware/        # auth, cors, errorHandler, notFound
 │   │   ├── services/          # auth.service, profile.service, youtube.service
 │   │   ├── prisma/            # schema.prisma + migrations
@@ -136,7 +139,7 @@ focused-tube/
 
 | Tool | Minimum Version | Check |
 |------|-----------------|-------|
-| Node.js | 18+ | `node --version` |
+| Node.js | 22+ | `node --version` |
 | npm | 9+ | `npm --version` |
 | Git | Any recent | `git --version` |
 
@@ -156,8 +159,8 @@ npm install
 cp .env.example .env
 # Fill in your Google OAuth credentials and generated secrets
 
-# 4. Set up the database (requires SQL Server — use Docker for local dev)
-# docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong@Passw0rd' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+# 4. Set up the database (requires SQL Server; use Docker for local dev)
+# docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Passw0rd" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 cd server
 npx prisma generate
 npx prisma migrate dev
@@ -195,6 +198,7 @@ Create a `.env` file in the project root:
 | `NODE_ENV` | No | `development` | `development` or `production` |
 | `CLIENT_ORIGIN` | No | `http://localhost:5173` | Frontend URL for CORS |
 | `DATABASE_URL` | **Yes** | — | SQL Server connection string (see `.env.example`) |
+| `SHADOW_DATABASE_URL` | **Yes for migrations** | — | SQL Server shadow database connection string for Prisma migrations |
 | `GOOGLE_CLIENT_ID` | **Yes** | — | OAuth 2.0 Client ID |
 | `GOOGLE_CLIENT_SECRET` | **Yes** | — | OAuth 2.0 Client Secret |
 | `GOOGLE_CALLBACK_URL` | No | `http://localhost:3001/api/auth/google/callback` | OAuth redirect URI |
@@ -225,8 +229,9 @@ All routes are prefixed with `/api/`.
 |--------|------|-------------|
 | GET | `/api/auth/google` | Redirect to Google OAuth consent screen |
 | GET | `/api/auth/google/callback` | Handle OAuth callback, issue JWT |
-| POST | `/api/auth/logout` | Invalidate session |
 | GET | `/api/auth/me` | Get current user info |
+| POST | `/api/auth/refresh` | Rotate refresh token and issue a new access token |
+| POST | `/api/auth/logout` | Invalidate session |
 
 ### Profiles
 
@@ -234,6 +239,7 @@ All routes are prefixed with `/api/`.
 |--------|------|-------------|
 | GET | `/api/profiles` | List user's profiles |
 | POST | `/api/profiles` | Create a profile |
+| GET | `/api/profiles/:id` | Get a profile |
 | PUT | `/api/profiles/:id` | Update a profile |
 | DELETE | `/api/profiles/:id` | Delete a profile |
 | POST | `/api/profiles/:id/channels` | Add channels to a profile |
@@ -250,6 +256,15 @@ All routes are prefixed with `/api/`.
 | GET | `/api/feed/:profileId?source=subscriptions` | Subscription videos only |
 | GET | `/api/feed/:profileId?source=search` | Keyword search videos only |
 
+### Community
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/community/profiles` | Discover public profiles, with optional keyword search |
+| POST | `/api/community/profiles/:profileId/follow` | Follow a public profile |
+| DELETE | `/api/community/profiles/:profileId/follow` | Unfollow a profile |
+| GET | `/api/community/following` | List profiles followed by the current user |
+
 ---
 
 ## Database
@@ -262,7 +277,7 @@ For local development, run SQL Server in Docker:
 docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong@Passw0rd' -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-**Models:** `User`, `Profile`, `ProfileChannel`, `ProfileKeyword`
+**Models:** `User`, `Profile`, `ProfileChannel`, `ProfileKeyword`, `ProfileFollow`
 
 | Command | Description |
 |---------|-------------|
@@ -281,10 +296,13 @@ All Prisma commands should be run from the `server/` directory.
 |---------|-------|-------------|
 | `npm run dev` | Root | Start client + server concurrently |
 | `npm run build` | Root | Build both workspaces |
+| `npm run test` | Root | Run tests in both workspaces |
 | `npm run dev --workspace=client` | Client | Start Vite dev server only |
 | `npm run dev --workspace=server` | Server | Start Express with ts-node-dev |
 | `npm run build --workspace=client` | Client | `tsc -b && vite build` |
 | `npm run build --workspace=server` | Server | `tsc` |
+| `npm run test --workspace=client` | Client | Run client Vitest tests in jsdom |
+| `npm run test --workspace=server` | Server | Run server Vitest tests in Node |
 
 ---
 
@@ -311,6 +329,22 @@ This project uses a **spec-driven development** workflow:
 - Custom hooks for data fetching (`useAuth`, `useProfiles`, `useFeed`)
 - All server communication goes through `services/` API functions
 - Auth state managed via React context (`AuthProvider`)
+
+---
+
+## Testing
+
+Focused Tube uses Vitest in both workspaces.
+
+- Client tests run in `jsdom` with Testing Library setup from `client/src/test-setup.ts`
+- Server tests run in a Node environment
+- Test files are colocated under `src/` as `*.test.ts` or `*.test.tsx`
+
+```bash
+npm run test
+npm run test --workspace=client
+npm run test --workspace=server
+```
 
 ---
 
@@ -350,16 +384,17 @@ Focused Tube deploys to Azure via a GitHub Actions CI/CD pipeline:
 
 | Component | Azure Service | Trigger |
 |-----------|--------------|----------|
-| **Frontend** | Azure Static Web App | Push to `main` |
-| **Backend API** | Azure Container App (via ACR) | Push to `main` |
-| **Database** | Azure SQL (Prisma migrations) | Push to `main` |
+| **Frontend** | Azure Static Web App | Manual workflow dispatch |
+| **Backend API** | Azure Container App (via ACR) | Manual workflow dispatch |
+| **Database** | Azure SQL (Prisma migrations) | Manual or documented deployment step |
 
-The pipeline runs tests on every push and PR, and deploys to production only on `main`:
+The current workflow in `.github/workflows/ci-cd.yml` is manually triggered and lets the operator choose whether to deploy the API, the client, or both:
 
 1. **Test** — build and test both workspaces
-2. **Deploy Database** — apply Prisma migrations to Azure SQL
-3. **Deploy Client** — build the SPA and deploy to Static Web App
-4. **Deploy API** — build Docker image, push to ACR, update Container App
+2. **Deploy Client** — build the SPA and deploy to Static Web Apps when selected
+3. **Deploy API** — build a Docker image, push to ACR, and update Container Apps when selected
+
+Database migration setup and first-time deployment steps are covered in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the full step-by-step setup guide.
 
@@ -371,7 +406,8 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for the full step-by-step setup guide.
 2. Follow the spec-driven workflow: spec → stories → implementation → validation
 3. Keep routes thin — business logic belongs in `server/src/services/`
 4. All server communication from the client goes through `services/` API functions
-5. Run `npm run build` to verify the build passes before submitting
+5. Add or update tests for meaningful behavior changes
+6. Run `npm run build` and `npm run test` before submitting
 
 ---
 
