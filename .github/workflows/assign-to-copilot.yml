@@ -12,13 +12,47 @@ jobs:
     if: github.event.label.name == 'spec-approved'
     runs-on: ubuntu-latest
     steps:
+      - name: Debug event context
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          script: |
+            core.info(`Event action: ${context.payload.action}`);
+            core.info(`Label added: ${context.payload.label?.name}`);
+            core.info(`Issue number: ${context.issue.number}`);
+            core.info(`Repo: ${context.repo.owner}/${context.repo.repo}`);
+            core.info(`Current assignees: ${JSON.stringify(context.payload.issue?.assignees?.map(a => a.login))}`);
+
+      - name: Check if copilot is a valid assignee
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          script: |
+            try {
+              const result = await github.rest.issues.checkUserCanBeAssigned({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                assignee: 'copilot',
+              });
+              core.info(`copilot can be assigned — HTTP status: ${result.status}`);
+            } catch (err) {
+              core.warning(`copilot assignee check failed: ${err.status} ${err.message}`);
+            }
+
       - name: Assign issue to Copilot
         uses: actions/github-script@v9
         with:
+          github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           script: |
-            await github.rest.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              assignees: ['copilot'],
-            });
+            try {
+              const response = await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                assignees: ['copilot'],
+              });
+              core.info(`addAssignees HTTP status: ${response.status}`);
+              core.info(`Issue assignees after update: ${JSON.stringify(response.data.assignees?.map(a => a.login))}`);
+            } catch (err) {
+              core.setFailed(`addAssignees failed: ${err.status} — ${err.message}`);
+            }
