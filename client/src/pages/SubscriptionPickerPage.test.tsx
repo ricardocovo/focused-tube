@@ -122,7 +122,7 @@ describe('SubscriptionPickerPage', () => {
     });
 
     const row = container.querySelectorAll<HTMLElement>('.subscription-row')[0]!;
-    await user.click(within(row).getByRole('button', { name: 'Remove Channel One' }));
+    await user.click(within(row).getByRole('button', { name: 'Selected - remove Channel One' }));
 
     await waitFor(() => {
       expect(mockRemoveChannel).toHaveBeenCalledWith('profile-1', 'membership-1');
@@ -138,7 +138,7 @@ describe('SubscriptionPickerPage', () => {
     });
 
     const row = container.querySelectorAll<HTMLElement>('.subscription-row')[1]!;
-    await user.click(within(row).getByRole('button', { name: 'Add Channel Two' }));
+    await user.click(within(row).getByRole('button', { name: 'Select Channel Two' }));
 
     await waitFor(() => {
       expect(mockAddChannel).toHaveBeenCalledWith('profile-1', {

@@ -13,13 +13,16 @@ export default function SubscriptionChannelRow({ channel, isSelected, isSaving, 
 
   let btnLabel = 'Select';
   let btnClass = 'sub-channel-btn';
+  let ariaLabel = `Select ${channel.channelTitle}`;
 
   if (isSaving) {
     btnLabel = isSelected ? 'Updating…' : 'Updating…';
     btnClass += ' sub-channel-btn--saving';
+    ariaLabel = `Updating ${channel.channelTitle}…`;
   } else if (isSelected) {
     btnLabel = 'Selected';
     btnClass += ' sub-channel-btn--selected';
+    ariaLabel = `Selected - remove ${channel.channelTitle}`;
   }
 
   return (
@@ -43,7 +46,7 @@ export default function SubscriptionChannelRow({ channel, isSelected, isSaving, 
       <button
         type="button"
         aria-pressed={isSelected}
-        aria-label={isSelected ? `Remove ${channel.channelTitle}` : `Add ${channel.channelTitle}`}
+        aria-label={ariaLabel}
         disabled={disabled}
         onClick={onToggle}
         className={btnClass}
