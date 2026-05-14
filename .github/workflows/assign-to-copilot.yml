@@ -49,10 +49,14 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                assignees: ['copilot'],
+                assignees: ['@copilot'],
               });
               core.info(`addAssignees HTTP status: ${response.status}`);
-              core.info(`Issue assignees after update: ${JSON.stringify(response.data.assignees?.map(a => a.login))}`);
+              const assignees = response.data.assignees ?? [];
+              core.info(`Issue assignees after update: ${JSON.stringify(assignees.map(a => a.login))}`);
+              if (assignees.length === 0) {
+                core.setFailed('Assignment failed: issue has no assignees after update. The "copilot" login may not be a valid assignee for this repo.');
+              }
             } catch (err) {
               core.setFailed(`addAssignees failed: ${err.status} — ${err.message}`);
             }
