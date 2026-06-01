@@ -20,7 +20,10 @@ export default function LoginPage() {
   if (isLoading) {
     return (
       <div className="login-spinner-container">
-        <div className="login-spinner" />
+        <div role="status" aria-label="Loading, please wait...">
+          <div className="login-spinner" aria-hidden="true" />
+          <span className="sr-only">Loading, please wait...</span>
+        </div>
       </div>
     );
   }

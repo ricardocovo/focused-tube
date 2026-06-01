@@ -595,6 +595,18 @@ select:focus-visible {
   background: #0F0F0F;
 }
 
+/* ===== VISUALLY HIDDEN (screen-reader only) ===== */
+
+.sr-only {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 /* ===== EMPTY STATES ===== */
 
 .empty-state {
