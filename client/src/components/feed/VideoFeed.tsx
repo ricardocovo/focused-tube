@@ -65,11 +65,20 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
     }
   }, [videos.length]);
 
+  // Shared live region rendered in all states so it is always mounted when text changes
+  const liveRegion = (
+    <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+      {isLoading && 'Loading videos…'}
+      {isFetchingMore && !isLoading && 'Loading more videos…'}
+    </div>
+  );
+
   // Error state
   if (error && !isLoading && videos.length === 0) {
     return (
       <div>
-        <div className="video-feed-error">
+        {liveRegion}
+        <div className="video-feed-error" role="alert">
           <p className="video-feed-error-text">{error}</p>
           <button
             onClick={reset}
@@ -86,6 +95,7 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
   if (!isLoading && hasLoadedOnce && videos.length === 0) {
     return (
       <div>
+        {liveRegion}
         <div className="video-feed-empty">
           <div className="video-feed-empty-icon">📺</div>
           <p className="video-feed-empty-text">
@@ -104,6 +114,8 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
 
   return (
     <div>
+      {liveRegion}
+
       {/* Initial loading state */}
       {isLoading && (
         <div className="video-grid">
@@ -130,7 +142,7 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
 
           {/* All caught up */}
           {!nextPageToken && hasLoadedOnce && (
-            <p className="video-feed-caught-up">
+            <p className="video-feed-caught-up" role="status">
               You're all caught up! 🎉
             </p>
           )}
@@ -139,7 +151,7 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
 
       {/* Inline error with videos already shown */}
       {error && videos.length > 0 && (
-        <div className="video-feed-inline-error">
+        <div className="video-feed-inline-error" role="alert">
           <p className="video-feed-inline-error-text">{error}</p>
           <button
             onClick={reset}

@@ -93,6 +93,63 @@ describe('VideoFeed', () => {
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
+  it('announces loading state via role="status" live region', () => {
+    mockUseFeed.mockReturnValue(defaultFeedReturn({ isLoading: true }));
+
+    renderWithRouter(<VideoFeed profileId="p1" />);
+
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('Loading videos…');
+  });
+
+  it('announces fetching-more state via role="status" live region', () => {
+    const videos = [makeVideo('1')];
+    mockUseFeed.mockReturnValue(
+      defaultFeedReturn({ videos, hasLoadedOnce: true, isFetchingMore: true, nextPageToken: 'tok' })
+    );
+
+    renderWithRouter(<VideoFeed profileId="p1" />);
+
+    // The "all caught up" <p> also has role="status"; find the sr-only one
+    const statusRegions = screen.getAllByRole('status');
+    const liveRegion = statusRegions.find((el) => el.classList.contains('sr-only'));
+    expect(liveRegion).toHaveTextContent('Loading more videos…');
+  });
+
+  it('full-page error has role="alert"', () => {
+    mockUseFeed.mockReturnValue(
+      defaultFeedReturn({ error: 'Network error', hasLoadedOnce: true })
+    );
+
+    renderWithRouter(<VideoFeed profileId="p1" />);
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Network error');
+  });
+
+  it('inline error (videos present) has role="alert"', () => {
+    const videos = [makeVideo('1')];
+    mockUseFeed.mockReturnValue(
+      defaultFeedReturn({ videos, hasLoadedOnce: true, error: 'Partial error' })
+    );
+
+    renderWithRouter(<VideoFeed profileId="p1" />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Partial error');
+  });
+
+  it('"all caught up" message has role="status"', () => {
+    const videos = [makeVideo('1')];
+    mockUseFeed.mockReturnValue(
+      defaultFeedReturn({ videos, hasLoadedOnce: true, nextPageToken: undefined })
+    );
+
+    renderWithRouter(<VideoFeed profileId="p1" />);
+
+    const caughtUp = screen.getByText(/You're all caught up/);
+    expect(caughtUp).toHaveAttribute('role', 'status');
+  });
+
   it('does not render source tabs (feature disabled)', () => {
     mockUseFeed.mockReturnValue(defaultFeedReturn({ isLoading: true }));
 
