@@ -593,6 +593,8 @@ select:focus-visible {
   padding: 24px;
   text-align: center;
   background: #0F0F0F;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ===== VISUALLY HIDDEN (screen-reader only) ===== */

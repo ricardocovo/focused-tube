@@ -22,6 +22,7 @@ export interface Video {
   thumbnailUrl: string;
   publishedAt: string;
   source: 'subscription' | 'search';
+  duration?: string;
 }
 
 export interface SearchVideosParams {
@@ -383,6 +384,7 @@ export async function filterEmbeddableVideos(
 
   const uncachedVideoIds: string[] = [];
   const embeddableMap = new Map<string, boolean>();
+  const durationMap = new Map<string, string>();
 
   // Check cache for each video
   for (const video of videos) {
@@ -404,7 +406,7 @@ export async function filterEmbeddableVideos(
       for (let i = 0; i < uncachedVideoIds.length; i += BATCH_SIZE) {
         const batch = uncachedVideoIds.slice(i, i + BATCH_SIZE);
         const response = await youtube.videos.list({
-          part: ['status'],
+          part: ['status', 'contentDetails'],
           id: batch,
         });
         quotaTracker.record('videos.list');
@@ -418,6 +420,9 @@ export async function filterEmbeddableVideos(
             embeddableMap.set(item.id, isEmbeddable);
             returnedIds.add(item.id);
             await cache.set(`embeddable:${item.id}`, isEmbeddable, EMBEDDABLE_CACHE_TTL_SECONDS);
+            if (item.contentDetails?.duration) {
+              durationMap.set(item.id, item.contentDetails.duration);
+            }
           }
         }
 
@@ -436,5 +441,10 @@ export async function filterEmbeddableVideos(
     }
   }
 
-  return videos.filter((v) => embeddableMap.get(v.videoId) !== false);
+  return videos
+    .filter((v) => embeddableMap.get(v.videoId) !== false)
+    .map((v) => {
+      const dur = durationMap.get(v.videoId);
+      return dur ? { ...v, duration: dur } : v;
+    });
 }
