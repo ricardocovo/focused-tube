@@ -40,7 +40,6 @@
   font-size: 16px;
   font-family: var(--ft-font);
   min-height: 44px;
-  outline: none;
   background: var(--ft-surface);
   color: var(--ft-text);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -48,9 +47,9 @@
 }
 
 .community-search-input:focus {
-  border-color: var(--ft-border-focus);
-  box-shadow: 0 0 0 3px rgba(6, 95, 212, 0.12);
   outline: 2px solid transparent;
+  border-color: var(--ft-border-focus);
+  box-shadow: 0 0 0 3px rgba(6, 95, 212, 0.35);
 }
 
 .community-loading {

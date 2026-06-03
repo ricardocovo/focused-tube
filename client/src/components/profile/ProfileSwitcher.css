@@ -48,6 +48,13 @@
   margin: 4px 0;
 }
 
+.profile-switcher-section,
+.profile-switcher-section-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .profile-switcher-section {
   display: flex;
   flex-direction: column;
@@ -68,6 +75,20 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.profile-switcher-option:focus {
+  background: var(--ft-surface-hover);
+  box-shadow: inset 0 0 0 2px var(--ft-border-focus);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+@media (forced-colors: active) {
+  .profile-switcher-option:focus {
+    box-shadow: none;
+    outline-color: Highlight;
+  }
 }
 
 .profile-switcher-option-main {

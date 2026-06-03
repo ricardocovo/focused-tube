@@ -8,8 +8,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (isLoading) {
     return (
-      <div className="protected-route-loading">
-        <div className="protected-route-spinner" />
+      <div className="protected-route-loading" role="status" aria-label="Loading, please wait...">
+        <div className="protected-route-spinner" aria-hidden="true" />
+        <span className="sr-only">Loading, please wait...</span>
       </div>
     );
   }

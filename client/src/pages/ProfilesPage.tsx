@@ -77,6 +77,8 @@ export default function ProfilesPage() {
           <button
             onClick={() => setShowForm(!showForm)}
             className="profiles-new-btn"
+            aria-expanded={showForm}
+            aria-controls="new-profile-form"
           >
             {showForm ? 'Cancel' : '+ New Profile'}
           </button>
@@ -84,6 +86,7 @@ export default function ProfilesPage() {
 
       {showForm && (
         <form
+          id="new-profile-form"
           onSubmit={handleCreate}
           className="profiles-create-form"
         >
@@ -117,7 +120,7 @@ export default function ProfilesPage() {
         </form>
       )}
 
-      {error && <p className="profiles-error">{error}</p>}
+      {error && <p className="profiles-error" role="alert">{error}</p>}
 
       {isLoading ? (
         <p className="profiles-loading">Loading profiles…</p>
