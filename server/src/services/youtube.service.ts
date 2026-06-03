@@ -370,10 +370,14 @@ async function executeSearch(
 }
 
 const EMBEDDABLE_CACHE_TTL_SECONDS = 3600; // 1 hour
+interface EmbeddableCacheEntry {
+  embeddable: boolean;
+  duration?: string;
+}
 
 /**
  * Filter a list of videos to only those that are embeddable.
- * Uses videos.list with part=status in batches of 50.
+ * Uses videos.list with part=status,contentDetails in batches of 50.
  * Caches results per video ID. Fails open on API errors.
  */
 export async function filterEmbeddableVideos(
@@ -389,9 +393,17 @@ export async function filterEmbeddableVideos(
   // Check cache for each video
   for (const video of videos) {
     const cacheKey = `embeddable:${video.videoId}`;
-    const cached = await cache.get<boolean>(cacheKey);
+    const cached = await cache.get<boolean | EmbeddableCacheEntry>(cacheKey);
     if (cached !== undefined) {
-      embeddableMap.set(video.videoId, cached);
+      if (typeof cached === 'boolean') {
+        // Backward compatibility with existing boolean-only cache entries.
+        embeddableMap.set(video.videoId, cached);
+      } else {
+        embeddableMap.set(video.videoId, cached.embeddable);
+        if (cached.duration) {
+          durationMap.set(video.videoId, cached.duration);
+        }
+      }
     } else {
       uncachedVideoIds.push(video.videoId);
     }
@@ -419,10 +431,13 @@ export async function filterEmbeddableVideos(
             const isEmbeddable = item.status?.embeddable === true;
             embeddableMap.set(item.id, isEmbeddable);
             returnedIds.add(item.id);
-            await cache.set(`embeddable:${item.id}`, isEmbeddable, EMBEDDABLE_CACHE_TTL_SECONDS);
-            if (item.contentDetails?.duration) {
-              durationMap.set(item.id, item.contentDetails.duration);
-            }
+            const duration = item.contentDetails?.duration ?? undefined;
+            if (duration) durationMap.set(item.id, duration);
+            await cache.set<EmbeddableCacheEntry>(
+              `embeddable:${item.id}`,
+              { embeddable: isEmbeddable, duration },
+              EMBEDDABLE_CACHE_TTL_SECONDS,
+            );
           }
         }
 
@@ -430,7 +445,11 @@ export async function filterEmbeddableVideos(
         for (const id of batch) {
           if (!returnedIds.has(id)) {
             embeddableMap.set(id, false);
-            await cache.set(`embeddable:${id}`, false, EMBEDDABLE_CACHE_TTL_SECONDS);
+            await cache.set<EmbeddableCacheEntry>(
+              `embeddable:${id}`,
+              { embeddable: false },
+              EMBEDDABLE_CACHE_TTL_SECONDS,
+            );
           }
         }
       }
