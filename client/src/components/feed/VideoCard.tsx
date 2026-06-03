@@ -28,6 +28,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
     <button
       type="button"
       className="video-card"
+      aria-label={`Play ${video.title} by ${video.channelTitle}`}
       onClick={() => onSelect?.(video)}
     >
       {/* Thumbnail */}

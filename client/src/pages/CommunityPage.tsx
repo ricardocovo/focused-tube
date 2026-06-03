@@ -47,9 +47,9 @@ export default function CommunityPage() {
         </div>
 
         {isLoading ? (
-          <p className="community-loading">Loading profiles…</p>
+          <p className="community-loading" role="status">Loading profiles…</p>
         ) : error ? (
-          <p className="community-error">{error}</p>
+          <p className="community-error" role="alert">{error}</p>
         ) : profiles.length === 0 ? (
           <div className="community-empty">
             <p>No public profiles found{keyword ? ` matching "${keyword}"` : ''}.</p>

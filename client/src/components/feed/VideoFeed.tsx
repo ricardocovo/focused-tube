@@ -69,7 +69,7 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
   const liveRegion = (
     <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
       {isLoading && 'Loading videos…'}
-      {isFetchingMore && !isLoading && 'Loading more videos…'}
+      {!isLoading && isFetchingMore && 'Loading more videos…'}
     </div>
   );
 
@@ -128,14 +128,20 @@ export default function VideoFeed({ profileId, onVideoSelect }: VideoFeedProps) 
       {/* Video grid */}
       {!isLoading && videos.length > 0 && (
         <>
-          <div className="video-grid">
+          <ul className="video-grid" aria-label={`Video feed – ${videos.length} videos`}>
             {videos.map((video) => (
-              <VideoCard key={video.videoId} video={video} onSelect={onVideoSelect} />
+              <li key={video.videoId}>
+                <VideoCard video={video} onSelect={onVideoSelect} />
+              </li>
             ))}
             {/* Extra skeletons while fetching more */}
             {isFetchingMore &&
-              Array.from({ length: 4 }).map((_, i) => <VideoCardSkeleton key={`more-${i}`} />)}
-          </div>
+              Array.from({ length: 4 }).map((_, i) => (
+                <li key={`more-${i}`} aria-hidden="true">
+                  <VideoCardSkeleton />
+                </li>
+              ))}
+          </ul>
 
           {/* Sentinel for infinite scroll */}
           <div ref={sentinelRef} className="video-feed-sentinel" />
