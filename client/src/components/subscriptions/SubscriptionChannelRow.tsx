@@ -29,7 +29,7 @@ export default function SubscriptionChannelRow({ channel, isSelected, isSaving, 
     <div className={`subscription-row${isSelected ? ' subscription-row--selected' : ''}`}>
       <img
         src={channel.thumbnailUrl ?? undefined}
-        alt={channel.channelTitle}
+        alt=""
       />
 
       <div className="subscription-row-info">

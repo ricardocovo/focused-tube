@@ -47,6 +47,24 @@ export default function Dashboard() {
   }, [activeProfile?.id]);
 
   useEffect(() => {
+    const mainContent = document.getElementById('main-content');
+    const header = document.querySelector('header');
+
+    if (selectedVideo) {
+      mainContent?.setAttribute('inert', '');
+      header?.setAttribute('inert', '');
+    } else {
+      mainContent?.removeAttribute('inert');
+      header?.removeAttribute('inert');
+    }
+
+    return () => {
+      mainContent?.removeAttribute('inert');
+      header?.removeAttribute('inert');
+    };
+  }, [selectedVideo]);
+
+  useEffect(() => {
     localStorage.setItem(PROFILE_PANEL_STORAGE_KEY, isProfilePanelVisible ? 'visible' : 'hidden');
   }, [isProfilePanelVisible]);
 
