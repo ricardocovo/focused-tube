@@ -1,5 +1,5 @@
 # ── Stage 1: Build ────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN npx prisma generate --schema=server/src/prisma/schema.prisma
 RUN npm run build --workspace=server
 
 # ── Stage 2: Production runtime ──────────────────────
-FROM node:22-alpine
+FROM node:26-alpine
 
 WORKDIR /app
 
