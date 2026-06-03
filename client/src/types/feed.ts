@@ -6,6 +6,7 @@ export interface FeedVideo {
   thumbnailUrl: string;
   publishedAt: string;
   source: 'subscription' | 'search';
+  duration?: string;
 }
 
 export interface FeedResponse {

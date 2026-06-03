@@ -36,6 +36,11 @@ export default function LoginPage() {
 
   return (
     <main id="main-content" tabIndex={-1} className="login-page">
+      <div className="login-bg" aria-hidden="true">
+        <span className="login-blob login-blob--1" />
+        <span className="login-blob login-blob--2" />
+        <span className="login-blob login-blob--3" />
+      </div>
       <div className="login-content">
         {errorCode && (
           <div role="alert" className="login-error-banner">
