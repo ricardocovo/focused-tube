@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockPlaylistItemsList = vi.fn();
 const mockSearchList = vi.fn();
 const mockSubscriptionsList = vi.fn();
+const mockVideosList = vi.fn();
 
 vi.mock('googleapis', () => {
   class MockOAuth2 {
@@ -16,6 +17,7 @@ vi.mock('googleapis', () => {
         playlistItems: { list: mockPlaylistItemsList },
         search: { list: mockSearchList },
         subscriptions: { list: mockSubscriptionsList },
+        videos: { list: mockVideosList },
       })),
     },
   };
@@ -65,6 +67,7 @@ import {
   getChannelVideos,
   searchVideos,
   getUserSubscriptions,
+  filterEmbeddableVideos,
 } from './youtube.service';
 
 const mockedUserFindUnique = vi.mocked(prisma.user.findUnique);
@@ -336,5 +339,90 @@ describe('getUserSubscriptions', () => {
     mockedUserFindUnique.mockResolvedValue(null);
 
     await expect(getUserSubscriptions('nonexistent')).rejects.toThrow('User not found');
+  });
+});
+
+describe('filterEmbeddableVideos', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('attaches duration from videos.list response and caches embeddable metadata', async () => {
+    mockedCacheGet.mockResolvedValue(undefined);
+    mockedUserFindUnique.mockResolvedValue(mockUser as any);
+    mockVideosList.mockResolvedValue({
+      data: {
+        items: [
+          {
+            id: 'v1',
+            status: { embeddable: true },
+            contentDetails: { duration: 'PT4M13S' },
+          },
+        ],
+      },
+    });
+
+    const result = await filterEmbeddableVideos('user-1', [
+      {
+        videoId: 'v1',
+        title: 'Video 1',
+        description: 'desc',
+        channelId: 'ch1',
+        channelTitle: 'Channel 1',
+        thumbnailUrl: 'http://thumb.jpg',
+        publishedAt: '2024-01-01T00:00:00Z',
+        source: 'subscription',
+      },
+    ]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.duration).toBe('PT4M13S');
+    expect(mockedCacheSet).toHaveBeenCalledWith(
+      'embeddable:v1',
+      { embeddable: true, duration: 'PT4M13S' },
+      3600,
+    );
+  });
+
+  it('attaches duration from cached embeddability metadata on cache hit', async () => {
+    mockedCacheGet.mockResolvedValue({ embeddable: true, duration: 'PT1M05S' } as any);
+
+    const result = await filterEmbeddableVideos('user-1', [
+      {
+        videoId: 'v1',
+        title: 'Video 1',
+        description: 'desc',
+        channelId: 'ch1',
+        channelTitle: 'Channel 1',
+        thumbnailUrl: 'http://thumb.jpg',
+        publishedAt: '2024-01-01T00:00:00Z',
+        source: 'search',
+      },
+    ]);
+
+    expect(mockVideosList).not.toHaveBeenCalled();
+    expect(result).toHaveLength(1);
+    expect(result[0]?.duration).toBe('PT1M05S');
+  });
+
+  it('supports legacy boolean cache entries without duration', async () => {
+    mockedCacheGet.mockResolvedValue(true as any);
+
+    const result = await filterEmbeddableVideos('user-1', [
+      {
+        videoId: 'v1',
+        title: 'Video 1',
+        description: 'desc',
+        channelId: 'ch1',
+        channelTitle: 'Channel 1',
+        thumbnailUrl: 'http://thumb.jpg',
+        publishedAt: '2024-01-01T00:00:00Z',
+        source: 'search',
+      },
+    ]);
+
+    expect(mockVideosList).not.toHaveBeenCalled();
+    expect(result).toHaveLength(1);
+    expect(result[0]?.duration).toBeUndefined();
   });
 });
