@@ -353,7 +353,7 @@ async function startServer(rootPath, initialPath) {
     return { server, url: `http://127.0.0.1:${port}/` };
 }
 
-const session = await joinSession({
+await joinSession({
     canvases: [
         createCanvas({
             id: "repo-explorer",
