@@ -340,7 +340,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Build and run app in background
-        run: "npm install\nnpm run build\nDATABASE_URL=\"sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true\" \\\nSHADOW_DATABASE_URL=\"sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true\" \\\nCLIENT_ORIGIN=http://localhost:3000 PORT=3001 npm run start --workspace=server > /tmp/focused-tube-server.log 2>&1 &\nnpm run preview --workspace=client -- --host 0.0.0.0 --port 3000 > /tmp/focused-tube-client.log 2>&1 &\nuntil curl -sf http://localhost:3000 >/dev/null; do sleep 2; done\n"
+        run: "npm install\nnpm run build\nDB_PASSWORD=\"PLACEHOLDER_PASSWORD\"\nDB_URL=\"sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true\"\nDATABASE_URL=\"$DB_URL\" \\\nSHADOW_DATABASE_URL=\"$DB_URL\" \\\nCLIENT_ORIGIN=http://localhost:3000 PORT=3001 npm run start --workspace=server > /tmp/focused-tube-server.log 2>&1 &\nnpm run preview --workspace=client -- --host 0.0.0.0 --port 3000 > /tmp/focused-tube-client.log 2>&1 &\nuntil curl -sf http://localhost:3000 >/dev/null; do sleep 2; done\n"
 
       - name: Configure Git credentials
         env:

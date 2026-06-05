@@ -38,8 +38,10 @@ steps:
     run: |
       npm install
       npm run build
-      DATABASE_URL="sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true" \
-      SHADOW_DATABASE_URL="sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true" \
+      DB_PASSWORD="PLACEHOLDER_PASSWORD"
+      DB_URL="sqlserver://localhost:1433;database=focusedtube;user=sa;******;encrypt=true;trustServerCertificate=true"
+      DATABASE_URL="$DB_URL" \
+      SHADOW_DATABASE_URL="$DB_URL" \
       CLIENT_ORIGIN=http://localhost:3000 PORT=3001 npm run start --workspace=server > /tmp/focused-tube-server.log 2>&1 &
       npm run preview --workspace=client -- --host 0.0.0.0 --port 3000 > /tmp/focused-tube-client.log 2>&1 &
       until curl -sf http://localhost:3000 >/dev/null; do sleep 2; done
