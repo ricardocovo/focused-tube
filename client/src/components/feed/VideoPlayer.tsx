@@ -48,8 +48,14 @@ function loadYouTubeIFrameApi(): Promise<void> {
   return ytApiPromise;
 }
 
-/* Embed error codes that signal "cannot play in embedded player" */
-const EMBED_BLOCKED_CODES = new Set([101, 150, 153]);
+const YT_ERROR_MESSAGES: Record<number, string> = {
+  2: 'This video request is invalid.',
+  5: 'The browser could not load this YouTube video format.',
+  100: 'This video is unavailable or has been removed.',
+  101: 'The video owner does not allow playback in embedded players.',
+  150: 'The video owner does not allow playback in embedded players.',
+  153: 'Playback is blocked because your browser did not send a valid referrer.',
+};
 const VIDEO_PLAYER_TITLE_ID = 'video-player-title-id';
 const FOCUSABLE_ELEMENTS_SELECTOR =
   'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, details, summary, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"]):not([disabled])';
@@ -70,7 +76,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
   const playerRef = useRef<YTPlayerLike | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [embedError, setEmbedError] = useState(false);
+  const [playerErrorCode, setPlayerErrorCode] = useState<number | null>(null);
   const [apiLoadFailed, setApiLoadFailed] = useState(false);
 
   // Focus close button on mount
@@ -100,7 +106,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
 
     async function init() {
       setLoading(true);
-      setEmbedError(false);
+      setPlayerErrorCode(null);
       setApiLoadFailed(false);
       destroyPlayer();
 
@@ -135,8 +141,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
             if (!cancelled) setLoading(false);
           },
           onError: (event: { data: number }) => {
-            if (!cancelled && EMBED_BLOCKED_CODES.has(event.data)) {
-              setEmbedError(true);
+            if (!cancelled) {
+              setPlayerErrorCode(event.data);
               setLoading(false);
             }
           },
@@ -158,7 +164,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
     window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
   }, [youtubeUrl]);
 
-  const showFallback = embedError || apiLoadFailed;
+  const showFallback = playerErrorCode !== null || apiLoadFailed;
+  const playerErrorMessage =
+    playerErrorCode !== null
+      ? YT_ERROR_MESSAGES[playerErrorCode] ?? 'This video cannot be played in the embedded player.'
+      : null;
 
   const trapFocus = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Tab') return;
@@ -256,8 +266,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, onClose }) => {
                 <p className="video-player-fallback-message">
                   {apiLoadFailed
                     ? 'Could not load the video player.'
-                    : 'This video cannot be played here.'}
+                    : playerErrorMessage}
                 </p>
+                {playerErrorCode !== null && (
+                  <p className="video-player-fallback-code">YouTube error code: {playerErrorCode}</p>
+                )}
                 <a
                   href={youtubeUrl}
                   target="_blank"
