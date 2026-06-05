@@ -1,5 +1,9 @@
 # Copilot Instructions for Focused Tube
 
+## AGENTS
+
+Be brief on your responses.
+
 ## Project Overview
 
 Focused Tube is a YouTube overlay web app that lets users create curated profiles — each with subscribed channels and keywords — to bypass YouTube's recommendation algorithm. Users sign in with Google to import their YouTube subscriptions, organize them into profiles, and view a combined feed of subscription-based and keyword-search videos.
@@ -33,6 +37,9 @@ All routes are prefixed with `/api/`:
 - `/api/profiles/*` — Profile CRUD, channel/keyword management
 - `/api/subscriptions` — Fetch user's YouTube subscriptions
 - `/api/feed/:profileId` — Combined video feed (filterable by `?source=subscriptions|search`)
+   - If `profileId` does not exist in the database, return HTTP 404 with `{ "error": "profile_not_found" }`.
+   - If `profileId` exists but belongs to a different user than the authenticated session, return HTTP 403 with `{ "error": "forbidden" }`. Never leak the existence of another user's profile by returning 404 in this case.
+   - If `?source=` is provided with any value other than `subscriptions` or `search`, return HTTP 400 with `{ "error": "invalid_source", "message": "source must be 'subscriptions' or 'search'" }`.
 
 ## Conventions
 
@@ -42,6 +49,7 @@ All routes are prefixed with `/api/`:
 - Auth middleware in `server/src/middleware/` attaches the authenticated user to the request
 - YouTube API calls are isolated in a service layer to support future caching
 - Google access/refresh tokens are stored encrypted — use the encryption utils in `server/src/utils/`
+- If a Google token refresh attempt fails with `invalid_grant` or `token_revoked`, delete the user's stored tokens from the database and return HTTP 401 with `{ "error": "google_auth_revoked", "message": "Google authorization has been revoked. Please sign in again." }`.
 - Environment variables: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `JWT_SECRET`, `DATABASE_URL` (all in `.env`, gitignored)
 
 ### Client-side patterns
@@ -66,10 +74,14 @@ Feature work follows a spec-driven workflow:
 3. Use the **developer** agent to implement a spec end-to-end (reads spec → plans → implements → validates)
 
 Always read the relevant spec and user stories before implementing a feature.
+If no spec exists for a requested feature, do not implement it directly. Inform the user that a spec is required and instruct them to run the feature-spec-generator agent first before requesting implementation.
 
 ## YouTube API Quota Awareness
 
 The YouTube Data API v3 has a 10,000 unit daily quota. `search.list` costs 100 units per call. When implementing YouTube-related features:
-- Batch API calls where possible
-- Keep the service layer cache-friendly (a caching layer will be added later)
-- Avoid unnecessary duplicate calls for the same data
+Follow these rules in priority order:
+1. Never make duplicate calls for data already fetched in the same request lifecycle.
+2. Always batch API calls when the YouTube Data API supports it for that endpoint (for example, use comma-separated `id` parameters for `videos.list` instead of one request per video). Never call the same endpoint in a loop when a single batched request is available.
+3. Structure service functions so inputs fully determine outputs and avoid internal state mutations, so a caching wrapper can memoize by function arguments later. Do not make inline API calls from within other service calls; invoke isolated YouTube service functions so a cache can intercept them.
+
+If a YouTube API call returns a 403 `quotaExceeded` error, the server must return HTTP 429 with `{ "error": "youtube_quota_exceeded", "message": "YouTube API quota exhausted. Try again after midnight Pacific Time." }`. Do not propagate the raw Google error response to the client.
