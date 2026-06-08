@@ -5,7 +5,14 @@ applyTo: '**/*.md'
 
 # Mermaid Diagram Conventions
 
-Any diagrams should be created using Mermaid syntax and follow the conventions outlined below to ensure consistency across documentation. These guidelines cover diagram type selection, styling rules, size guidelines, and Markdown integration.
+Diagrams should be created using Mermaid syntax and follow the conventions outlined below to ensure consistency across documentation.
+
+## Quick Start
+
+1. **Choose a diagram type** based on your documentation context (see table below)
+2. **Apply naming and styling rules** for consistency
+3. **Follow size guidelines** to manage complexity
+4. **Integrate into Markdown** using fenced code blocks
 
 ## Diagram Type Selection
 
@@ -19,12 +26,14 @@ Any diagrams should be created using Mermaid syntax and follow the conventions o
 | State machines | `stateDiagram-v2` | Workflow states, pipeline stages |
 | Dependency graphs | `flowchart TD` | Service dependency trees, blast radius |
 
-## Styling Rules
+## Naming Conventions
 
 ### Node Naming
 - Use `PascalCase` for service/component names: `OrderService`, `PaymentGateway`
 - Include the repo name in parentheses for cross-repo references: `OrderService(order-svc)`
 - Use short, descriptive labels — max 30 characters
+
+## Grouping & Organization
 
 ### Subgraph Grouping
 Group by:
@@ -44,12 +53,16 @@ flowchart TD
     OrderAPI --> PaymentAPI
 ```
 
+## Connection Labels & Line Styles
+
 ### Edge Labels
 - Always label edges with the interaction type: HTTP, gRPC, async, event, SQL
 - For async messaging, use dotted lines: `-.->` or `-. "event" .->`
 - For sync calls, use solid lines: `-->` or `-- "REST" -->`
 
-### Color Coding (CSS classes)
+## Color Coding
+
+### CSS Classes
 Use consistent colors when styling is needed:
 - `classDef service fill:#4A90D9,color:#fff` — Backend services
 - `classDef frontend fill:#7B68EE,color:#fff` — Frontend apps
