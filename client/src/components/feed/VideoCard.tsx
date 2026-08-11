@@ -8,6 +8,11 @@ interface VideoCardProps {
   onSelect?: (video: FeedVideo) => void;
 }
 
+const COMPACT_COUNT_FORMATTER = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
 /** Converts ISO 8601 duration (e.g. PT4M13S) to a display string (e.g. 4:13 or 1:23:45). */
 function formatDuration(iso: string): string {
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -20,9 +25,19 @@ function formatDuration(iso: string): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function formatMetricCount(rawCount: string | undefined): string {
+  if (rawCount === undefined) return '—';
+  const parsed = Number(rawCount);
+  if (!Number.isFinite(parsed) || parsed < 0) return '—';
+  return COMPACT_COUNT_FORMATTER.format(parsed);
+}
+
 const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ video, onSelect }) {
   const relativeTime = formatDistanceToNow(new Date(video.publishedAt), { addSuffix: true });
   const duration = video.duration ? formatDuration(video.duration) : null;
+  const viewCount = formatMetricCount(video.viewCount);
+  const likeCount = formatMetricCount(video.likeCount);
+  const dislikeCount = formatMetricCount(video.dislikeCount);
 
   return (
     <button
@@ -51,6 +66,15 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
         <p className="video-card-channel">{video.channelTitle}</p>
         <div className="video-card-meta">
           <span className="video-card-time">{relativeTime}</span>
+          <span className="video-card-stat" aria-label={`Views: ${viewCount === '—' ? 'Unavailable' : viewCount}`}>
+            Views {viewCount}
+          </span>
+          <span className="video-card-stat" aria-label={`Likes: ${likeCount === '—' ? 'Unavailable' : likeCount}`}>
+            Likes {likeCount}
+          </span>
+          <span className="video-card-stat" aria-label={`Dislikes: ${dislikeCount === '—' ? 'Unavailable' : dislikeCount}`}>
+            Dislikes {dislikeCount}
+          </span>
         </div>
       </div>
     </button>

@@ -23,6 +23,9 @@ export interface Video {
   publishedAt: string;
   source: 'subscription' | 'search';
   duration?: string;
+  viewCount?: string;
+  likeCount?: string;
+  dislikeCount?: string;
 }
 
 export interface SearchVideosParams {
@@ -373,6 +376,9 @@ const EMBEDDABLE_CACHE_TTL_SECONDS = 3600; // 1 hour
 interface EmbeddableCacheEntry {
   embeddable: boolean;
   duration?: string;
+  viewCount?: string;
+  likeCount?: string;
+  dislikeCount?: string;
 }
 
 /**
@@ -389,6 +395,9 @@ export async function filterEmbeddableVideos(
   const uncachedVideoIds: string[] = [];
   const embeddableMap = new Map<string, boolean>();
   const durationMap = new Map<string, string>();
+  const viewCountMap = new Map<string, string>();
+  const likeCountMap = new Map<string, string>();
+  const dislikeCountMap = new Map<string, string>();
 
   // Check cache for each video
   for (const video of videos) {
@@ -402,6 +411,15 @@ export async function filterEmbeddableVideos(
         embeddableMap.set(video.videoId, cached.embeddable);
         if (cached.duration) {
           durationMap.set(video.videoId, cached.duration);
+        }
+        if (cached.viewCount) {
+          viewCountMap.set(video.videoId, cached.viewCount);
+        }
+        if (cached.likeCount) {
+          likeCountMap.set(video.videoId, cached.likeCount);
+        }
+        if (cached.dislikeCount) {
+          dislikeCountMap.set(video.videoId, cached.dislikeCount);
         }
       }
     } else {
@@ -418,7 +436,7 @@ export async function filterEmbeddableVideos(
       for (let i = 0; i < uncachedVideoIds.length; i += BATCH_SIZE) {
         const batch = uncachedVideoIds.slice(i, i + BATCH_SIZE);
         const response = await youtube.videos.list({
-          part: ['status', 'contentDetails'],
+          part: ['status', 'contentDetails', 'statistics'],
           id: batch,
         });
         quotaTracker.record('videos.list');
@@ -433,9 +451,15 @@ export async function filterEmbeddableVideos(
             returnedIds.add(item.id);
             const duration = item.contentDetails?.duration ?? undefined;
             if (duration) durationMap.set(item.id, duration);
+            const viewCount = item.statistics?.viewCount ?? undefined;
+            const likeCount = item.statistics?.likeCount ?? undefined;
+            const dislikeCount = item.statistics?.dislikeCount ?? undefined;
+            if (viewCount) viewCountMap.set(item.id, viewCount);
+            if (likeCount) likeCountMap.set(item.id, likeCount);
+            if (dislikeCount) dislikeCountMap.set(item.id, dislikeCount);
             await cache.set<EmbeddableCacheEntry>(
               `embeddable:${item.id}`,
-              { embeddable: isEmbeddable, duration },
+              { embeddable: isEmbeddable, duration, viewCount, likeCount, dislikeCount },
               EMBEDDABLE_CACHE_TTL_SECONDS,
             );
           }
@@ -464,6 +488,16 @@ export async function filterEmbeddableVideos(
     .filter((v) => embeddableMap.get(v.videoId) !== false)
     .map((v) => {
       const dur = durationMap.get(v.videoId);
-      return dur ? { ...v, duration: dur } : v;
+      const viewCount = viewCountMap.get(v.videoId);
+      const likeCount = likeCountMap.get(v.videoId);
+      const dislikeCount = dislikeCountMap.get(v.videoId);
+      const enriched = {
+        ...v,
+        ...(dur ? { duration: dur } : {}),
+        ...(viewCount ? { viewCount } : {}),
+        ...(likeCount ? { likeCount } : {}),
+        ...(dislikeCount ? { dislikeCount } : {}),
+      };
+      return enriched;
     });
 }
