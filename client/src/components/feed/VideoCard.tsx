@@ -25,16 +25,18 @@ function formatDuration(iso: string): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-function formatCount(count: string): string {
-  const parsed = Number(count);
+function formatCount(count: string, parsed: number): string {
   if (!Number.isFinite(parsed)) return count;
   return compactCountFormatter.format(parsed);
 }
 
 function formatStat(count: string | undefined, label: string): string | null {
   if (count === undefined) return null;
-  const formatted = formatCount(count);
-  const suffix = count === '1' ? label : `${label}s`;
+  const trimmed = count.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  const formatted = formatCount(trimmed, parsed);
+  const suffix = parsed === 1 ? label : `${label}s`;
   return `${formatted} ${suffix}`;
 }
 
