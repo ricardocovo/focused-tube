@@ -1,19 +1,19 @@
 {
   "entries": {
-    "actions/checkout@v4": {
+    "actions/checkout@v7.0.1": {
       "repo": "actions/checkout",
-      "version": "v4",
-      "sha": "34e114876b0b11c390a56381ad16ebd13914f8d5"
+      "version": "v7.0.1",
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
     },
-    "actions/github-script@v9": {
+    "actions/github-script@v9.0.0": {
       "repo": "actions/github-script",
-      "version": "v9",
-      "sha": "373c709c69115d41ff229c7e5df9f8788daa9553"
+      "version": "v9.0.0",
+      "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
     },
-    "actions/setup-node@v6": {
+    "actions/setup-node@v7.0.0": {
       "repo": "actions/setup-node",
-      "version": "v6",
-      "sha": "48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e"
+      "version": "v7.0.0",
+      "sha": "820762786026740c76f36085b0efc47a31fe5020"
     },
     "github/gh-aw-actions/setup-cli@v0.81.6": {
       "repo": "github/gh-aw-actions/setup-cli",
@@ -25,10 +25,10 @@
       "version": "v0.81.6",
       "sha": "ba6380cc6e5be5d21677bebe04d52fb48e3abec7"
     },
-    "microsoft/apm-action@v1": {
+    "microsoft/apm-action@v1.10.0": {
       "repo": "microsoft/apm-action",
-      "version": "v1",
-      "sha": "a190b0b1a91031057144dc136acf9757a59c9e4d"
+      "version": "v1.10.0",
+      "sha": "d723bb64ed70c135bbaf87d126b721dd2dae0439"
     }
   }
 }

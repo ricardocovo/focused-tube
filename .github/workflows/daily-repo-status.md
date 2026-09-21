@@ -17,6 +17,7 @@ permissions:
 network: defaults
 
 tools:
+  bash: ["cat", "ls", "find", "grep", "head", "tail", "wc"]
   github:
     # If in a public repo, setting `lockdown: false` allows
     # reading issues, pull requests and comments from 3rd-parties
@@ -31,10 +32,10 @@ safe-outputs:
     title-prefix: "[repo-status] "
     labels: [report, daily-status]
     close-older-issues: true
-source: githubnext/agentics/workflows/daily-repo-status.md@96b9d4c39aa22359c0b38265927eadb31dcf4e2a
+source: githubnext/agentics/workflows/repo-status.md@main
 ---
 
-# Daily Repo Status
+# Repo Status
 
 Create an upbeat daily status report for the repo as a GitHub issue.
 
