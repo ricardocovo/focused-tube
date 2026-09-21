@@ -12,6 +12,8 @@ permissions:
 safe-outputs:
   add-comment:
   update-issue:
+    target: "${{ github.event.issue.number }}"
+    title:
 
 tools:
   github:
@@ -34,8 +36,8 @@ who will implement this work.
 
 ## Results
 
-Update the issue with all the new specifications. *DO NOT delete*  any content. Append to the existing issue description.
-
-Update the title with something representative of the changes required.
+Use `update_issue` to update issue #${{ github.event.issue.number }} with the new
+specification as `body` and `operation: "append"`. *DO NOT delete* any existing
+content. In the same call, set `title` to something representative of the changes required.
 
 Add a comment stating you have updated the issue.
