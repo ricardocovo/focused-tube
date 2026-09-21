@@ -56,6 +56,8 @@
 
 name: "Test Gap Gate"
 on:
+  # bots: # Bots processed as bot check in pre-activation job
+  # - github-actions # Bots processed as bot check in pre-activation job
   pull_request:
     types:
     - opened
@@ -237,6 +239,7 @@ jobs:
         id: sanitized
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
+          GH_AW_ALLOWED_BOTS: "github-actions"
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org,telemetry.enterprise.githubcopilot.com"
         with:
           script: |
