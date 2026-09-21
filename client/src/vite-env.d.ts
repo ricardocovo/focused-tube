@@ -1,5 +1,18 @@
 /// <reference types="vite/client" />
 
+interface ImportMetaEnv {
+  /**
+   * Public-facing site URL used for canonical links, sitemap entries and OG tags.
+   * Set this to your production origin (e.g. https://www.example.com) with no trailing slash.
+   * Falls back to the reserved placeholder `https://focused-tube.example` when absent.
+   */
+  readonly VITE_SITE_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 /* YouTube IFrame Player API global types */
 interface YTPlayerOptions {
   videoId: string;

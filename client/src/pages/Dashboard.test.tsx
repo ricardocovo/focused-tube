@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Dashboard from './Dashboard';
 
 const mockUseProfiles = vi.fn();
@@ -46,9 +47,11 @@ vi.mock('../lib/toast', () => ({
 
 function renderPage() {
   return render(
-    <MemoryRouter>
-      <Dashboard />
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter>
+        <Dashboard />
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
@@ -118,9 +121,11 @@ describe('Dashboard', () => {
     });
 
     rerender(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>,
+      <HelmetProvider>
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      </HelmetProvider>,
     );
 
     expect(screen.queryByText('Demo video')).not.toBeInTheDocument();
@@ -181,5 +186,22 @@ describe('Dashboard', () => {
 
     const feedTabPanel = screen.getByRole('tabpanel', { name: 'Feed videos' });
     expect(feedTabPanel).toContainElement(screen.getByRole('button', { name: 'Open video' }));
+  });
+
+  describe('indexability', () => {
+    it('renders noindex,nofollow robots meta (protected page)', async () => {
+      renderPage();
+      await waitFor(() =>
+        expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          'noindex,nofollow',
+        ),
+      );
+    });
+
+    it('sets document title from active profile name', async () => {
+      renderPage();
+      await waitFor(() => expect(document.title).toBe('Deep Work feed – Focused Tube'));
+    });
   });
 });

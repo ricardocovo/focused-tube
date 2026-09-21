@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import SubscriptionPickerPage from './SubscriptionPickerPage';
 
 const mockUseSubscriptions = vi.fn();
@@ -40,11 +41,13 @@ const mockRemoveChannel = vi.mocked(removeChannel);
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={['/profiles/profile-1/subscriptions']}>
-      <Routes>
-        <Route path="/profiles/:profileId/subscriptions" element={<SubscriptionPickerPage />} />
-      </Routes>
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter initialEntries={['/profiles/profile-1/subscriptions']}>
+        <Routes>
+          <Route path="/profiles/:profileId/subscriptions" element={<SubscriptionPickerPage />} />
+        </Routes>
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
@@ -147,5 +150,15 @@ describe('SubscriptionPickerPage', () => {
         thumbnailUrl: null,
       });
     });
+  });
+
+  it('renders noindex,nofollow robots meta (protected page)', async () => {
+    renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex,nofollow',
+      ),
+    );
   });
 });

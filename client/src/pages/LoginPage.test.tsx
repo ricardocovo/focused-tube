@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import LoginPage from './LoginPage';
 
 const mockUseAuth = vi.fn();
@@ -8,15 +9,13 @@ vi.mock('../context/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-vi.mock('../hooks/usePageTitle', () => ({
-  usePageTitle: vi.fn(),
-}));
-
 function renderLoginPage(route = '/login') {
   return render(
-    <MemoryRouter initialEntries={[route]}>
-      <LoginPage />
-    </MemoryRouter>
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[route]}>
+        <LoginPage />
+      </MemoryRouter>
+    </HelmetProvider>
   );
 }
 
@@ -97,6 +96,36 @@ describe('LoginPage', () => {
       renderLoginPage('/login?error=oauth_failed');
 
       expect(screen.getByRole('alert')).toHaveTextContent('Google sign-in failed');
+    });
+  });
+
+  describe('indexability', () => {
+    it('renders index,follow robots meta on login page (indexable)', async () => {
+      mockUseAuth.mockReturnValue({ user: null, isLoading: false });
+      renderLoginPage();
+      await waitFor(() =>
+        expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          'index,follow',
+        ),
+      );
+    });
+
+    it('renders index,follow robots meta even during loading state', async () => {
+      mockUseAuth.mockReturnValue({ user: null, isLoading: true });
+      renderLoginPage();
+      await waitFor(() =>
+        expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          'index,follow',
+        ),
+      );
+    });
+
+    it('sets the document title to "Sign in – Focused Tube"', async () => {
+      mockUseAuth.mockReturnValue({ user: null, isLoading: false });
+      renderLoginPage();
+      await waitFor(() => expect(document.title).toBe('Sign in – Focused Tube'));
     });
   });
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProfile, addKeyword, removeKeyword, removeChannel } from '../services/profilesApi';
-import { usePageTitle } from '../hooks/usePageTitle';
+import Seo from '../components/ui/Seo';
 import { useProfiles } from '../context/ProfileContext';
 import { notify } from '../lib/toast';
 import AppHeader from '../components/ui/AppHeader';
@@ -21,8 +21,6 @@ export default function ProfileEditPage() {
   const [newKeyword, setNewKeyword] = useState('');
   const [error, setError] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-
-  usePageTitle(profile ? `Edit ${profile.name}` : 'Edit Profile');
 
   useEffect(() => {
     if (!id) return;
@@ -118,6 +116,7 @@ export default function ProfileEditPage() {
 
   return (
     <>
+      <Seo title={profile ? `Edit ${profile.name}` : 'Edit Profile'} noindex canonicalPath={`/profiles/${encodeURIComponent(id ?? '')}/edit`} />
       <AppHeader>
         <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
           <ol>

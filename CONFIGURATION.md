@@ -255,6 +255,8 @@ Expected response:
 
 ## 12. Environment Variable Reference
 
+### Server variables
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `PORT` | No | `3001` | Port the Express server listens on |
@@ -272,6 +274,16 @@ Expected response:
 | `CACHE_TTL_KEYWORD_SECONDS` | No | `300` | TTL (seconds) for cached keyword search results |
 | `FEED_PUBLISHED_AFTER_DAYS` | No | `14` | Only return videos published within this many days |
 | `QUOTA_DAILY_LIMIT` | No | `9000` | Soft quota guard threshold (YouTube daily limit is 10,000) |
+
+### Client build-time variables (`VITE_*`)
+
+Client variables are prefixed with `VITE_` and are inlined at build time by Vite. Put them in `client/.env` or export them in the shell before running `npm run build --workspace=client`; the project-root `.env` used by the server is not loaded by Vite for the client build. The root `.env.example` is only a reference example.
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_SITE_URL` | No | `https://focused-tube.example` (placeholder) | Public-facing site origin used for canonical links, Open Graph `og:url`, and the `Sitemap:` entry in `robots.txt`. Set to your production origin (e.g. `https://www.example.com`); trailing slashes and paths are normalized to the origin. When absent or empty, the build falls back to the reserved `.example` placeholder — SEO files and tags will contain `https://focused-tube.example` and should not be deployed without setting the real value. |
+
+> **Production checklist:** Always set `VITE_SITE_URL` before a production build. Verify the substituted value in `dist/robots.txt` and `dist/sitemap.xml` after building.
 
 ---
 

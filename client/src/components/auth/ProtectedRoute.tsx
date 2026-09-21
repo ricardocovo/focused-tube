@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Seo from '../ui/Seo';
 import './ProtectedRoute.css';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -8,10 +9,13 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (isLoading) {
     return (
-      <div className="protected-route-loading" role="status" aria-label="Loading, please wait...">
-        <div className="protected-route-spinner" aria-hidden="true" />
-        <span className="sr-only">Loading, please wait...</span>
-      </div>
+      <>
+        <Seo noindex />
+        <div className="protected-route-loading" role="status" aria-label="Loading, please wait...">
+          <div className="protected-route-spinner" aria-hidden="true" />
+          <span className="sr-only">Loading, please wait...</span>
+        </div>
+      </>
     );
   }
 

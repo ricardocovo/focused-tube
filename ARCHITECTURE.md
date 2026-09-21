@@ -180,7 +180,8 @@ Utility modules live in `server/src/utils/`.
 
 ```mermaid
 graph TB
-    BR["BrowserRouter"] --> AP["AuthProvider"]
+    HP["HelmetProvider (react-helmet-async)"] --> BR["BrowserRouter"]
+    BR --> AP["AuthProvider"]
     AP --> PP["ProfileProvider"]
     PP --> FCP["FeedCacheProvider"]
     FCP --> T["Toaster (react-hot-toast)"]
@@ -302,6 +303,23 @@ components/
 
 - **React plugin** — JSX/TSX support via `@vitejs/plugin-react`
 - **Dev proxy** — `/api/*` requests are proxied to `http://localhost:3001`, allowing the client to use relative URLs
+- **`focused-tube:site-url` plugin** — resolves `VITE_SITE_URL` through `client/site.config.ts` (normalizing to an http(s) origin and falling back to `https://focused-tube.example`), then substitutes the `__SITE_URL__` placeholder in `index.html` (via `transformIndexHtml`), in `public/robots.txt` and `public/sitemap.xml` (via `writeBundle` post-processing of `dist/`), and in dev-server responses for those files (via `configureServer` middleware).
+
+### 4.9 SEO Architecture
+
+The app uses a layered SEO approach:
+
+| Layer | Mechanism | Applies when |
+|-------|-----------|-------------|
+| HTTP headers | Azure Static Web Apps `X-Robots-Tag: noindex,nofollow` for all routes except `/login` | Always (crawler sees header before JS runs) |
+| Static HTML | `data-rh="true"` tags in `index.html` — description, canonical, OG, Twitter Card | Before JS hydration (social/search bots) |
+| Runtime (client JS) | `<Seo />` component via `react-helmet-async` — per-page title, robots, canonical, description | After React mounts |
+
+**`src/components/ui/Seo.tsx`** — The single source of per-page head metadata. Props: `title`, `description`, `noindex`, `canonicalPath`, `image`. All protected routes render `<Seo noindex />`. `/login` renders `<Seo canonicalPath="/login" />` (indexable).
+
+**`client/site.config.ts` + `src/lib/siteUrl.ts`** — `client/site.config.ts` is the pure single source for `PLACEHOLDER_SITE_URL`, `resolveSiteUrl()` (http/https origin normalization), and `joinUrl()`. `src/lib/siteUrl.ts` only reads runtime `import.meta.env.VITE_SITE_URL` and delegates to the shared helpers. `<Seo />` and the Vite plugin therefore use the same URL resolution for canonical, OG, default image, and static file substitution.
+
+**Static SEO files** (`client/public/`) — `robots.txt` (allows `/login`, disallows `/profiles` and `/api`, includes sitemap reference), `sitemap.xml` (lists `/login` only — automated generation is out of scope), `site.webmanifest` (reuses existing icon assets).
 
 ---
 

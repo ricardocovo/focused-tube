@@ -1,6 +1,6 @@
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { usePageTitle } from '../hooks/usePageTitle';
+import Seo from '../components/ui/Seo';
 import './LoginPage.css';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -10,7 +10,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export default function LoginPage() {
-  usePageTitle('Sign in');
   const { user, isLoading } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -19,10 +18,13 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="login-spinner-container" role="status" aria-label="Loading, please wait...">
-        <div className="login-spinner" aria-hidden="true" />
-        <span className="sr-only">Loading, please wait...</span>
-      </div>
+      <>
+        <Seo title="Sign in" canonicalPath="/login" />
+        <div className="login-spinner-container" role="status" aria-label="Loading, please wait...">
+          <div className="login-spinner" aria-hidden="true" />
+          <span className="sr-only">Loading, please wait...</span>
+        </div>
+      </>
     );
   }
 
@@ -33,7 +35,9 @@ export default function LoginPage() {
   const googleAuthHref = `${import.meta.env.VITE_API_URL ?? ''}/api/auth/google`;
 
   return (
-    <main id="main-content" tabIndex={-1} className="login-page">
+    <>
+      <Seo title="Sign in" canonicalPath="/login" />
+      <main id="main-content" tabIndex={-1} className="login-page">
       <div className="login-bg" aria-hidden="true">
         <span className="login-blob login-blob--1" />
         <span className="login-blob login-blob--2" />
@@ -85,5 +89,6 @@ export default function LoginPage() {
         </a>
       </div>
     </main>
+    </>
   );
 }

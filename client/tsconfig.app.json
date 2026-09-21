@@ -5,5 +5,5 @@
     "outDir": "dist",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsBuildInfo"
   },
-  "include": ["src"]
+  "include": ["src", "site.config.ts"]
 }

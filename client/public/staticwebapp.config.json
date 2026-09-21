@@ -1,12 +1,79 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/assets/*"]
+    "exclude": [
+      "/images/*.{png,jpg,gif}",
+      "/css/*",
+      "/assets/*",
+      "/favicon*",
+      "/apple-touch-icon.png",
+      "/ft-logo.png",
+      "/favicon-192.png",
+      "/robots.txt",
+      "/sitemap.xml",
+      "/site.webmanifest"
+    ]
   },
+  "routes": [
+    {
+      "route": "/login",
+      "rewrite": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "index,follow"
+      }
+    },
+    {
+      "route": "/",
+      "rewrite": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "noindex,nofollow"
+      }
+    },
+    {
+      "route": "/profiles",
+      "rewrite": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "noindex,nofollow"
+      }
+    },
+    {
+      "route": "/profiles/*",
+      "rewrite": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "noindex,nofollow"
+      }
+    },
+    {
+      "route": "/community",
+      "rewrite": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "noindex,nofollow"
+      }
+    },
+    {
+      "route": "/index.html",
+      "headers": {
+        "X-Robots-Tag": "noindex,nofollow"
+      }
+    },
+    {
+      "route": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain"
+      }
+    },
+    {
+      "route": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml"
+      }
+    }
+  ],
   "mimeTypes": {
     ".js": "application/javascript",
     ".mjs": "application/javascript",
     ".css": "text/css",
-    ".wasm": "application/wasm"
+    ".wasm": "application/wasm",
+    ".webmanifest": "application/manifest+json"
   }
 }

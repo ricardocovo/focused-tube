@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import ProfilesPage from './ProfilesPage';
 
 const mockUseProfiles = vi.fn();
@@ -23,9 +24,11 @@ vi.mock('../lib/toast', () => ({
 
 function renderPage() {
   return render(
-    <MemoryRouter>
-      <ProfilesPage />
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter>
+        <ProfilesPage />
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
@@ -96,5 +99,17 @@ describe('ProfilesPage', () => {
 
     expect(screen.getByRole('button', { name: 'Edit Deep Work' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete Deep Work' })).toBeInTheDocument();
+  });
+
+  describe('indexability', () => {
+    it('renders noindex,nofollow robots meta (protected page)', async () => {
+      renderPage();
+      await waitFor(() =>
+        expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          'noindex,nofollow',
+        ),
+      );
+    });
   });
 });

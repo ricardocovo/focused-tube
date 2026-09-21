@@ -1,10 +1,9 @@
 import AppHeader from '../components/ui/AppHeader';
+import Seo from '../components/ui/Seo';
 import { useCommunity } from '../hooks/useCommunity';
-import { usePageTitle } from '../hooks/usePageTitle';
 import './CommunityPage.css';
 
 export default function CommunityPage() {
-  usePageTitle('Community Profiles');
   const {
     profiles,
     total,
@@ -21,6 +20,7 @@ export default function CommunityPage() {
 
   return (
     <>
+      <Seo title="Community Profiles" noindex canonicalPath="/community" />
       <AppHeader />
       <main id="main-content" tabIndex={-1} className="page-container">
         <div className="community-header">

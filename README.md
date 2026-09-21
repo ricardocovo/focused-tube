@@ -211,6 +211,12 @@ Create a `.env` file in the project root:
 | `FEED_PUBLISHED_AFTER_DAYS` | No | `14` | Only return videos published within this many days |
 | `QUOTA_DAILY_LIMIT` | No | `9000` | Soft quota guard threshold (YouTube limit is 10,000) |
 
+**Client build-time variables (put in `client/.env` or export before `npm run build --workspace=client`; root `.env` is server-only for Vite builds):**
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_SITE_URL` | No | `https://focused-tube.example` | Public-facing site origin for canonical links, Open Graph tags, and `robots.txt` sitemap entry. Set to your production origin (e.g. `https://www.example.com`). |
+
 Generate secrets with:
 
 ```bash

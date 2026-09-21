@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSubscriptions } from '../hooks/useSubscriptions';
-import { usePageTitle } from '../hooks/usePageTitle';
+import Seo from '../components/ui/Seo';
 import { useProfiles } from '../context/ProfileContext';
 import { addChannel, removeChannel } from '../services/profilesApi';
 import { fetchProfile } from '../services/profilesApi';
@@ -19,8 +19,6 @@ export default function SubscriptionPickerPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-
-  usePageTitle(profile ? `Subscriptions – ${profile.name}` : 'Browse Subscriptions');
 
   const [search, setSearch] = useState('');
   const [selectedChannels, setSelectedChannels] = useState<Map<string, ProfileChannel>>(new Map());
@@ -119,6 +117,7 @@ export default function SubscriptionPickerPage() {
 
   return (
     <>
+      <Seo title={profile ? `Subscriptions – ${profile.name}` : 'Browse Subscriptions'} noindex canonicalPath={`/profiles/${encodeURIComponent(profileId ?? '')}/subscriptions`} />
       <AppHeader>
         <nav className="app-header-breadcrumb" aria-label="Breadcrumb">
           <ol>

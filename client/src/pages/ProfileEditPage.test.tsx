@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import ProfileEditPage from './ProfileEditPage';
 
 const mockUseProfiles = vi.fn();
@@ -37,11 +38,13 @@ const mockFetchProfile = vi.mocked(fetchProfile);
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={['/profiles/profile-1/edit']}>
-      <Routes>
-        <Route path="/profiles/:id/edit" element={<ProfileEditPage />} />
-      </Routes>
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter initialEntries={['/profiles/profile-1/edit']}>
+        <Routes>
+          <Route path="/profiles/:id/edit" element={<ProfileEditPage />} />
+        </Routes>
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
@@ -92,6 +95,16 @@ describe('ProfileEditPage', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Remove Calm Coding' })).toBeInTheDocument();
+    });
+  });
+
+  it('renders noindex,nofollow robots meta (protected page)', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex,nofollow',
+      );
     });
   });
 });

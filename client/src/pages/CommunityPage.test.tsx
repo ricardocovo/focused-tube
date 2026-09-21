@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { HelmetProvider } from 'react-helmet-async';
+import { MemoryRouter } from 'react-router-dom';
 import CommunityPage from './CommunityPage';
 
 const mockUseCommunity = vi.fn();
@@ -11,6 +13,16 @@ vi.mock('../hooks/useCommunity', () => ({
 vi.mock('../components/ui/AppHeader', () => ({
   default: () => <div>Header</div>,
 }));
+
+function renderPage() {
+  return render(
+    <HelmetProvider>
+      <MemoryRouter>
+        <CommunityPage />
+      </MemoryRouter>
+    </HelmetProvider>,
+  );
+}
 
 describe('CommunityPage', () => {
   beforeEach(() => {
@@ -42,9 +54,21 @@ describe('CommunityPage', () => {
   });
 
   it('shows Yours in the owner line for the current user profile', () => {
-    render(<CommunityPage />);
+    renderPage();
 
     expect(screen.getByText('Yours')).toBeInTheDocument();
     expect(screen.queryByText('by Casey')).not.toBeInTheDocument();
+  });
+
+  describe('indexability', () => {
+    it('renders noindex,nofollow robots meta (protected page)', async () => {
+      renderPage();
+      await waitFor(() =>
+        expect(document.querySelector('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          'noindex,nofollow',
+        ),
+      );
+    });
   });
 });
