@@ -23,13 +23,13 @@ timeout-minutes: 20
 
 steps:
   - name: Checkout repository
-    uses: actions/checkout@v4
+    uses: actions/checkout@v7.0.1
     with:
       fetch-depth: 0
       persist-credentials: false
 
   - name: Install repo-metadata-generator pack
-    uses: microsoft/apm-action@v1
+    uses: microsoft/apm-action@v1.10.0
     with:
       isolated: 'true'
       dependencies: |
