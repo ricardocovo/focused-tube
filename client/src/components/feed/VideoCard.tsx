@@ -35,7 +35,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
     { label: 'Likes', count: video.stats?.likeCount },
     { label: 'Dislikes', count: video.stats?.dislikeCount },
   ].filter((metric): metric is { label: string; count: number } => metric.count !== null && metric.count !== undefined);
-  const engagementLabel = metrics.map(({ label, count }) => `${count.toLocaleString()} ${label.toLowerCase()}`).join(', ');
+  const engagementLabel = metrics.map(({ label, count }) => `${count.toLocaleString('en')} ${label.toLowerCase()}`).join(', ');
 
   return (
     <button

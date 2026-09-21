@@ -98,6 +98,11 @@ describe('isInsufficientScopeError', () => {
         errors: [{ reason: 'quotaExceeded' }],
       })).toBe(true);
     });
+
+    it('returns true for a quota error message and false for unrelated errors', () => {
+      expect(isQuotaExceededError({ code: 403, message: 'Quota exhausted' })).toBe(true);
+      expect(isQuotaExceededError({ code: 403, message: 'Forbidden' })).toBe(false);
+    });
   });
 
   it('returns false for 403 without insufficientPermissions reason', () => {
