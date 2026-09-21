@@ -52,6 +52,19 @@ describe('VideoCard', () => {
     expect(screen.getByText('1:23:45')).toBeInTheDocument();
   });
 
+  it('renders engagement statistics when present', () => {
+    render(<VideoCard video={{
+      ...video,
+      viewCount: '1234',
+      likeCount: '56',
+      dislikeCount: '7',
+    }} />);
+
+    expect(screen.getByText('1.2K views')).toBeInTheDocument();
+    expect(screen.getByText('56 likes')).toBeInTheDocument();
+    expect(screen.getByText('7 dislikes')).toBeInTheDocument();
+  });
+
   it('does not render duration badge when duration is absent', () => {
     const { container } = render(<VideoCard video={video} />);
     expect(container.querySelector('.video-card-duration')).not.toBeInTheDocument();

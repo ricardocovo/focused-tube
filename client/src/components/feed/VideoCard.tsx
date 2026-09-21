@@ -20,15 +20,37 @@ function formatDuration(iso: string): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function formatCount(count: string): string {
+  const parsed = Number(count);
+  if (!Number.isFinite(parsed)) return count;
+  return new Intl.NumberFormat('en', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(parsed);
+}
+
+function formatStat(count: string | undefined, label: string): string | null {
+  if (count === undefined) return null;
+  const formatted = formatCount(count);
+  const suffix = count === '1' ? label : `${label}s`;
+  return `${formatted} ${suffix}`;
+}
+
 const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ video, onSelect }) {
   const relativeTime = formatDistanceToNow(new Date(video.publishedAt), { addSuffix: true });
   const duration = video.duration ? formatDuration(video.duration) : null;
+  const stats = [
+    formatStat(video.viewCount, 'view'),
+    formatStat(video.likeCount, 'like'),
+    formatStat(video.dislikeCount, 'dislike'),
+  ].filter((stat): stat is string => stat !== null);
+  const statsLabel = stats.length > 0 ? `, ${stats.join(', ')}` : '';
 
   return (
     <button
       type="button"
       className="video-card"
-      aria-label={`Play ${video.title} by ${video.channelTitle}`}
+      aria-label={`Play ${video.title} by ${video.channelTitle}${statsLabel}`}
       onClick={() => onSelect?.(video)}
     >
       {/* Thumbnail */}
@@ -52,6 +74,15 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
         <div className="video-card-meta">
           <span className="video-card-time">{relativeTime}</span>
         </div>
+        {stats.length > 0 && (
+          <div className="video-card-socials" aria-hidden="true">
+            {stats.map((stat) => (
+              <span key={stat} className="video-card-social">
+                {stat}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </button>
   );

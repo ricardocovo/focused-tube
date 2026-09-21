@@ -23,6 +23,9 @@ export interface Video {
   publishedAt: string;
   source: 'subscription' | 'search';
   duration?: string;
+  viewCount?: string;
+  likeCount?: string;
+  dislikeCount?: string;
 }
 
 export interface SearchVideosParams {
@@ -373,6 +376,9 @@ const EMBEDDABLE_CACHE_TTL_SECONDS = 3600; // 1 hour
 interface EmbeddableCacheEntry {
   embeddable: boolean;
   duration?: string;
+  viewCount?: string;
+  likeCount?: string;
+  dislikeCount?: string;
 }
 
 /**
@@ -389,6 +395,7 @@ export async function filterEmbeddableVideos(
   const uncachedVideoIds: string[] = [];
   const embeddableMap = new Map<string, boolean>();
   const durationMap = new Map<string, string>();
+  const statisticsMap = new Map<string, Pick<Video, 'viewCount' | 'likeCount' | 'dislikeCount'>>();
 
   // Check cache for each video
   for (const video of videos) {
@@ -402,6 +409,13 @@ export async function filterEmbeddableVideos(
         embeddableMap.set(video.videoId, cached.embeddable);
         if (cached.duration) {
           durationMap.set(video.videoId, cached.duration);
+        }
+        if (cached.viewCount || cached.likeCount || cached.dislikeCount) {
+          statisticsMap.set(video.videoId, {
+            viewCount: cached.viewCount,
+            likeCount: cached.likeCount,
+            dislikeCount: cached.dislikeCount,
+          });
         }
       }
     } else {
@@ -418,7 +432,7 @@ export async function filterEmbeddableVideos(
       for (let i = 0; i < uncachedVideoIds.length; i += BATCH_SIZE) {
         const batch = uncachedVideoIds.slice(i, i + BATCH_SIZE);
         const response = await youtube.videos.list({
-          part: ['status', 'contentDetails'],
+          part: ['status', 'contentDetails', 'statistics'],
           id: batch,
         });
         quotaTracker.record('videos.list');
@@ -433,9 +447,17 @@ export async function filterEmbeddableVideos(
             returnedIds.add(item.id);
             const duration = item.contentDetails?.duration ?? undefined;
             if (duration) durationMap.set(item.id, duration);
+            const statistics = {
+              viewCount: item.statistics?.viewCount ?? undefined,
+              likeCount: item.statistics?.likeCount ?? undefined,
+              dislikeCount: item.statistics?.dislikeCount ?? undefined,
+            };
+            if (statistics.viewCount || statistics.likeCount || statistics.dislikeCount) {
+              statisticsMap.set(item.id, statistics);
+            }
             await cache.set<EmbeddableCacheEntry>(
               `embeddable:${item.id}`,
-              { embeddable: isEmbeddable, duration },
+              { embeddable: isEmbeddable, duration, ...statistics },
               EMBEDDABLE_CACHE_TTL_SECONDS,
             );
           }
@@ -464,6 +486,7 @@ export async function filterEmbeddableVideos(
     .filter((v) => embeddableMap.get(v.videoId) !== false)
     .map((v) => {
       const dur = durationMap.get(v.videoId);
-      return dur ? { ...v, duration: dur } : v;
+      const statistics = statisticsMap.get(v.videoId);
+      return dur || statistics ? { ...v, duration: dur, ...statistics } : v;
     });
 }

@@ -347,7 +347,7 @@ describe('filterEmbeddableVideos', () => {
     vi.clearAllMocks();
   });
 
-  it('attaches duration from videos.list response and caches embeddable metadata', async () => {
+  it('attaches duration and engagement statistics from videos.list response', async () => {
     mockedCacheGet.mockResolvedValue(undefined);
     mockedUserFindUnique.mockResolvedValue(mockUser as any);
     mockVideosList.mockResolvedValue({
@@ -357,6 +357,11 @@ describe('filterEmbeddableVideos', () => {
             id: 'v1',
             status: { embeddable: true },
             contentDetails: { duration: 'PT4M13S' },
+            statistics: {
+              viewCount: '1200',
+              likeCount: '34',
+              dislikeCount: '2',
+            },
           },
         ],
       },
@@ -377,15 +382,34 @@ describe('filterEmbeddableVideos', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]?.duration).toBe('PT4M13S');
+    expect(result[0]?.viewCount).toBe('1200');
+    expect(result[0]?.likeCount).toBe('34');
+    expect(result[0]?.dislikeCount).toBe('2');
+    expect(mockVideosList).toHaveBeenCalledWith({
+      part: ['status', 'contentDetails', 'statistics'],
+      id: ['v1'],
+    });
     expect(mockedCacheSet).toHaveBeenCalledWith(
       'embeddable:v1',
-      { embeddable: true, duration: 'PT4M13S' },
+      {
+        embeddable: true,
+        duration: 'PT4M13S',
+        viewCount: '1200',
+        likeCount: '34',
+        dislikeCount: '2',
+      },
       3600,
     );
   });
 
-  it('attaches duration from cached embeddability metadata on cache hit', async () => {
-    mockedCacheGet.mockResolvedValue({ embeddable: true, duration: 'PT1M05S' } as any);
+  it('attaches cached duration and engagement metadata on cache hit', async () => {
+    mockedCacheGet.mockResolvedValue({
+      embeddable: true,
+      duration: 'PT1M05S',
+      viewCount: '98',
+      likeCount: '7',
+      dislikeCount: '1',
+    } as any);
 
     const result = await filterEmbeddableVideos('user-1', [
       {
@@ -403,6 +427,9 @@ describe('filterEmbeddableVideos', () => {
     expect(mockVideosList).not.toHaveBeenCalled();
     expect(result).toHaveLength(1);
     expect(result[0]?.duration).toBe('PT1M05S');
+    expect(result[0]?.viewCount).toBe('98');
+    expect(result[0]?.likeCount).toBe('7');
+    expect(result[0]?.dislikeCount).toBe('1');
   });
 
   it('supports legacy boolean cache entries without duration', async () => {
