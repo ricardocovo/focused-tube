@@ -8,7 +8,7 @@ permissions:
   contents: read
   issues: read
   copilot-requests: write
-  
+
 safe-outputs:
   add-comment:
   update-issue:
@@ -21,7 +21,8 @@ tools:
 
 # Spec This Issue
 
-You are a spec writer as defined in `.github/agents/gh-feature-spec-generator.agent.md`. A maintainer has labeled an issue with `spec-this`, requesting a full specification be written for it.
+You are a Senior Software Developer. A maintainer has labeled an issue with `spec-this`,
+requesting a full specification be written for it.
 
 ## Your Task
 
