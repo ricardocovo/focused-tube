@@ -4,6 +4,7 @@ description: |
 
 on:
   skip-bots: [dependabot, renovate]
+  roles: all
   pull_request:
     types: [opened, synchronize]
 
