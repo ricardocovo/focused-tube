@@ -487,6 +487,6 @@ export async function filterEmbeddableVideos(
     .map((v) => {
       const dur = durationMap.get(v.videoId);
       const statistics = statisticsMap.get(v.videoId);
-      return dur || statistics ? { ...v, duration: dur, ...statistics } : v;
+      return dur || statistics ? { ...v, ...(dur ? { duration: dur } : {}), ...statistics } : v;
     });
 }

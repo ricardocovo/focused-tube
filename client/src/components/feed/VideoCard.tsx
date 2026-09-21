@@ -40,19 +40,18 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
   const relativeTime = formatDistanceToNow(new Date(video.publishedAt), { addSuffix: true });
   const duration = video.duration ? formatDuration(video.duration) : null;
   const stats = [
-    formatStat(video.viewCount, 'view'),
-    formatStat(video.likeCount, 'like'),
-    formatStat(video.dislikeCount, 'dislike'),
-  ].filter((stat): stat is string => stat !== null);
-  const statsLabel = stats.length > 0 ? `, ${stats.join(', ')}` : '';
+    { type: 'views', text: formatStat(video.viewCount, 'view') },
+    { type: 'likes', text: formatStat(video.likeCount, 'like') },
+    { type: 'dislikes', text: formatStat(video.dislikeCount, 'dislike') },
+  ].filter((stat): stat is { type: string; text: string } => stat.text !== null);
 
   return (
     <button
       type="button"
       className="video-card"
-      aria-label={`Play ${video.title} by ${video.channelTitle}${statsLabel}`}
       onClick={() => onSelect?.(video)}
     >
+      <span className="sr-only">Play </span>
       {/* Thumbnail */}
       <div className="video-card-thumbnail">
         <img
@@ -75,10 +74,10 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
           <span className="video-card-time">{relativeTime}</span>
         </div>
         {stats.length > 0 && (
-          <div className="video-card-socials" aria-hidden="true">
+          <div className="video-card-socials">
             {stats.map((stat) => (
-              <span key={stat} className="video-card-social">
-                {stat}
+              <span key={stat.type} className="video-card-social">
+                {stat.text}
               </span>
             ))}
           </div>
