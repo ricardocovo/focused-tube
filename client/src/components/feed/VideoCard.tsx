@@ -25,17 +25,12 @@ function formatDuration(iso: string): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-function formatCount(count: string, parsed: number): string {
-  if (!Number.isFinite(parsed)) return count;
-  return compactCountFormatter.format(parsed);
-}
-
 function formatStat(count: string | undefined, label: string): string | null {
   if (count === undefined) return null;
   const trimmed = count.trim();
   if (!trimmed) return null;
   const parsed = Number(trimmed);
-  const formatted = formatCount(trimmed, parsed);
+  const formatted = Number.isFinite(parsed) ? compactCountFormatter.format(parsed) : trimmed;
   const suffix = parsed === 1 ? label : `${label}s`;
   return `${formatted} ${suffix}`;
 }
