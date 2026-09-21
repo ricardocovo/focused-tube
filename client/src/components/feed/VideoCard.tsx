@@ -67,7 +67,7 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
           {metrics.length > 0 && (
             <span className="video-card-stats">
               {metrics.map(({ label, count }) => (
-                <span key={label} aria-label={`${label}: ${count.toLocaleString()}`}>
+                <span key={label} aria-label={`${label}: ${count.toLocaleString('en')}`}>
                   {formatCount(count)} {label.toLowerCase()}
                 </span>
               ))}

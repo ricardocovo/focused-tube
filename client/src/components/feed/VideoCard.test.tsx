@@ -66,6 +66,7 @@ describe('VideoCard', () => {
     expect(screen.getByText('12.3K views')).toBeInTheDocument();
     expect(screen.getByText('678 likes')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /12,345 views, 678 likes/i })).toBeInTheDocument();
+    expect(screen.getByLabelText('Views: 12,345')).toBeInTheDocument();
     expect(screen.queryByText(/dislikes/i)).not.toBeInTheDocument();
   });
 
