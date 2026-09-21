@@ -119,6 +119,23 @@ function isUnauthorizedError(error: unknown): boolean {
   );
 }
 
+async function getCachedInitialPage<T>(pageToken: string | undefined, cacheKey: string): Promise<T | undefined> {
+  if (pageToken) return undefined;
+  return cache.get<T>(cacheKey);
+}
+
+async function cacheInitialPage<T>(
+  pageToken: string | undefined,
+  cacheKey: string,
+  result: T,
+  ttlSeconds: number,
+): Promise<T> {
+  if (!pageToken) {
+    await cache.set(cacheKey, result, ttlSeconds);
+  }
+  return result;
+}
+
 export function isInsufficientScopeError(error: unknown): boolean {
   if (typeof error === 'object' && error !== null) {
     const e = error as any;
@@ -206,10 +223,8 @@ export async function getChannelVideos(
 ): Promise<GetChannelVideosResult> {
   // Check cache first (only for initial page — paginated requests bypass cache)
   const cacheKey = `channel:${params.channelId}:${params.publishedAfter ?? ''}`;
-  if (!params.pageToken) {
-    const cached = await cache.get<GetChannelVideosResult>(cacheKey);
-    if (cached) return cached;
-  }
+  const cached = await getCachedInitialPage<GetChannelVideosResult>(params.pageToken, cacheKey);
+  if (cached) return cached;
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -221,19 +236,13 @@ export async function getChannelVideos(
 
   try {
     const result = await fetchPlaylistItems(youtube, playlistId, params);
-    if (!params.pageToken) {
-      await cache.set(cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
-    }
-    return result;
+    return await cacheInitialPage(params.pageToken, cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
   } catch (error) {
     if (isUnauthorizedError(error)) {
       await refreshAndSaveToken(userId, oauth2Client, user.refreshToken);
       const retryYoutube = google.youtube({ version: 'v3', auth: oauth2Client });
       const result = await fetchPlaylistItems(retryYoutube, playlistId, params);
-      if (!params.pageToken) {
-        await cache.set(cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
-      }
-      return result;
+      return await cacheInitialPage(params.pageToken, cacheKey, result, config.CACHE_TTL_CHANNEL_SECONDS);
     }
     // Graceful fallback: if the uploads playlist is private/unavailable, return empty
     if (isPlaylistNotFoundError(error)) {
@@ -296,10 +305,8 @@ export async function searchVideos(
 ): Promise<SearchVideosResult> {
   // Check cache first (only for initial page — paginated requests bypass cache)
   const cacheKey = `search:${params.query ?? ''}:${params.publishedAfter ?? ''}`;
-  if (!params.pageToken) {
-    const cached = await cache.get<SearchVideosResult>(cacheKey);
-    if (cached) return cached;
-  }
+  const cached = await getCachedInitialPage<SearchVideosResult>(params.pageToken, cacheKey);
+  if (cached) return cached;
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -324,19 +331,13 @@ export async function searchVideos(
 
   try {
     const result = await executeSearch(youtube, requestParams, source);
-    if (!params.pageToken) {
-      await cache.set(cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
-    }
-    return result;
+    return await cacheInitialPage(params.pageToken, cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
   } catch (error) {
     if (isUnauthorizedError(error)) {
       await refreshAndSaveToken(userId, oauth2Client, user.refreshToken);
       const retryYoutube = google.youtube({ version: 'v3', auth: oauth2Client });
       const result = await executeSearch(retryYoutube, requestParams, source);
-      if (!params.pageToken) {
-        await cache.set(cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
-      }
-      return result;
+      return await cacheInitialPage(params.pageToken, cacheKey, result, config.CACHE_TTL_KEYWORD_SECONDS);
     }
     throw error;
   }
