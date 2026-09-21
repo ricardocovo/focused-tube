@@ -23,6 +23,11 @@ export interface Video {
   publishedAt: string;
   source: 'subscription' | 'search';
   duration?: string;
+  stats?: {
+    viewCount: number | null;
+    likeCount: number | null;
+    dislikeCount: number | null;
+  };
 }
 
 export interface SearchVideosParams {
@@ -126,6 +131,17 @@ export function isInsufficientScopeError(error: unknown): boolean {
       e.code === 403 &&
       Array.isArray(e.errors) &&
       e.errors.some((err: any) => err.reason === 'insufficientPermissions')
+    );
+  }
+  return false;
+}
+
+export function isQuotaExceededError(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null) {
+    const e = error as any;
+    return e.code === 403 && (
+      e.errors?.some((item: any) => item.reason === 'quotaExceeded') ||
+      (typeof e.message === 'string' && e.message.toLowerCase().includes('quota'))
     );
   }
   return false;
@@ -373,11 +389,19 @@ const EMBEDDABLE_CACHE_TTL_SECONDS = 3600; // 1 hour
 interface EmbeddableCacheEntry {
   embeddable: boolean;
   duration?: string;
+  stats?: Video['stats'];
+}
+
+function parseStatistic(value: string | null | undefined): number | null {
+  if (value === undefined || value === null || value.trim() === '') return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 /**
  * Filter a list of videos to only those that are embeddable.
- * Uses videos.list with part=status,contentDetails in batches of 50.
+ * Uses videos.list with part=status,contentDetails,statistics in batches of 50.
  * Caches results per video ID. Fails open on API errors.
  */
 export async function filterEmbeddableVideos(
@@ -389,6 +413,7 @@ export async function filterEmbeddableVideos(
   const uncachedVideoIds: string[] = [];
   const embeddableMap = new Map<string, boolean>();
   const durationMap = new Map<string, string>();
+  const statsMap = new Map<string, NonNullable<Video['stats']>>();
 
   // Check cache for each video
   for (const video of videos) {
@@ -398,10 +423,24 @@ export async function filterEmbeddableVideos(
       if (typeof cached === 'boolean') {
         // Backward compatibility with existing boolean-only cache entries.
         embeddableMap.set(video.videoId, cached);
+        statsMap.set(video.videoId, {
+          viewCount: null,
+          likeCount: null,
+          dislikeCount: null,
+        });
       } else {
         embeddableMap.set(video.videoId, cached.embeddable);
         if (cached.duration) {
           durationMap.set(video.videoId, cached.duration);
+        }
+        if (cached.stats) {
+          statsMap.set(video.videoId, cached.stats);
+        } else {
+          statsMap.set(video.videoId, {
+            viewCount: null,
+            likeCount: null,
+            dislikeCount: null,
+          });
         }
       }
     } else {
@@ -418,7 +457,7 @@ export async function filterEmbeddableVideos(
       for (let i = 0; i < uncachedVideoIds.length; i += BATCH_SIZE) {
         const batch = uncachedVideoIds.slice(i, i + BATCH_SIZE);
         const response = await youtube.videos.list({
-          part: ['status', 'contentDetails'],
+          part: ['status', 'contentDetails', 'statistics'],
           id: batch,
         });
         quotaTracker.record('videos.list');
@@ -433,9 +472,15 @@ export async function filterEmbeddableVideos(
             returnedIds.add(item.id);
             const duration = item.contentDetails?.duration ?? undefined;
             if (duration) durationMap.set(item.id, duration);
+            const stats = {
+              viewCount: parseStatistic(item.statistics?.viewCount),
+              likeCount: parseStatistic(item.statistics?.likeCount),
+              dislikeCount: null,
+            };
+            statsMap.set(item.id, stats);
             await cache.set<EmbeddableCacheEntry>(
               `embeddable:${item.id}`,
-              { embeddable: isEmbeddable, duration },
+              { embeddable: isEmbeddable, duration, stats },
               EMBEDDABLE_CACHE_TTL_SECONDS,
             );
           }
@@ -447,13 +492,17 @@ export async function filterEmbeddableVideos(
             embeddableMap.set(id, false);
             await cache.set<EmbeddableCacheEntry>(
               `embeddable:${id}`,
-              { embeddable: false },
+              {
+                embeddable: false,
+                stats: { viewCount: null, likeCount: null, dislikeCount: null },
+              },
               EMBEDDABLE_CACHE_TTL_SECONDS,
             );
           }
         }
       }
     } catch (error) {
+      if (isQuotaExceededError(error)) throw error;
       // Fail open: if we can't check embeddability, return all videos
       console.warn('[filterEmbeddableVideos] Failed to check embeddability, returning all videos:', error);
       return videos;
@@ -464,6 +513,7 @@ export async function filterEmbeddableVideos(
     .filter((v) => embeddableMap.get(v.videoId) !== false)
     .map((v) => {
       const dur = durationMap.get(v.videoId);
-      return dur ? { ...v, duration: dur } : v;
+      const stats = statsMap.get(v.videoId);
+      return { ...v, ...(dur && { duration: dur }), ...(stats && { stats }) };
     });
 }

@@ -56,4 +56,27 @@ describe('VideoCard', () => {
     const { container } = render(<VideoCard video={video} />);
     expect(container.querySelector('.video-card-duration')).not.toBeInTheDocument();
   });
+
+  it('renders compact views and likes with exact accessible counts', () => {
+    render(<VideoCard video={{
+      ...video,
+      stats: { viewCount: 12_345, likeCount: 678, dislikeCount: null },
+    }} />);
+
+    expect(screen.getByText('12.3K views')).toBeInTheDocument();
+    expect(screen.getByText('678 likes')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /12,345 views, 678 likes/i })).toBeInTheDocument();
+    expect(screen.queryByText(/dislikes/i)).not.toBeInTheDocument();
+  });
+
+  it('renders dislikes only when a value is available', () => {
+    render(<VideoCard video={{
+      ...video,
+      stats: { viewCount: null, likeCount: null, dislikeCount: 10 },
+    }} />);
+
+    expect(screen.getByText('10 dislikes')).toBeInTheDocument();
+    expect(screen.queryByText(/0 views/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 likes/i)).not.toBeInTheDocument();
+  });
 });

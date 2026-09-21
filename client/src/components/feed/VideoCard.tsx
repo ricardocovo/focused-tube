@@ -20,15 +20,28 @@ function formatDuration(iso: string): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function formatCount(count: number): string {
+  return new Intl.NumberFormat('en', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(count);
+}
+
 const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ video, onSelect }) {
   const relativeTime = formatDistanceToNow(new Date(video.publishedAt), { addSuffix: true });
   const duration = video.duration ? formatDuration(video.duration) : null;
+  const metrics = [
+    { label: 'Views', count: video.stats?.viewCount },
+    { label: 'Likes', count: video.stats?.likeCount },
+    { label: 'Dislikes', count: video.stats?.dislikeCount },
+  ].filter((metric): metric is { label: string; count: number } => metric.count !== null && metric.count !== undefined);
+  const engagementLabel = metrics.map(({ label, count }) => `${count.toLocaleString()} ${label.toLowerCase()}`).join(', ');
 
   return (
     <button
       type="button"
       className="video-card"
-      aria-label={`Play ${video.title} by ${video.channelTitle}`}
+      aria-label={`Play ${video.title} by ${video.channelTitle}${engagementLabel ? `. ${engagementLabel}` : ''}`}
       onClick={() => onSelect?.(video)}
     >
       {/* Thumbnail */}
@@ -51,6 +64,15 @@ const VideoCard: React.FC<VideoCardProps> = React.memo(function VideoCard({ vide
         <p className="video-card-channel">{video.channelTitle}</p>
         <div className="video-card-meta">
           <span className="video-card-time">{relativeTime}</span>
+          {metrics.length > 0 && (
+            <span className="video-card-stats">
+              {metrics.map(({ label, count }) => (
+                <span key={label} aria-label={`${label}: ${count.toLocaleString()}`}>
+                  {formatCount(count)} {label.toLowerCase()}
+                </span>
+              ))}
+            </span>
+          )}
         </div>
       </div>
     </button>

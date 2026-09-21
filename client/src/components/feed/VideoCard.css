@@ -60,3 +60,15 @@ button.video-card:focus-visible {
   font-size: 12px;
   color: var(--ft-text-tertiary);
 }
+
+.video-card-meta,
+.video-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.video-card-stats {
+  color: var(--ft-text-tertiary);
+  font-size: 12px;
+}

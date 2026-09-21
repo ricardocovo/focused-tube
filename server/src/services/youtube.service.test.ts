@@ -64,6 +64,7 @@ import prisma from '../utils/prisma';
 import { cache } from '../utils/cache';
 import {
   isInsufficientScopeError,
+  isQuotaExceededError,
   getChannelVideos,
   searchVideos,
   getUserSubscriptions,
@@ -88,6 +89,15 @@ describe('isInsufficientScopeError', () => {
       errors: [{ reason: 'insufficientPermissions' }],
     };
     expect(isInsufficientScopeError(error)).toBe(true);
+  });
+
+  describe('isQuotaExceededError', () => {
+    it('returns true for a quota-exceeded YouTube response', () => {
+      expect(isQuotaExceededError({
+        code: 403,
+        errors: [{ reason: 'quotaExceeded' }],
+      })).toBe(true);
+    });
   });
 
   it('returns false for 403 without insufficientPermissions reason', () => {
@@ -347,7 +357,7 @@ describe('filterEmbeddableVideos', () => {
     vi.clearAllMocks();
   });
 
-  it('attaches duration from videos.list response and caches embeddable metadata', async () => {
+  it('attaches duration and parsed engagement stats from videos.list response', async () => {
     mockedCacheGet.mockResolvedValue(undefined);
     mockedUserFindUnique.mockResolvedValue(mockUser as any);
     mockVideosList.mockResolvedValue({
@@ -357,6 +367,7 @@ describe('filterEmbeddableVideos', () => {
             id: 'v1',
             status: { embeddable: true },
             contentDetails: { duration: 'PT4M13S' },
+            statistics: { viewCount: '12345', likeCount: '678' },
           },
         ],
       },
@@ -377,9 +388,22 @@ describe('filterEmbeddableVideos', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]?.duration).toBe('PT4M13S');
+    expect(result[0]?.stats).toEqual({
+      viewCount: 12345,
+      likeCount: 678,
+      dislikeCount: null,
+    });
+    expect(mockVideosList).toHaveBeenCalledWith({
+      part: ['status', 'contentDetails', 'statistics'],
+      id: ['v1'],
+    });
     expect(mockedCacheSet).toHaveBeenCalledWith(
       'embeddable:v1',
-      { embeddable: true, duration: 'PT4M13S' },
+      {
+        embeddable: true,
+        duration: 'PT4M13S',
+        stats: { viewCount: 12345, likeCount: 678, dislikeCount: null },
+      },
       3600,
     );
   });
@@ -403,6 +427,11 @@ describe('filterEmbeddableVideos', () => {
     expect(mockVideosList).not.toHaveBeenCalled();
     expect(result).toHaveLength(1);
     expect(result[0]?.duration).toBe('PT1M05S');
+    expect(result[0]?.stats).toEqual({
+      viewCount: null,
+      likeCount: null,
+      dislikeCount: null,
+    });
   });
 
   it('supports legacy boolean cache entries without duration', async () => {
@@ -424,5 +453,80 @@ describe('filterEmbeddableVideos', () => {
     expect(mockVideosList).not.toHaveBeenCalled();
     expect(result).toHaveLength(1);
     expect(result[0]?.duration).toBeUndefined();
+    expect(result[0]?.stats).toEqual({
+      viewCount: null,
+      likeCount: null,
+      dislikeCount: null,
+    });
+  });
+
+  it('returns null for missing or invalid statistics', async () => {
+    mockedCacheGet.mockResolvedValue(undefined);
+    mockedUserFindUnique.mockResolvedValue(mockUser as any);
+    mockVideosList.mockResolvedValue({
+      data: {
+        items: [{
+          id: 'v1',
+          status: { embeddable: true },
+          statistics: { viewCount: 'invalid' },
+        }],
+      },
+    });
+
+    const [result] = await filterEmbeddableVideos('user-1', [{
+      videoId: 'v1',
+      title: 'Video 1',
+      description: 'desc',
+      channelId: 'ch1',
+      channelTitle: 'Channel 1',
+      thumbnailUrl: 'http://thumb.jpg',
+      publishedAt: '2024-01-01T00:00:00Z',
+      source: 'search',
+    }]);
+
+    expect(result?.stats).toEqual({
+      viewCount: null,
+      likeCount: null,
+      dislikeCount: null,
+    });
+  });
+
+  it('batches metadata requests in groups of 50', async () => {
+    mockedCacheGet.mockResolvedValue(undefined);
+    mockedUserFindUnique.mockResolvedValue(mockUser as any);
+    mockVideosList.mockResolvedValue({ data: { items: [] } });
+    const videos = Array.from({ length: 51 }, (_, index) => ({
+      videoId: `v${index}`,
+      title: 'Video',
+      description: '',
+      channelId: 'ch1',
+      channelTitle: 'Channel 1',
+      thumbnailUrl: '',
+      publishedAt: '2024-01-01T00:00:00Z',
+      source: 'search' as const,
+    }));
+
+    await filterEmbeddableVideos('user-1', videos);
+
+    expect(mockVideosList).toHaveBeenCalledTimes(2);
+    expect(mockVideosList.mock.calls.map(([request]) => request.id.length)).toEqual([50, 1]);
+  });
+
+  it('propagates quota errors instead of failing open', async () => {
+    mockedCacheGet.mockResolvedValue(undefined);
+    mockedUserFindUnique.mockResolvedValue(mockUser as any);
+    const quotaError = { code: 403, errors: [{ reason: 'quotaExceeded' }] };
+    mockVideosList.mockRejectedValue(quotaError);
+
+    await expect(filterEmbeddableVideos('user-1', [{
+      videoId: 'v1',
+      title: 'Video 1',
+      description: 'desc',
+      channelId: 'ch1',
+      channelTitle: 'Channel 1',
+      thumbnailUrl: 'http://thumb.jpg',
+      publishedAt: '2024-01-01T00:00:00Z',
+      source: 'search',
+    }])).rejects.toBe(quotaError);
   });
 });

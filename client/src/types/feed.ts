@@ -7,6 +7,11 @@ export interface FeedVideo {
   publishedAt: string;
   source: 'subscription' | 'search';
   duration?: string;
+  stats?: {
+    viewCount: number | null;
+    likeCount: number | null;
+    dislikeCount: number | null;
+  };
 }
 
 export interface FeedResponse {
