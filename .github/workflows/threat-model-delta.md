@@ -7,6 +7,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
+      - "docs/threat-model.md"
       - ".github/workflows/**"
       - "**/auth/**"
       - "**/authentication/**"
