@@ -8,6 +8,11 @@ interface VideoCardProps {
   onSelect?: (video: FeedVideo) => void;
 }
 
+const compactCountFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
 /** Converts ISO 8601 duration (e.g. PT4M13S) to a display string (e.g. 4:13 or 1:23:45). */
 function formatDuration(iso: string): string {
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -23,10 +28,7 @@ function formatDuration(iso: string): string {
 function formatCount(count: string): string {
   const parsed = Number(count);
   if (!Number.isFinite(parsed)) return count;
-  return new Intl.NumberFormat('en', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(parsed);
+  return compactCountFormatter.format(parsed);
 }
 
 function formatStat(count: string | undefined, label: string): string | null {

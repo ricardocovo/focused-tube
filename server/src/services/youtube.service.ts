@@ -450,6 +450,7 @@ export async function filterEmbeddableVideos(
             const statistics = {
               viewCount: item.statistics?.viewCount ?? undefined,
               likeCount: item.statistics?.likeCount ?? undefined,
+              // YouTube only returns dislikeCount to video owners; keep it optional when present.
               dislikeCount: item.statistics?.dislikeCount ?? undefined,
             };
             if (statistics.viewCount || statistics.likeCount || statistics.dislikeCount) {
