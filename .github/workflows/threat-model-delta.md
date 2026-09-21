@@ -4,6 +4,7 @@ description: |
   a trust boundary, then performs a focused STRIDE review only when they do.
 
 on:
+  bots: [github-actions]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:

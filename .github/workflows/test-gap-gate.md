@@ -5,6 +5,7 @@ description: |
   for the highest-risk gaps when the repository test suite can run.
 
 on:
+  bots: [github-actions]
   pull_request:
     types: [opened, synchronize]
 
