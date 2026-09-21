@@ -7,7 +7,8 @@ on:
 permissions:
   contents: read
   issues: read
-
+  copilot-requests: write
+  
 safe-outputs:
   add-comment:
   update-issue:
