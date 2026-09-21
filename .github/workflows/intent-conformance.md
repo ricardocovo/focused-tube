@@ -4,7 +4,7 @@ description: |
 
 on:
   skip-bots: [dependabot, renovate]
-  roles: all
+  bots: ["github-actions[bot]"]
   pull_request:
     types: [opened, synchronize]
 
