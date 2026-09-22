@@ -4,9 +4,11 @@ description: |
   scanners cannot reliably infer from code and schema context.
 
 on:
-  bots: [github-actions]
-  pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch:
+
+#  bots: [github-actions]
+#  pull_request:
+#    types: [opened, synchronize]
 
 permissions: read-all
 

@@ -1,6 +1,6 @@
 ---
-on:
-  schedule: daily
+on:  
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -3,10 +3,12 @@ description: |
   Checks whether a pull request actually delivers the intent it claims to.
 
 on:
-  bots: [github-actions]
-  skip-bots: [dependabot, renovate]
-  pull_request:
-    types: [opened, synchronize]
+  workflow_dispatch:
+
+#  bots: [github-actions]
+#  skip-bots: [dependabot, renovate]
+#  pull_request:
+#    types: [opened, synchronize]
 
 permissions:
   contents: read

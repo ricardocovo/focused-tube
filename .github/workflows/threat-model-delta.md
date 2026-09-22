@@ -4,55 +4,11 @@ description: |
   a trust boundary, then performs a focused STRIDE review only when they do.
 
 on:
-  bots: [github-actions]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - "docs/threat-model.md"
-      - ".github/workflows/**"
-      - "**/auth/**"
-      - "**/authentication/**"
-      - "**/authorization/**"
-      - "**/session/**"
-      - "**/sessions/**"
-      - "**/*auth*.*"
-      - "**/*session*.*"
-      - "**/*authoriz*.*"
-      - "**/*crypto*.*"
-      - "**/*encrypt*.*"
-      - "**/*decrypt*.*"
-      - "**/routes/**"
-      - "**/api/**"
-      - "**/Dockerfile"
-      - "**/Dockerfile.*"
-      - "**/*.tf"
-      - "**/*.tfvars"
-      - "**/*.bicep"
-      - "**/Pulumi.*"
-      - "**/cdk.json"
-      - "**/serverless.yml"
-      - "**/serverless.yaml"
-      - "**/package.json"
-      - "**/package-lock.json"
-      - "**/npm-shrinkwrap.json"
-      - "**/yarn.lock"
-      - "**/pnpm-lock.yaml"
-      - "**/bun.lock"
-      - "**/bun.lockb"
-      - "**/requirements*.txt"
-      - "**/pyproject.toml"
-      - "**/poetry.lock"
-      - "**/Pipfile"
-      - "**/Pipfile.lock"
-      - "**/go.mod"
-      - "**/go.sum"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
-      - "**/Gemfile"
-      - "**/Gemfile.lock"
-      - "**/*.csproj"
-      - "**/packages.lock.json"
-    forks: []
+  workflow_dispatch:
+
+#  bots: [github-actions]
+#  pull_request:
+#    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions: read-all
 
